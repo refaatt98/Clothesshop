@@ -5,7 +5,6 @@ import { Link, useSearchParams } from "react-router";
 import { categoryNames } from "../components/Header";
 import { ProductCard } from "../components/ProductCard";
 import { Breadcrumbs, Button, EmptyState, HandNote, Skeleton } from "../components/ui";
-import { chapters } from "../data/chapters";
 import { getProducts } from "../lib/api";
 import { colourFamilies } from "../lib/colour";
 import { useAsync, useDocumentTitle } from "../lib/hooks";
@@ -26,7 +25,8 @@ export default function Shop() {
   const [params, setParams] = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [view, setView] = useState<"rail" | "flat">("rail");
-  const { money } = useShop();
+  const { money, chapters: chapterList } = useShop();
+  const chapters = chapterList ?? [];
 
   const query: ProductQuery = {
     category: (params.get("category") as Category) || "all",

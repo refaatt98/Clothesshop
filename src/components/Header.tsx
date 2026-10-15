@@ -2,8 +2,6 @@ import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
 import { ArrowUpRight, Menu, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router";
-import { chapters } from "../data/chapters";
-import { products } from "../data/products";
 import { useLockBody } from "../lib/hooks";
 import { useShop } from "../lib/store";
 import type { Category } from "../types";
@@ -84,9 +82,11 @@ function MeasuringTape() {
 }
 
 function ShopPanel({ onClose }: { onClose: () => void }) {
+  const { catalog, chapters, bySlug } = useShop();
+  const products = catalog ?? [];
   const counts = products.reduce<Record<string, number>>((acc, p) => ((acc[p.category] = (acc[p.category] ?? 0) + 1), acc), {});
-  const current = chapters.find((c) => c.status === "current")!;
-  const feature = products.find((p) => p.slug === "orchard-midi-dress")!;
+  const current = chapters?.find((c) => c.status === "current");
+  const feature = bySlug("orchard-midi-dress");
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
@@ -124,7 +124,7 @@ function ShopPanel({ onClose }: { onClose: () => void }) {
             <li><Link onClick={onClose} className="hover:text-thread" to="/pinned">Your pinboard</Link></li>
           </ul>
         </div>
-        <Link
+        {current && feature && <Link
           onClick={onClose}
           to={`/chapters/${current.slug}`}
           className="group col-span-5 grid grid-cols-5 items-center gap-6 rounded-md bg-tissue p-5 ring-1 ring-line transition hover:ring-ink/30"
@@ -145,7 +145,7 @@ function ShopPanel({ onClose }: { onClose: () => void }) {
               Read the chapter <ArrowUpRight className="h-4 w-4" />
             </span>
           </div>
-        </Link>
+        </Link>}
       </div>
     </motion.div>
   );

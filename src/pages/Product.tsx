@@ -8,7 +8,6 @@ import { GarmentFlat } from "../components/GarmentFlat";
 import { ProductCard } from "../components/ProductCard";
 import { Swatch } from "../components/Swatch";
 import { Breadcrumbs, Button, EmptyState, HandNote, Meter, PinHead, Reveal, SectionHead, Skeleton } from "../components/ui";
-import { chapters } from "../data/chapters";
 import { getFabric, getProduct, getProductsBySlugs, getWearerNotes } from "../lib/api";
 import { fitNotes, suggestSize } from "../lib/fit";
 import { pad, useAsync, useDocumentTitle } from "../lib/hooks";
@@ -221,7 +220,7 @@ export default function Product() {
   const { data: notes } = useAsync(() => getWearerNotes(slug), [slug]);
   const { data: fabric } = useAsync(() => (product ? getFabric(product.fabricId) : Promise.resolve(null)), [product?.fabricId]);
   const { data: pairs } = useAsync(() => getProductsBySlugs(product?.pairsWith ?? []), [product?.slug]);
-  const { addToRail, setRailOpen, money, togglePin, isPinned, toast } = useShop();
+  const { addToRail, setRailOpen, money, togglePin, isPinned, toast, chapters } = useShop();
 
   const [cw, setCw] = useState(0);
   const [size, setSize] = useState("");
@@ -241,7 +240,7 @@ export default function Product() {
   }, [product]);
 
   useDocumentTitle(product?.name ?? "Piece");
-  const chapter = useMemo(() => chapters.find((c) => c.slug === product?.chapter), [product]);
+  const chapter = useMemo(() => chapters?.find((c) => c.slug === product?.chapter), [product, chapters]);
 
   if (loading && !product)
     return (

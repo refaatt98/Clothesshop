@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Minus, Plus, X } from "lucide-react";
 import { Link, useNavigate } from "react-router";
-import { products } from "../data/products";
 import { FREE_SHIPPING_FROM } from "../lib/api";
 import { useLockBody } from "../lib/hooks";
 import { useShop } from "../lib/store";
@@ -32,13 +31,11 @@ export function StitchProgress({ value }: { value: number }) {
 }
 
 export function useRailTotals() {
-  const { rail } = useShop();
-  const lines = rail
-    .map((l) => ({ line: l, product: products.find((p) => p.slug === l.slug)! }))
-    .filter((x) => x.product);
+  const { rail, bySlug, catalog } = useShop();
+  const lines = rail.map((l) => ({ line: l, product: bySlug(l.slug)! })).filter((x) => x.product);
   const subtotal = lines.reduce((s, x) => s + x.product.price * x.line.qty, 0);
   const hours = lines.reduce((s, x) => s + x.product.makingHours * x.line.qty, 0);
-  return { lines, subtotal, hours, toFree: Math.max(0, FREE_SHIPPING_FROM - subtotal) };
+  return { lines, subtotal, hours, toFree: Math.max(0, FREE_SHIPPING_FROM - subtotal), ready: catalog !== null };
 }
 
 export function RailDrawer() {

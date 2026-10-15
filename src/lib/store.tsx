@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { CartLine, Currency } from "../types";
+import type { CartLine, Chapter, Currency, Product } from "../types";
+import { getChapters, getProducts } from "./api";
 
 const rates: Record<Currency, number> = { USD: 1, EUR: 0.92, GBP: 0.79, JOD: 0.71, AED: 3.67 };
 export const currencies = Object.keys(rates) as Currency[];
@@ -34,6 +35,10 @@ interface Toast {
 }
 
 interface ShopState {
+  /** Full catalogue, loaded once through api.ts */
+  catalog: Product[] | null;
+  chapters: Chapter[] | null;
+  bySlug: (slug: string) => Product | undefined;
   rail: CartLine[];
   addToRail: (line: Omit<CartLine, "key" | "qty">, qty?: number) => void;
   setQty: (key: string, qty: number) => void;
@@ -72,6 +77,13 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const [railOpen, setRailOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [catalog, setCatalog] = useState<Product[] | null>(null);
+  const [chapters, setChapters] = useState<Chapter[] | null>(null);
+
+  useEffect(() => {
+    getProducts().then(setCatalog);
+    getChapters().then(setChapters);
+  }, []);
 
   useEffect(() => save("ourlet.rail", rail), [rail]);
   useEffect(() => save("ourlet.pinned", pinned), [pinned]);
@@ -99,6 +111,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<ShopState>(
     () => ({
+      catalog,
+      chapters,
+      bySlug: (slug) => catalog?.find((p) => p.slug === slug),
       rail,
       addToRail,
       setQty,
@@ -128,7 +143,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       searchOpen,
       setSearchOpen,
     }),
-    [rail, addToRail, setQty, railOpen, pinned, looks, currency, toasts, toast, searchOpen],
+    [catalog, chapters, rail, addToRail, setQty, railOpen, pinned, looks, currency, toasts, toast, searchOpen],
   );
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;

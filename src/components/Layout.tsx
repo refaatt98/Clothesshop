@@ -22,7 +22,7 @@ function ScrollManager() {
 function Toasts() {
   const { toasts } = useShop();
   return (
-    <div className="pointer-events-none fixed bottom-4 left-1/2 z-[99] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 flex-col gap-2" aria-live="polite">
+    <div className="pointer-events-none fixed top-3 left-1/2 z-[99] md:top-auto md:bottom-4 flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 flex-col gap-2" aria-live="polite">
       <AnimatePresence>
         {toasts.map((t) => (
           <motion.div

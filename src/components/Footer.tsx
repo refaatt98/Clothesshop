@@ -148,8 +148,8 @@ export function Footer() {
         <Letters />
       </div>
 
-      <div className="wrap grid gap-10 pb-12 sm:grid-cols-2 lg:grid-cols-[1.3fr_repeat(4,1fr)]">
-        <div className="max-w-xs">
+      <div className="wrap grid grid-cols-2 gap-x-6 gap-y-10 pb-12 lg:grid-cols-[1.3fr_repeat(4,1fr)]">
+        <div className="col-span-2 max-w-xs lg:col-span-1">
           <p className="font-display text-[1.6rem] italic leading-tight">
             <span className="text-thread">ourlet</span> <span className="not-italic text-ink-3">(n.)</span>
           </p>
