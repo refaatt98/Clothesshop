@@ -7,12 +7,12 @@ import { categoryNames } from "../components/Header";
 import { GarmentFlat } from "../components/GarmentFlat";
 import { ProductCard } from "../components/ProductCard";
 import { Swatch } from "../components/Swatch";
-import { Breadcrumbs, Button, EmptyState, HandNote, Meter, PinHead, Reveal, SectionHead, Skeleton } from "../components/ui";
-import { getFabric, getProduct, getProductsBySlugs, getWearerNotes } from "../lib/api";
+import { Breadcrumbs, Button, EmptyState, HandNote, Meter, PinHead, SectionHead, Skeleton } from "../components/ui";
+import { getFabric, getProduct, getProductsBySlugs } from "../lib/api";
 import { fitNotes, suggestSize } from "../lib/fit";
 import { pad, useAsync, useDocumentTitle } from "../lib/hooks";
 import { useShop } from "../lib/store";
-import type { Product as P, WearerNote } from "../types";
+import type { Product as P } from "../types";
 
 function Fold({ title, children, open: initial = false }: { title: string; children: ReactNode; open?: boolean }) {
   const [open, setOpen] = useState(initial);
@@ -103,121 +103,10 @@ function SizeHelper({ product, onPick }: { product: P; onPick: (s: string) => vo
   );
 }
 
-function CostPerWear({ price }: { price: number }) {
-  const { money } = useShop();
-  const [perMonth, setPerMonth] = useState(6);
-  const [years, setYears] = useState(8);
-  const wears = perMonth * 12 * years;
-  const cpw = price / wears;
-  return (
-    <div className="grid gap-8 rounded-md bg-tissue p-6 ring-1 ring-line md:grid-cols-2 md:p-10">
-      <div>
-        <p className="label text-thread">الحساب الوحيد الذي نؤمن به</p>
-        <h3 className="mt-2 font-display text-[2.2rem] leading-tight">كلفة اللبسة الواحدة</h3>
-        <p className="mt-2 text-ink-2">كن صادقاً. كم مرة ستلبسها فعلاً؟ (وتذكّر: نرفوها مجاناً، فالسنوات قد تطول.)</p>
-        <div className="mt-6 space-y-5">
-          <div>
-            <div className="flex justify-between text-sm">
-              <label htmlFor="cpw-m">مرات في الشهر</label>
-              <span className="font-mono">{perMonth}×</span>
-            </div>
-            <input id="cpw-m" type="range" min={1} max={25} value={perMonth} onChange={(e) => setPerMonth(Number(e.target.value))} className="mt-2 w-full accent-thread" />
-          </div>
-          <div>
-            <div className="flex justify-between text-sm">
-              <label htmlFor="cpw-y">لكم سنة</label>
-              <span className="font-mono">{years} سنوات</span>
-            </div>
-            <input id="cpw-y" type="range" min={1} max={25} value={years} onChange={(e) => setYears(Number(e.target.value))} className="mt-2 w-full accent-thread" />
-          </div>
-        </div>
-      </div>
-      <div className="relative flex flex-col justify-center rounded-md bg-paper bg-ruled p-6 ring-1 ring-line">
-        <p className="label text-ink-3">{money(price)} ÷ {wears.toLocaleString("en")} لبسة</p>
-        <motion.p key={cpw.toFixed(2)} initial={{ y: 6, opacity: 0.4 }} animate={{ y: 0, opacity: 1 }} className="mt-2 font-mono text-[3rem] font-bold leading-none">
-          {money(cpw, 2)}
-          <span className="ms-2 font-sans text-xl text-ink-3">للبسة</span>
-        </motion.p>
-        <p className="mt-3 font-hand text-2xl text-chalk">
-          {cpw < 0.5 ? "أقل من تذكرة باص. البسها حتى تبلى — وسنرفوها." : cpw < 2 ? "تقريباً بسعر فنجان قهوة." : cpw < 6 ? "معقول — لكن ربما تلبسها أكثر قليلاً؟" : "همم. تأكّد أنك ستحبّها. أو استعِر واحدة."}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function Passport({ product }: { product: P }) {
-  return (
-    <div className="relative">
-      <div className="no-scrollbar -mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-4 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 lg:grid-cols-6">
-        {product.passport.map((s, i) => (
-          <Reveal key={s.stage + i} delay={i * 0.07} className="w-[70vw] shrink-0 snap-start sm:w-64 md:w-auto">
-            <div className="relative h-full rounded-md bg-tissue p-5 ring-1 ring-line">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs text-ink-3">{pad(i + 1, 2)}</span>
-                <span
-                  className="rotate-[-8deg] rounded border-2 border-double px-1.5 py-0.5 text-[0.75rem] font-bold"
-                  style={{ color: i % 3 === 0 ? "#c2432e" : i % 3 === 1 ? "#3f6a8a" : "#6f7d55", borderColor: "currentColor" }}
-                >
-                  {s.stage}
-                </span>
-              </div>
-              <p className="mt-5 font-display text-xl leading-snug">{s.place}</p>
-              <p className="mt-1 text-sm text-ink-2">{s.maker}</p>
-              <p className="mt-3 border-t border-dashed border-ink/20 pt-3 font-hand text-xl leading-tight text-chalk">{s.note}</p>
-            </div>
-          </Reveal>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function WearerNotes({ notes }: { notes: WearerNote[] }) {
-  if (!notes.length)
-    return <p className="text-ink-2">لا ملاحظات بعد — هذه القطعة ما زالت جديدة على العالم. البسها موسماً وأخبرنا كيف كانت.</p>;
-  const counts = { "أصغر من المعتاد": 0, "مطابق للمقاس": 0, "أكبر من المعتاد": 0 };
-  notes.forEach((n) => counts[n.fitVerdict]++);
-  return (
-    <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
-      <div className="rounded-md bg-paper-2 p-5 ring-1 ring-line">
-        <p className="label text-ink-3">كيف تأتي على الجسم، بحسب من لبسها</p>
-        <div className="mt-4 space-y-2">
-          {(Object.keys(counts) as (keyof typeof counts)[]).map((k) => (
-            <div key={k} className="flex items-center gap-3 text-sm">
-              <span className="w-28 shrink-0">{k}</span>
-              <div className="h-2 flex-1 rounded-full bg-ink/10">
-                <div className="h-full rounded-full bg-ink" style={{ width: `${(counts[k] / notes.length) * 100}%` }} />
-              </div>
-              <span className="w-4 font-mono text-xs">{counts[k]}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {notes.map((n) => (
-          <figure key={n.name} className="rounded-md bg-tissue bg-ruled p-6 ring-1 ring-line">
-            <blockquote className="font-display text-[1.25rem] leading-relaxed">«{n.text}»</blockquote>
-            <figcaption className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-2">
-              <span className="font-medium text-ink">{n.name}</span>
-              <span>{n.city}</span>
-              <span className="label rounded-full bg-butter/60 px-2 py-0.5 text-ink">لُبست {n.worn}</span>
-              <span className="label text-ink-3">
-                مقاس {n.size} · {n.height}
-              </span>
-            </figcaption>
-          </figure>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function Product() {
   const { slug = "" } = useParams();
   const [params] = useSearchParams();
   const { data: product, loading } = useAsync(() => getProduct(slug), [slug]);
-  const { data: notes } = useAsync(() => getWearerNotes(slug), [slug]);
   const { data: fabric } = useAsync(() => (product ? getFabric(product.fabricId) : Promise.resolve(null)), [product?.fabricId]);
   const { data: pairs } = useAsync(() => getProductsBySlugs(product?.pairsWith ?? []), [product?.slug]);
   const { addToRail, setRailOpen, money, togglePin, isPinned, toast, chapters } = useShop();
@@ -454,22 +343,6 @@ export default function Product() {
             </Fold>
           </div>
         </div>
-      </section>
-
-      <section className="wrap py-16">
-        <SectionHead no="ج" kicker="جواز سفر القطعة" title={<>أين <em className="text-thread not-italic">كانت</em> هذه القطعة</>} aside={<p className="text-ink-2">كل خطوة، كل يد، كل مكان — من الحقل حتى العلبة التي تصلك بها.</p>} />
-        <div className="mt-10">
-          <Passport product={product} />
-        </div>
-      </section>
-
-      <section className="wrap py-10">
-        <CostPerWear price={product.price} />
-      </section>
-
-      <section className="wrap py-16">
-        <SectionHead no="م" kicker="ملاحظات من لبسوها" title={<>ماذا حدث <em className="text-thread not-italic">بعد</em> أن اشتروها</>} />
-        <div className="mt-10">{notes ? <WearerNotes notes={notes} /> : <Skeleton className="h-40" />}</div>
       </section>
 
       {pairs && pairs.length > 0 && (

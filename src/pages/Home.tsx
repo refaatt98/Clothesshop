@@ -365,7 +365,7 @@ function FibreToHem() {
               من الليفة إلى <em className="text-thread not-italic">الحاشية</em>، في ست خطوات بطيئة
             </>
           }
-          aside={<p className="text-ink-2">انزل واتبع الخيط الأحمر. في صفحة كل قطعة «جواز سفر» يُظهر هذه الخطوات — بالأسماء والأماكن الحقيقية.</p>}
+          aside={<p className="text-ink-2">انزل واتبع الخيط الأحمر من الحقل حتى العلبة التي تصلك.</p>}
         />
         <div className="relative mt-16">
           <ScrollThread viewBox="0 0 1000 100" d="M0,50 C120,10 200,90 330,50 S540,10 660,50 S880,90 1000,50" className="absolute inset-x-0 top-6 hidden h-24 w-full -scale-x-100 lg:block" />
