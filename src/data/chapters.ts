@@ -1,0 +1,108 @@
+import type { Chapter } from "../types";
+
+export const chapters: Chapter[] = [
+  {
+    slug: "salt-and-linen",
+    numeral: "IV",
+    title: "Salt & Linen",
+    season: "Summer 2026",
+    status: "current",
+    intro:
+      "A chapter written on the Atlantic coast, where everything is a little sun-faded and nothing is ironed twice.",
+    story: [
+      "We spent four weeks in a borrowed fisherman's house outside Ericeira. The drafting table was a door on two trestles. The linen came from a mill in Flanders that still retts its flax in dew, the slow way, out in the field.",
+      "Every shape in this chapter had to pass one test: could you wear it from the morning market to a long dinner without changing? The answer is in the cuts — dropped shoulders, deep pockets, hems that forgive a sandy chair.",
+      "Colours were pulled from the walls of the town: lime-wash white, harbour blue, the terracotta of roof tiles after rain.",
+    ],
+    palette: [
+      { name: "Lime-wash", hex: "#F1ECE1" },
+      { name: "Sand", hex: "#D9C7A7" },
+      { name: "Roof tile", hex: "#C47D5A" },
+      { name: "Harbour", hex: "#5E7A86" },
+      { name: "Salt sage", hex: "#A9B49A" },
+    ],
+    moods: ["sun-faded", "unironed", "barefoot", "long lunch", "sea air"],
+    note: "Leave the creases in. They're the point.",
+  },
+  {
+    slug: "wool-and-weather",
+    numeral: "III",
+    title: "Wool & Weather",
+    season: "Winter 2025",
+    status: "archive",
+    intro: "Coats cut for walking into the wind, from cloth that has been fighting weather since the 1800s.",
+    story: [
+      "This chapter began with a single bolt of Shetland tweed that sat in our studio for a year before we were brave enough to cut it.",
+      "Everything here is heavier than it needs to be, on purpose. These are pieces for people who walk everywhere, in every weather, and want a coat that will be passed on rather than thrown out.",
+    ],
+    palette: [
+      { name: "Peat", hex: "#5A4A3A" },
+      { name: "Camel", hex: "#B08D63" },
+      { name: "Slate", hex: "#4A4743" },
+      { name: "Moss", hex: "#7D8461" },
+      { name: "Fog", hex: "#CFCBC2" },
+    ],
+    moods: ["windproof", "heirloom", "long walks", "woodsmoke", "heavy cloth"],
+    note: "A coat is a house you can walk in.",
+  },
+  {
+    slug: "indigo-hours",
+    numeral: "II",
+    title: "Indigo Hours",
+    season: "Spring 2025",
+    status: "archive",
+    intro: "Workwear for the hours between — denim and canvas that start stiff and end up being yours.",
+    story: [
+      "Indigo is the only dye that sits on top of the yarn rather than soaking through. That's why it fades where you live: knees, pockets, the place your keys go.",
+      "We cut these pieces generously so they can soften into you over years rather than weeks.",
+    ],
+    palette: [
+      { name: "Raw indigo", hex: "#2E3F5C" },
+      { name: "Rinse", hex: "#4D6383" },
+      { name: "Chalk", hex: "#E9E4D8" },
+      { name: "Oat", hex: "#CDBF9F" },
+    ],
+    moods: ["fades", "workshop", "rivets", "patina", "pockets"],
+    note: "Don't wash them for six months. We mean it.",
+  },
+  {
+    slug: "the-quiet-room",
+    numeral: "I",
+    title: "The Quiet Room",
+    season: "Autumn 2024",
+    status: "archive",
+    intro: "Knitwear and soft shirts for staying in, reading too late, and answering the door anyway.",
+    story: [
+      "Our first chapter. Twelve pieces, one knitting machine older than the founders, and a lot of tea.",
+      "The Quiet Room was about clothes that make no noise — no logos, no hardware, nothing that asks to be looked at. Just things that feel good at 11pm.",
+    ],
+    palette: [
+      { name: "Ecru", hex: "#E8E0CF" },
+      { name: "Oat", hex: "#D8CBB0" },
+      { name: "Rust", hex: "#A9583A" },
+      { name: "Ink navy", hex: "#2F3B4E" },
+    ],
+    moods: ["rib", "tea", "slippers", "lamplight", "slow mornings"],
+    note: "Made for the hours nobody photographs.",
+  },
+  {
+    slug: "orchard",
+    numeral: "V",
+    title: "Orchard",
+    season: "Autumn 2026 · drafting now",
+    status: "upcoming",
+    intro: "On the table right now: dresses and overshirts in apple-skin checks and pressed-flower voile.",
+    story: [
+      "Chapter V is still paper. Patterns are pinned to the studio wall; the first toiles are hanging on the rail in calico.",
+      "Leave your name and we'll send you the first fitting notes before anything goes on sale.",
+    ],
+    palette: [
+      { name: "Butter", hex: "#E9D8A6" },
+      { name: "Apple skin", hex: "#B5473A" },
+      { name: "Leaf", hex: "#7E8B5E" },
+      { name: "Bark", hex: "#6B5440" },
+    ],
+    moods: ["harvest", "checks", "cider", "ladders", "first frost"],
+    note: "Still in calico. Ask us anything.",
+  },
+];
