@@ -375,7 +375,7 @@ export default function Product() {
               <p className="label text-ink-3">
                 المقاس {size && <span className="text-ink">— {size}</span>}
               </p>
-              {product.sizes.length > 1 && (
+              {product.sizes.length > 1 && !product.departments.includes("kids") && (
                 <button onClick={() => setHelper((h) => !h)} className="flex items-center gap-1 text-sm underline decoration-dashed underline-offset-4 hover:text-thread">
                   <RulerIcon className="h-4 w-4" /> {helper ? "أخفِ مساعد المقاس" : "أيّ مقاس؟"}
                 </button>
@@ -386,7 +386,7 @@ export default function Product() {
             </motion.div>
             {nudge && <p className="mt-2 text-sm text-thread">اختر مقاساً أولاً — أو اسأل مساعد المقاس.</p>}
             <p className="mt-2 text-xs text-ink-3">
-              {fitNotes[product.fit]} {product.lowSizes?.length ? "النقطة الحمراء = آخر القطع." : ""}
+              {product.departments.includes("kids") ? "مقاسات الأطفال بالسنوات، وكل قطعة مقصوصة لتكبر معهم موسماً إضافياً." : fitNotes[product.fit]} {product.lowSizes?.length ? "النقطة الحمراء = آخر القطع." : ""}
             </p>
             <AnimatePresence>{helper && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden"><SizeHelper product={product} onPick={(s) => { setSize(s); setHelper(false); }} /></motion.div>}</AnimatePresence>
           </div>

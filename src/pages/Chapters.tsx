@@ -15,18 +15,18 @@ export default function Chapters() {
     <>
       <PageHeader
         trail={[{ label: "الرئيسية", to: "/" }, { label: "الفصول" }]}
-        kicker="فصول، لا مواسم"
+        kicker="الفصول"
         title={
           <>
-            ننشر الملابس <em className="text-thread not-italic">كما يُنشر كتاب</em>
+            كل موسم <em className="text-thread not-italic">وقطعه</em>
           </>
         }
-        intro="بدل مجموعة للربيع وأخرى للخريف، نكتب فصولاً — كل فصل يُرسم في مكان بعينه، بلوحة ألوانه وحفنة من الأقمشة. الفصول القديمة تبقى على الراف حتى تنفد إصداراتها المرقّمة."
+        intro="اختر الموسم وادخل لتشاهد كل قطعه — للستات والرجال والأطفال — وصفِّها حسب مقاسك. المواسم السابقة تبقى معروضة حتى تنفد قطعها."
       />
 
       <div className="wrap space-y-6 py-14">
         {!chapters && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-72" />)}
-        {chapters?.map((c, i) => {
+        {chapters?.map((c) => {
           const pieces = products?.filter((p) => p.chapter === c.slug) ?? [];
           const upcoming = c.status === "upcoming";
           return (
@@ -40,7 +40,7 @@ export default function Chapters() {
                   <span
                     className={`label rounded-full px-2.5 py-1 ${c.status === "current" ? "bg-thread text-tissue" : upcoming ? "bg-butter text-ink" : "ring-1 ring-current/30"}`}
                   >
-                    {c.status === "current" ? "على الراف الآن" : upcoming ? "قيد الرسم الآن" : "أرشيف · ما زال معروضاً"}
+                    {c.status === "current" ? "الموسم الحالي" : upcoming ? "قريباً" : "ما زال معروضاً"}
                   </span>
                 </div>
                 <div className="p-6 md:p-8">
@@ -56,7 +56,7 @@ export default function Chapters() {
                   </div>
                   {upcoming ? (
                     <div className="mt-6 max-w-md">
-                      <p className="mb-2 text-sm">احصل على ملاحظات البروفة الأولى قبل أن يُعرض أي شيء للبيع:</p>
+                      <p className="mb-2 text-sm">نخبرك أول ما تنزل قطعه:</p>
                       <NotifyForm />
                     </div>
                   ) : (
@@ -64,7 +64,7 @@ export default function Chapters() {
                       to={`/chapters/${c.slug}`}
                       className={`mt-6 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition hover:-translate-y-0.5 ${c.status === "current" ? "bg-paper text-ink" : "bg-ink text-paper"}`}
                     >
-                      اقرأ الفصل · {pieces.length} قطع <ArrowLeft className="h-4 w-4" />
+                      شاهد القطع · {pieces.length} <ArrowLeft className="h-4 w-4" />
                     </Link>
                   )}
                 </div>
@@ -90,7 +90,6 @@ export default function Chapters() {
                   </div>
                   {upcoming && <HandNote className="absolute right-6 top-6 text-2xl">ما زال بالكاليكو ✂</HandNote>}
                 </div>
-                <span className={`label absolute bottom-3 right-6 hidden md:block ${c.status === "current" ? "text-paper/40" : "text-ink-3/60"}`}>الفصل {i + 1} من {chapters.length}</span>
               </article>
             </Reveal>
           );

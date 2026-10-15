@@ -4,8 +4,8 @@ export const chapters: Chapter[] = [
   {
     slug: "salt-and-linen",
     numeral: "٤",
-    title: "ملح وكتّان",
-    season: "صيف 2026",
+    title: "صيف 2026",
+    season: "ملح وكتّان",
     status: "current",
     intro: "فصلٌ كُتب على ساحل الأطلسي، حيث كل شيء باهتٌ قليلاً من الشمس، ولا شيء يُكوى مرتين.",
     story: [
@@ -26,8 +26,8 @@ export const chapters: Chapter[] = [
   {
     slug: "wool-and-weather",
     numeral: "٣",
-    title: "صوف وطقس",
-    season: "شتاء 2025",
+    title: "شتاء 2025",
+    season: "صوف وطقس",
     status: "archive",
     intro: "معاطف مقصوصة للمشي في وجه الريح، من قماشٍ يقاوم الطقس منذ القرن التاسع عشر.",
     story: [
@@ -47,8 +47,8 @@ export const chapters: Chapter[] = [
   {
     slug: "indigo-hours",
     numeral: "٢",
-    title: "ساعات النيلي",
-    season: "ربيع 2025",
+    title: "ربيع 2025",
+    season: "ساعات النيلي",
     status: "archive",
     intro: "ملابس عمل للساعات الفاصلة — دنيم وقماش كانفاس يبدآن قاسيين وينتهيان على مقاسك أنت.",
     story: [
@@ -67,8 +67,8 @@ export const chapters: Chapter[] = [
   {
     slug: "the-quiet-room",
     numeral: "١",
-    title: "الغرفة الهادئة",
-    season: "خريف 2024",
+    title: "خريف 2024",
+    season: "الغرفة الهادئة",
     status: "archive",
     intro: "تريكو وقمصان ناعمة للبقاء في البيت، والقراءة حتى وقت متأخر، وفتح الباب على أي حال.",
     story: [
@@ -87,8 +87,8 @@ export const chapters: Chapter[] = [
   {
     slug: "orchard",
     numeral: "٥",
-    title: "البستان",
-    season: "خريف 2026 · قيد الرسم الآن",
+    title: "خريف 2026",
+    season: "البستان · قريباً",
     status: "upcoming",
     intro: "على الطاولة الآن: فساتين وقمصان علوية بمربعات بلون قشر التفاح، وفوال بلون الزهر المجفّف.",
     story: [

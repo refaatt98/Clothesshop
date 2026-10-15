@@ -45,14 +45,29 @@ export default function DressingTable() {
   const [table, setTable] = useState(tables[0]);
   const [letter, setLetter] = useState("M");
   const [waist, setWaist] = useState("30");
+  const [kids, setKids] = useState(false);
+  const [age, setAge] = useState("6-7");
   const [resetKey, setResetKey] = useState(0);
   const tableRef = useRef<HTMLDivElement>(null);
 
   const bySlot = useMemo(() => {
     const m: Record<Slot, Product[]> = { outer: [], top: [], bottom: [], finish: [] };
-    catalog?.forEach((p) => m[slotOf(p)].push(p));
+    catalog?.filter((p) => (kids ? p.departments.includes("kids") : !p.departments.includes("kids"))).forEach((p) => m[slotOf(p)].push(p));
     return m;
-  }, [catalog]);
+  }, [catalog, kids]);
+
+  const switchMode = (toKids: boolean) => {
+    if (toKids === kids || !catalog) return;
+    setKids(toKids);
+    const seed = toKids ? ["little-school-coat", "little-dockside-tee", "playground-linen-trousers"] : ["ferryman-overcoat", "morning-poplin-shirt", "long-table-trousers", "weather-scarf"];
+    const next: Partial<Record<Slot, Pick>> = {};
+    seed.forEach((slug) => {
+      const p = catalog.find((x) => x.slug === slug);
+      if (p) next[slotOf(p)] = { slug, cw: 0 };
+    });
+    setPicks(next);
+    setActive("outer");
+  };
 
   // initial look: from ?look=, ?with=, or a house default
   useEffect(() => {
@@ -75,6 +90,7 @@ export default function DressingTable() {
       place(withSlug);
     }
     setPicks(next);
+    if (Object.values(next).some((x) => catalog.find((p) => p.slug === x?.slug)?.departments.includes("kids"))) setKids(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [catalog]);
 
@@ -107,6 +123,7 @@ export default function DressingTable() {
   };
 
   const sizeFor = (p: Product) =>
+    p.departments.includes("kids") ? (p.sizes.includes(age) ? age : p.sizes[0]) :
     p.sizes.length === 1 ? p.sizes[0] : p.category === "trousers" ? waist : p.sizes.includes(letter) ? letter : p.sizes[Math.floor(p.sizes.length / 2)];
 
   const hangAll = () => {
@@ -208,6 +225,13 @@ export default function DressingTable() {
 
         {/* the drawers */}
         <aside className="space-y-4">
+          <div className="grid grid-cols-2 gap-1 rounded-md bg-ink p-1">
+            {([false, true] as const).map((k) => (
+              <button key={String(k)} onClick={() => switchMode(k)} aria-pressed={kids === k} className={`rounded py-2 font-display text-lg transition ${kids === k ? "bg-paper text-ink" : "text-paper/70 hover:text-paper"}`}>
+                {k ? "أطفال" : "ستاتي ورجالي"}
+              </button>
+            ))}
+          </div>
           <div className="grid grid-cols-4 gap-1 rounded-full bg-paper-2 p-1" role="tablist">
             {slots.map((s) => (
               <button key={s} role="tab" aria-selected={active === s} onClick={() => setActive(s)} className={`rounded-full py-2 text-xs transition sm:text-sm ${active === s ? "bg-ink text-paper" : "text-ink-2 hover:text-ink"}`}>
@@ -270,6 +294,18 @@ export default function DressingTable() {
                 </li>
               ))}
             </ul>
+            {kids ? (
+              <label className="mt-4 block border-t border-paper/15 pt-4 text-xs text-paper/60">
+                عمر الطفل
+                <select value={age} onChange={(e) => setAge(e.target.value)} className="mt-1 block w-full rounded-md bg-paper/10 px-2 py-1.5 font-mono text-sm text-paper">
+                  {["2-3", "4-5", "6-7", "8-9", "10-11"].map((s) => (
+                    <option key={s} value={s} className="text-ink">
+                      {s} سنوات
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
             <div className="mt-4 grid grid-cols-2 gap-3 border-t border-paper/15 pt-4">
               <label className="text-xs text-paper/60">
                 مقاسك
@@ -292,6 +328,7 @@ export default function DressingTable() {
                 </select>
               </label>
             </div>
+            )}
             <div className="mt-4 flex items-baseline justify-between">
               <span className="font-hand text-xl text-butter">{hours} ساعة عمل يدوي</span>
               <span className="font-mono text-2xl font-bold">{money(total)}</span>

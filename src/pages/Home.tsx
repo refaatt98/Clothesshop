@@ -11,7 +11,8 @@ import { Button, HandNote, Meter, PinHead, Reveal, SectionHead, Skeleton } from 
 import { getChapters, getFabrics, getJournal, getProducts, getProductsBySlugs, getStores } from "../lib/api";
 import { formatDate, pad, useAsync, useDocumentTitle } from "../lib/hooks";
 import { useShop } from "../lib/store";
-import type { GarmentKind, Product } from "../types";
+import type { Department, GarmentKind, Product } from "../types";
+import { departments } from "../lib/departments";
 
 // ─── Hero: the cutting table ───────────────────────────────────
 const heroPieces = [
@@ -221,6 +222,63 @@ function CareBand() {
     <div className="border-y border-line bg-paper-2 py-4">
       <Marquee items={items} className="text-[0.92rem] text-ink-2" />
     </div>
+  );
+}
+
+// ─── Departments: ستاتي / رجالي / أطفال ─────────────────────────
+const deptLooks: Record<Department, { slug: string; cw: number; cls: string; r: number }[]> = {
+  women: [
+    { slug: "orchard-midi-dress", cw: 0, cls: "right-[8%] top-[10%] w-[46%]", r: -4 },
+    { slug: "harbour-chore-jacket", cw: 2, cls: "left-[6%] top-[18%] w-[44%]", r: 6 },
+  ],
+  men: [
+    { slug: "ferryman-overcoat", cw: 1, cls: "right-[6%] top-[8%] w-[46%]", r: -5 },
+    { slug: "salt-linen-camp-shirt", cw: 0, cls: "left-[8%] top-[20%] w-[42%]", r: 5 },
+  ],
+  kids: [
+    { slug: "little-orchard-dress", cw: 0, cls: "right-[10%] top-[14%] w-[40%]", r: -6 },
+    { slug: "little-dockside-tee", cw: 0, cls: "left-[10%] top-[24%] w-[38%]", r: 6 },
+  ],
+};
+
+function Departments() {
+  const { catalog, bySlug } = useShop();
+  const tints: Record<Department, string> = { women: "#f1e4dc", men: "#e6ebf1", kids: "#f5edd5" };
+  return (
+    <section className="py-16 md:py-20">
+      <div className="wrap">
+        <div className="grid gap-4 md:grid-cols-3">
+          {departments.map((d, i) => {
+            const count = catalog?.filter((p) => p.departments.includes(d.id)).length;
+            return (
+              <Reveal key={d.id} delay={i * 0.08}>
+                <Link to={`/shop?dept=${d.id}`} className="group relative block aspect-[4/3.4] overflow-hidden rounded-md ring-1 ring-line transition hover:ring-ink/30" style={{ background: tints[d.id] }}>
+                  <div className="absolute inset-0 bg-dots opacity-40" />
+                  {deptLooks[d.id].map((l) => {
+                    const p = bySlug(l.slug);
+                    if (!p) return null;
+                    return (
+                      <div key={l.slug} className={`absolute ${l.cls} transition duration-700 group-hover:scale-105`} style={{ transform: `rotate(${l.r}deg)` }}>
+                        <GarmentFlat kind={p.garment} {...p.colorways[l.cw]} className="w-full" />
+                      </div>
+                    );
+                  })}
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between border-t border-dashed border-ink/15 bg-paper/90 p-5 backdrop-blur-sm">
+                    <div>
+                      <h2 className="font-display text-[2.6rem] leading-none">{d.name}</h2>
+                      <p className="mt-1 text-sm text-ink-2">{d.tagline}</p>
+                    </div>
+                    <span className="flex items-center gap-1 rounded-full bg-ink px-4 py-2 text-sm text-paper transition group-hover:bg-thread">
+                      {count ?? "…"} قطعة <ArrowLeft className="h-4 w-4" />
+                    </span>
+                  </div>
+                </Link>
+              </Reveal>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -491,13 +549,13 @@ function ChapterStack() {
       <div className="wrap">
         <SectionHead
           no="06"
-          kicker="فصول، لا مواسم"
+          kicker="الفصول"
           title={
             <>
-              ننشر الملابس <em className="text-thread not-italic">كما يُنشر كتاب</em>
+              كل موسم <em className="text-thread not-italic">وقطعه</em>
             </>
           }
-          aside={<p className="text-ink-2">كل فصل يُكتب في مكان، بلوحة ألوان وحفنة من الأقمشة. الفصول القديمة تبقى معروضة حتى تنفد إصداراتها.</p>}
+          aside={<p className="text-ink-2">اختر الموسم وشاهد كل قطعه — للستات والرجال والأطفال — مع فلتر المقاسات.</p>}
         />
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {ordered?.map((ch, n) => (
@@ -608,6 +666,7 @@ export default function Home() {
     <>
       <Hero />
       <CareBand />
+      <Departments />
       <TheRail />
       <FibreToHem />
       <SwatchDrawer />

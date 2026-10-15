@@ -32,6 +32,9 @@ export type Category =
   | "skirts"
   | "accessories";
 
+/** القسم: ستاتي، رجالي، أطفال. القطعة قد تكون في أكثر من قسم. */
+export type Department = "women" | "men" | "kids";
+
 export type Fit = "close" | "true" | "relaxed" | "generous";
 
 export interface PassportStage {
@@ -48,6 +51,7 @@ export interface Product {
   /** One-line poetic subtitle shown under the name */
   line: string;
   category: Category;
+  departments: Department[];
   garment: GarmentKind;
   chapter: string; // chapter slug
   fabricId: string;
@@ -178,6 +182,7 @@ export interface CartLine {
 
 export interface ProductQuery {
   category?: Category | "all";
+  dept?: Department;
   chapter?: string;
   colourFamily?: string;
   size?: string;

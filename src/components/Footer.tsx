@@ -7,18 +7,13 @@ import type { Currency } from "../types";
 
 const links = [
   { label: "المتجر", to: "/shop" },
+  { label: "ستاتي", to: "/shop?dept=women" },
+  { label: "رجالي", to: "/shop?dept=men" },
+  { label: "أطفال", to: "/shop?dept=kids" },
   { label: "الفصول", to: "/chapters" },
   { label: "الأقمشة", to: "/fabrics" },
   { label: "طاولة التنسيق", to: "/dressing-table" },
-  { label: "اليوميات", to: "/journal" },
-  { label: "المشغل", to: "/atelier" },
-  { label: "الرفو", to: "/mending" },
   { label: "المقاسات", to: "/fit-guide" },
-  { label: "العناية", to: "/care" },
-  { label: "الشحن والإرجاع", to: "/shipping" },
-  { label: "أسئلة شائعة", to: "/help" },
-  { label: "زورونا", to: "/visit" },
-  { label: "راسلنا", to: "/contact" },
 ];
 
 const socials = [

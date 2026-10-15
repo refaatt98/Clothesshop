@@ -1,11 +1,10 @@
 import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
 import { ArrowUpLeft, Menu, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 import { useLockBody } from "../lib/hooks";
 import { useShop } from "../lib/store";
 import type { Category } from "../types";
-import { GarmentFlat } from "./GarmentFlat";
 import { PinHead } from "./ui";
 
 const notices = [
@@ -27,15 +26,26 @@ export const categoryNames: Record<Category, string> = {
 };
 
 const startNav = [
-  { to: "/shop", label: "المتجر" },
+  { to: "/shop?dept=women", label: "ستاتي" },
+  { to: "/shop?dept=men", label: "رجالي" },
+  { to: "/shop?dept=kids", label: "أطفال" },
   { to: "/chapters", label: "الفصول" },
-  { to: "/fabrics", label: "مكتبة الأقمشة" },
-  { to: "/dressing-table", label: "طاولة التنسيق" },
 ];
 const endNav = [
-  { to: "/journal", label: "اليوميات" },
-  { to: "/atelier", label: "المشغل" },
+  { to: "/shop", label: "كل القطع" },
+  { to: "/dressing-table", label: "طاولة التنسيق" },
 ];
+
+/** Active state that also understands ?dept= links. */
+function useIsActive() {
+  const { pathname, search } = useLocation();
+  return (to: string) => {
+    const [path, qs] = to.split("?");
+    if (qs) return pathname === path && search.includes(qs);
+    if (path === "/shop") return pathname === "/shop" && !search.includes("dept=");
+    return pathname === path || pathname.startsWith(path + "/");
+  };
+}
 
 export function Logo({ className = "" }: { className?: string }) {
   return (
@@ -80,77 +90,9 @@ function MeasuringTape() {
   );
 }
 
-function ShopPanel({ onClose }: { onClose: () => void }) {
-  const { catalog, chapters, bySlug } = useShop();
-  const products = catalog ?? [];
-  const counts = products.reduce<Record<string, number>>((acc, p) => ((acc[p.category] = (acc[p.category] ?? 0) + 1), acc), {});
-  const current = chapters?.find((c) => c.status === "current");
-  const feature = bySlug("orchard-midi-dress");
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.25 }}
-      className="absolute inset-x-0 top-full z-40 hidden border-y border-line bg-paper/97 shadow-[0_30px_60px_-30px_#1e1c1940] backdrop-blur lg:block"
-    >
-      <div className="wrap grid grid-cols-12 gap-8 py-10">
-        <div className="col-span-4">
-          <p className="label text-ink-3">حسب القطعة</p>
-          <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-1">
-            <li>
-              <Link onClick={onClose} to="/shop" className="flex items-baseline justify-between border-b border-dashed border-line py-2 font-display text-lg hover:text-thread">
-                كل شيء <span className="font-mono text-xs text-ink-3">{products.length}</span>
-              </Link>
-            </li>
-            {(Object.keys(categoryNames) as Category[]).map((c) => (
-              <li key={c}>
-                <Link onClick={onClose} to={`/shop?category=${c}`} className="flex items-baseline justify-between border-b border-dashed border-line py-2 font-display text-lg hover:text-thread">
-                  {categoryNames[c]} <span className="font-mono text-xs text-ink-3">{counts[c] ?? 0}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="col-span-3">
-          <p className="label text-ink-3">طرق للدخول</p>
-          <ul className="mt-4 space-y-3 text-[0.95rem]">
-            <li><Link onClick={onClose} className="hover:text-thread" to="/shop?sort=new">الأحدث على الراف</Link></li>
-            <li><Link onClick={onClose} className="hover:text-thread" to="/shop?sort=slowest">الأبطأ صنعاً (أكثر ساعات)</Link></li>
-            <li><Link onClick={onClose} className="hover:text-thread" to="/dressing-table">نسّق إطلالة</Link></li>
-            <li><Link onClick={onClose} className="hover:text-thread" to="/fabrics">تسوّق حسب القماش</Link></li>
-            <li><Link onClick={onClose} className="hover:text-thread" to="/fit-guide">اعرف مقاسك</Link></li>
-            <li><Link onClick={onClose} className="hover:text-thread" to="/pinned">لوحتك المثبّتة</Link></li>
-          </ul>
-        </div>
-        {current && feature && (
-          <Link onClick={onClose} to={`/chapters/${current.slug}`} className="group col-span-5 grid grid-cols-5 items-center gap-6 rounded-md bg-tissue p-5 ring-1 ring-line transition hover:ring-ink/30">
-            <div className="col-span-2 rounded bg-mat p-3">
-              <GarmentFlat kind={feature.garment} {...feature.colorways[0]} className="w-full" />
-            </div>
-            <div className="col-span-3">
-              <p className="label text-thread">الفصل {current.numeral} · يُعرض الآن</p>
-              <p className="mt-2 font-display text-3xl leading-tight">{current.title}</p>
-              <p className="mt-2 text-sm text-ink-2">{current.intro}</p>
-              <div className="mt-4 flex gap-1">
-                {current.palette.map((p) => (
-                  <span key={p.hex} className="h-4 w-4 rounded-full ring-1 ring-ink/15" style={{ background: p.hex }} title={p.name} />
-                ))}
-              </div>
-              <span className="mt-4 inline-flex items-center gap-1 text-sm underline decoration-dashed underline-offset-4 group-hover:text-thread">
-                اقرأ الفصل <ArrowUpLeft className="h-4 w-4" />
-              </span>
-            </div>
-          </Link>
-        )}
-      </div>
-    </motion.div>
-  );
-}
-
 function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   useLockBody(open);
-  const links = [...startNav, ...endNav, { to: "/pinned", label: "اللوحة المثبّتة" }, { to: "/visit", label: "زيارة وبروفات" }];
+  const links = [...startNav, ...endNav, { to: "/fabrics", label: "مكتبة الأقمشة" }, { to: "/pinned", label: "اللوحة المثبّتة" }];
   return (
     <AnimatePresence>
       {open && (
@@ -183,10 +125,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
             <div className="mt-auto pt-10 text-sm text-ink-2">
               <p className="font-hand text-2xl text-chalk">كل قطعة تُرفأ مدى الحياة ↓</p>
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
-                <Link onClick={onClose} to="/mending" className="underline decoration-dashed underline-offset-4">الرفو</Link>
                 <Link onClick={onClose} to="/fit-guide" className="underline decoration-dashed underline-offset-4">دليل المقاسات</Link>
-                <Link onClick={onClose} to="/help" className="underline decoration-dashed underline-offset-4">المساعدة</Link>
-                <Link onClick={onClose} to="/contact" className="underline decoration-dashed underline-offset-4">تواصل</Link>
               </div>
             </div>
           </div>
@@ -199,21 +138,20 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
 export function Header() {
   const { railCount, setRailOpen, setSearchOpen, pinned } = useShop();
   const [notice, setNotice] = useState(0);
-  const [panel, setPanel] = useState(false);
   const [menu, setMenu] = useState(false);
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const isActive = useIsActive();
 
   useEffect(() => {
     const t = setInterval(() => setNotice((n) => (n + 1) % notices.length), 4200);
     return () => clearInterval(t);
   }, []);
   useEffect(() => {
-    setPanel(false);
     setMenu(false);
-  }, [pathname]);
+  }, [pathname, search]);
 
-  const navCls = ({ isActive }: { isActive: boolean }) =>
-    `relative py-2 text-[0.95rem] transition-colors hover:text-thread ${isActive ? "text-ink after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:bg-thread" : "text-ink-2"}`;
+  const navCls = (to: string) =>
+    `relative py-2 text-[0.95rem] transition-colors hover:text-thread ${isActive(to) ? "text-ink after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:bg-thread" : "text-ink-2"}`;
 
   return (
     <>
@@ -229,7 +167,7 @@ export function Header() {
         </div>
       </div>
 
-      <header className="sticky top-0 z-50 bg-paper/92 backdrop-blur-md" onMouseLeave={() => setPanel(false)}>
+      <header className="sticky top-0 z-50 bg-paper/92 backdrop-blur-md">
         <div className="wrap grid h-[72px] grid-cols-[1fr_auto_1fr] items-center gap-4 md:h-[84px]">
           <div className="flex items-center gap-2">
             <button onClick={() => setMenu(true)} className="-ms-2 grid h-11 w-11 place-items-center lg:hidden" aria-label="فتح القائمة">
@@ -237,9 +175,9 @@ export function Header() {
             </button>
             <nav className="hidden items-center gap-6 lg:flex" aria-label="التنقّل الرئيسي">
               {startNav.map((l) => (
-                <NavLink key={l.to} to={l.to} className={navCls} onMouseEnter={() => setPanel(l.to === "/shop")}>
+                <Link key={l.to} to={l.to} className={navCls(l.to)}>
                   {l.label}
-                </NavLink>
+                </Link>
               ))}
             </nav>
           </div>
@@ -249,9 +187,9 @@ export function Header() {
           <div className="flex items-center justify-end gap-1 md:gap-2">
             <nav className="me-3 hidden items-center gap-6 lg:flex" aria-label="تنقّل ثانوي">
               {endNav.map((l) => (
-                <NavLink key={l.to} to={l.to} className={navCls} onMouseEnter={() => setPanel(false)}>
+                <Link key={l.to} to={l.to} className={navCls(l.to)}>
                   {l.label}
-                </NavLink>
+                </Link>
               ))}
             </nav>
             <button onClick={() => setSearchOpen(true)} className="grid h-11 w-11 place-items-center rounded-full transition hover:bg-paper-2" aria-label="بحث">
@@ -276,7 +214,6 @@ export function Header() {
           </div>
         </div>
         <MeasuringTape />
-        <AnimatePresence>{panel && <ShopPanel onClose={() => setPanel(false)} />}</AnimatePresence>
       </header>
       <MobileMenu open={menu} onClose={() => setMenu(false)} />
     </>

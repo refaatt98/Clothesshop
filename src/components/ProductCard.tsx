@@ -27,7 +27,7 @@ export function ProductCard({ product, index, hanger = true }: { product: Produc
         <span className="label absolute start-3 top-3 text-ink-3">{index !== undefined ? `قطعة ${pad(index + 1, 2)}` : categoryNames[product.category]}</span>
         {product.isNew && (
           <span className="absolute start-3 top-9 rotate-[-4deg] rounded-sm border border-thread px-1.5 py-0.5 text-[0.68rem] font-medium text-thread">
-            جديد في الفصل ٤
+            جديد هذا الموسم
           </span>
         )}
 

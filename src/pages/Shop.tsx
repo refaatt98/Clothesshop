@@ -7,9 +7,10 @@ import { ProductCard } from "../components/ProductCard";
 import { Breadcrumbs, Button, EmptyState, HandNote, Skeleton } from "../components/ui";
 import { getProducts } from "../lib/api";
 import { colourFamilies } from "../lib/colour";
+import { departments, deptName, sizesIn } from "../lib/departments";
 import { useAsync, useDocumentTitle } from "../lib/hooks";
 import { useShop } from "../lib/store";
-import type { Category, ProductQuery } from "../types";
+import type { Category, Department, ProductQuery } from "../types";
 
 const sorts: { id: NonNullable<ProductQuery["sort"]>; label: string }[] = [
   { id: "featured", label: "كما عُلّقت في المشغل" },
@@ -18,18 +19,18 @@ const sorts: { id: NonNullable<ProductQuery["sort"]>; label: string }[] = [
   { id: "price-desc", label: "السعر: من الأعلى" },
   { id: "slowest", label: "الأبطأ صنعاً أولاً" },
 ];
-const sizes = ["XS", "S", "M", "L", "XL", "XXL", "26", "28", "30", "32", "34", "36"];
 const PRICE_MAX = 700;
 
 export default function Shop() {
   const [params, setParams] = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [view, setView] = useState<"rail" | "flat">("rail");
-  const { money, chapters: chapterList } = useShop();
+  const { money, chapters: chapterList, catalog } = useShop();
   const chapters = chapterList ?? [];
 
   const query: ProductQuery = {
     category: (params.get("category") as Category) || "all",
+    dept: (params.get("dept") as Department) || undefined,
     chapter: params.get("chapter") || undefined,
     colourFamily: params.get("colour") || undefined,
     size: params.get("size") || undefined,
@@ -48,8 +49,21 @@ export default function Shop() {
   };
 
   const activeCount = ["chapter", "colour", "size", "max", "q"].filter((k) => params.get(k)).length;
-  const title = query.category && query.category !== "all" ? categoryNames[query.category] : "كل ما على الراف";
-  useDocumentTitle(query.category && query.category !== "all" ? categoryNames[query.category] : "المتجر");
+  const inDept = (catalog ?? []).filter((p) => !query.dept || p.departments.includes(query.dept));
+  const sizes = sizesIn(inDept);
+  const deptCategories = (Object.keys(categoryNames) as Category[]).filter((c) => inDept.some((p) => p.category === c));
+  const catLabel = query.category && query.category !== "all" ? categoryNames[query.category] : null;
+  const title = [deptName(query.dept), catLabel].filter(Boolean).join(" · ") || "كل ما على الراف";
+  useDocumentTitle(title === "كل ما على الراف" ? "المتجر" : title);
+
+  const chooseDept = (d: Department | "all") => {
+    const next = new URLSearchParams(params);
+    if (d === "all") next.delete("dept");
+    else next.set("dept", d);
+    next.delete("size");
+    next.delete("category");
+    setParams(next, { replace: true });
+  };
 
   const chips = useMemo(() => {
     const c: { k: string; label: string }[] = [];
@@ -101,20 +115,6 @@ export default function Shop() {
         </div>
       </div>
       <div>
-        <p className="label text-ink-3">المقاس المتوفّر</p>
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {sizes.map((s) => (
-            <button
-              key={s}
-              onClick={() => set("size", query.size === s ? null : s)}
-              className={`h-9 min-w-11 rounded-md px-2 font-mono text-xs ring-1 transition ${query.size === s ? "bg-ink text-paper ring-ink" : "ring-line hover:ring-ink/40"}`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div>
         <div className="flex items-baseline justify-between">
           <label htmlFor="max-price" className="label text-ink-3">
             حتى
@@ -143,7 +143,7 @@ export default function Shop() {
     <>
       <header className="border-b border-line">
         <div className="wrap pb-8 pt-8 md:pt-10">
-          <Breadcrumbs trail={[{ label: "الرئيسية", to: "/" }, { label: "المتجر", to: "/shop" }, ...(query.category !== "all" ? [{ label: title }] : [])]} />
+          <Breadcrumbs trail={[{ label: "الرئيسية", to: "/" }, { label: "المتجر", to: "/shop" }, ...(title !== "كل ما على الراف" ? [{ label: title }] : [])]} />
           <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <h1 className="font-display text-[2.8rem] leading-[1.2] md:text-[4.4rem]">
               {title}
@@ -152,9 +152,27 @@ export default function Shop() {
             <p className="max-w-sm text-ink-2">قطع مرقّمة بإصدارات صغيرة. حين ينفد الإصدار، ينفد — ثم يبقى على قائمة الرفو إلى الأبد.</p>
           </div>
 
+          {/* الأقسام */}
+          <div className="mt-8 grid grid-cols-4 gap-2 sm:flex" role="tablist" aria-label="القسم">
+            {[{ id: "all" as const, name: "الكل" }, ...departments].map((d) => {
+              const active = (query.dept ?? "all") === d.id;
+              return (
+                <button
+                  key={d.id}
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => chooseDept(d.id)}
+                  className={`rounded-full px-4 py-2.5 font-display text-lg ring-1 transition sm:px-7 ${active ? "bg-thread text-tissue ring-thread" : "ring-line hover:ring-ink/40"}`}
+                >
+                  {d.name}
+                </button>
+              );
+            })}
+          </div>
+
           {/* envelope tabs */}
-          <div className="no-scrollbar -mx-4 mt-8 flex gap-1 overflow-x-auto px-4 md:mx-0 md:px-0">
-            {(["all", ...Object.keys(categoryNames)] as (Category | "all")[]).map((c) => {
+          <div className="no-scrollbar -mx-4 mt-6 flex gap-1 overflow-x-auto px-4 md:mx-0 md:px-0">
+            {(["all", ...deptCategories] as (Category | "all")[]).map((c) => {
               const active = query.category === c;
               return (
                 <button
@@ -184,7 +202,15 @@ export default function Shop() {
               </button>
             ))}
             {chips.length > 1 && (
-              <button onClick={() => setParams(query.category !== "all" ? { category: query.category! } : {})} className="px-2 text-sm underline decoration-dashed underline-offset-4">
+              <button
+                onClick={() => {
+                  const keep: Record<string, string> = {};
+                  if (query.dept) keep.dept = query.dept;
+                  if (query.category !== "all") keep.category = query.category!;
+                  setParams(keep);
+                }}
+                className="px-2 text-sm underline decoration-dashed underline-offset-4"
+              >
                 مسح الكل
               </button>
             )}
@@ -209,6 +235,24 @@ export default function Shop() {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* شريط المقاسات */}
+        <div className="mt-5 flex items-center gap-3 rounded-md bg-tissue p-3 ring-1 ring-line">
+          <span className="label shrink-0 text-ink-3">المقاس</span>
+          <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
+            {sizes.map((s) => (
+              <button
+                key={s}
+                onClick={() => set("size", query.size === s ? null : s)}
+                aria-pressed={query.size === s}
+                className={`h-9 shrink-0 rounded-md px-3 font-mono text-xs ring-1 transition ${query.size === s ? "bg-thread text-tissue ring-thread" : "bg-paper ring-line hover:ring-ink/40"}`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          {query.dept === "kids" && <span className="ms-auto hidden shrink-0 text-xs text-ink-3 sm:block">بالسنوات</span>}
         </div>
 
         <div className="mt-8 grid gap-10 lg:grid-cols-[260px_1fr]">

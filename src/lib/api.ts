@@ -43,6 +43,8 @@ const categoryWords: Record<string, string> = {
   accessories: "إكسسوارات حقيبة وشاح",
 };
 
+const deptWords: Record<string, string> = { women: "ستاتي نسائي نساء", men: "رجالي رجال", kids: "أطفال اطفال ولادي بناتي" };
+
 /** Arabic-friendly matching: drop harakat/shadda, unify alef & ya/ta-marbuta forms. */
 const normalise = (s: string) =>
   s
@@ -55,9 +57,10 @@ const normalise = (s: string) =>
 // ─── Products ──────────────────────────────────────────────────
 export async function getProducts(query: ProductQuery = {}): Promise<Product[]> {
   let list = [...products];
-  const { category, chapter, colourFamily, size, maxPrice, sort = "featured", q } = query;
+  const { category, dept, chapter, colourFamily, size, maxPrice, sort = "featured", q } = query;
 
   if (category && category !== "all") list = list.filter((p) => p.category === category);
+  if (dept) list = list.filter((p) => p.departments.includes(dept));
   if (chapter) list = list.filter((p) => p.chapter === chapter);
   if (colourFamily) list = list.filter((p) => p.colorways.some((c) => familyOf(c.hex) === colourFamily));
   if (size) list = list.filter((p) => p.sizes.includes(size) && !p.soldOutSizes?.includes(size));
@@ -65,7 +68,7 @@ export async function getProducts(query: ProductQuery = {}): Promise<Product[]> 
   if (q) {
     const needle = normalise(q.trim());
     list = list.filter((p) =>
-      normalise([p.name, p.line, p.category, categoryWords[p.category], p.composition, p.description, ...p.colorways.map((c) => c.name)].join(" ")).includes(needle),
+      normalise([p.name, p.line, p.category, categoryWords[p.category], ...p.departments.map((d) => deptWords[d]), p.composition, p.description, ...p.colorways.map((c) => c.name)].join(" ")).includes(needle),
     );
   }
 
