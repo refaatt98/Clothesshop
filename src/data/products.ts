@@ -65,7 +65,7 @@ export const products: Product[] = [
     garment: "coat",
     chapter: "wool-and-weather",
     fabricId: "wool-gabardine",
-    price: 640,
+    price: 2370,
     colorways: [
       { name: "جملي", hex: "#B08D63", accent: "#5B4630", pattern: "solid" },
       { name: "أردوازي", hex: "#4A4743", accent: "#1E1C19", pattern: "solid" },
@@ -111,7 +111,7 @@ export const products: Product[] = [
     garment: "jacket",
     chapter: "salt-and-linen",
     fabricId: "hemp-canvas",
-    price: 285,
+    price: 1050,
     colorways: [
       { name: "شوفاني", hex: "#CDBF9F", accent: "#6B5A3C", pattern: "linen" },
       { name: "أزرق الميناء", hex: "#5E7A86", accent: "#2E3F48", pattern: "linen" },
@@ -156,7 +156,7 @@ export const products: Product[] = [
     garment: "shirt",
     chapter: "the-quiet-room",
     fabricId: "cotton-poplin",
-    price: 145,
+    price: 540,
     colorways: [
       { name: "مقلّم طباشيري", hex: "#F1EEE7", accent: "#6E8BA6", pattern: "stripe" },
       { name: "أبيض سادة", hex: "#F6F3EC", accent: "#B9B2A4", pattern: "solid" },
@@ -199,7 +199,7 @@ export const products: Product[] = [
     garment: "camp-shirt",
     chapter: "salt-and-linen",
     fabricId: "flanders-linen",
-    price: 165,
+    price: 610,
     colorways: [
       { name: "رملي", hex: "#D9C7A7", accent: "#7A6744", pattern: "linen" },
       { name: "قرميدي", hex: "#C47D5A", accent: "#6A3A26", pattern: "linen" },
@@ -238,7 +238,7 @@ export const products: Product[] = [
     garment: "knit",
     chapter: "the-quiet-room",
     fabricId: "undyed-merino",
-    price: 210,
+    price: 780,
     colorways: [
       { name: "شوفاني", hex: "#D8CBB0", accent: "#9C8D6E", pattern: "rib" },
       { name: "طحلبي", hex: "#7D8461", accent: "#535A3F", pattern: "rib" },
@@ -276,7 +276,7 @@ export const products: Product[] = [
     garment: "knit",
     chapter: "wool-and-weather",
     fabricId: "undyed-merino",
-    price: 260,
+    price: 960,
     colorways: [
       { name: "عاجي خام", hex: "#E8E0CF", accent: "#B5AA92", pattern: "rib" },
       { name: "كحلي حبري", hex: "#2F3B4E", accent: "#1C2433", pattern: "rib" },
@@ -312,7 +312,7 @@ export const products: Product[] = [
     garment: "trousers",
     chapter: "wool-and-weather",
     fabricId: "wool-gabardine",
-    price: 230,
+    price: 850,
     colorways: [
       { name: "أردوازي", hex: "#4A4743", accent: "#2A2826", pattern: "solid" },
       { name: "زيتوني", hex: "#6B6B4E", accent: "#3F3F2C", pattern: "solid" },
@@ -351,7 +351,7 @@ export const products: Product[] = [
     garment: "trousers",
     chapter: "salt-and-linen",
     fabricId: "flanders-linen",
-    price: 190,
+    price: 700,
     colorways: [
       { name: "أبيض الجير", hex: "#F1ECE1", accent: "#A69C88", pattern: "linen" },
       { name: "رملي", hex: "#D9C7A7", accent: "#7A6744", pattern: "linen" },
@@ -389,7 +389,7 @@ export const products: Product[] = [
     garment: "trousers",
     chapter: "indigo-hours",
     fabricId: "selvedge-denim",
-    price: 220,
+    price: 810,
     colorways: [
       { name: "نيلي خام", hex: "#2E3F5C", accent: "#4D6383", pattern: "denim" },
       { name: "نيلي مغسول", hex: "#4D6383", accent: "#6E86A6", pattern: "denim" },
@@ -426,7 +426,7 @@ export const products: Product[] = [
     garment: "dress",
     chapter: "salt-and-linen",
     fabricId: "silk-voile",
-    price: 310,
+    price: 1150,
     colorways: [
       { name: "مربعات زبدية", hex: "#E9D8A6", accent: "#B9A26A", pattern: "check" },
       { name: "مربعات مريمية", hex: "#A9B49A", accent: "#717B62", pattern: "check" },
@@ -465,7 +465,7 @@ export const products: Product[] = [
     garment: "dress",
     chapter: "salt-and-linen",
     fabricId: "flanders-linen",
-    price: 240,
+    price: 890,
     colorways: [
       { name: "قرميدي", hex: "#C47D5A", accent: "#6A3A26", pattern: "linen" },
       { name: "أزرق الميناء", hex: "#5E7A86", accent: "#2E3F48", pattern: "linen" },
@@ -500,7 +500,7 @@ export const products: Product[] = [
     garment: "skirt",
     chapter: "the-quiet-room",
     fabricId: "cotton-poplin",
-    price: 175,
+    price: 650,
     colorways: [
       { name: "مقلّم طباشيري", hex: "#F1EEE7", accent: "#6E8BA6", pattern: "stripe" },
       { name: "كحلي حبري", hex: "#2F3B4E", accent: "#1C2433", pattern: "solid" },
@@ -536,7 +536,7 @@ export const products: Product[] = [
     garment: "tee",
     chapter: "indigo-hours",
     fabricId: "cotton-poplin",
-    price: 68,
+    price: 250,
     colorways: [
       { name: "أبيض الجير", hex: "#F3EFE6", accent: "#C9C0AE", pattern: "solid" },
       { name: "حبري", hex: "#2B2A28", accent: "#111111", pattern: "solid" },
@@ -573,7 +573,7 @@ export const products: Product[] = [
     garment: "tee",
     chapter: "salt-and-linen",
     fabricId: "cotton-poplin",
-    price: 78,
+    price: 290,
     colorways: [
       { name: "عاجي / كحلي", hex: "#EFE9DC", accent: "#2F3B4E", pattern: "stripe" },
       { name: "عاجي / قرميدي", hex: "#EFE9DC", accent: "#C47D5A", pattern: "stripe" },
@@ -610,7 +610,7 @@ export const products: Product[] = [
     garment: "coat",
     chapter: "wool-and-weather",
     fabricId: "shetland-tweed",
-    price: 590,
+    price: 2180,
     colorways: [
       { name: "بنّي الخثّ", hex: "#8C7B65", accent: "#5F5242", pattern: "herringbone" },
       { name: "طحلبي", hex: "#7D8461", accent: "#535A3F", pattern: "herringbone" },
@@ -646,7 +646,7 @@ export const products: Product[] = [
     garment: "tote",
     chapter: "salt-and-linen",
     fabricId: "hemp-canvas",
-    price: 95,
+    price: 350,
     colorways: [
       { name: "شوفاني", hex: "#CDBF9F", accent: "#6B5A3C", pattern: "linen" },
       { name: "أزرق الميناء", hex: "#5E7A86", accent: "#2E3F48", pattern: "linen" },
@@ -681,7 +681,7 @@ export const products: Product[] = [
     garment: "scarf",
     chapter: "wool-and-weather",
     fabricId: "shetland-tweed",
-    price: 120,
+    price: 440,
     colorways: [
       { name: "مربعات ضبابية", hex: "#CFCBC2", accent: "#7D8461", pattern: "check" },
       { name: "مربعات صدئية", hex: "#C9A27E", accent: "#A9583A", pattern: "check" },
@@ -715,7 +715,7 @@ export const products: Product[] = [
     garment: "jacket",
     chapter: "indigo-hours",
     fabricId: "selvedge-denim",
-    price: 295,
+    price: 1090,
     colorways: [
       { name: "نيلي خام", hex: "#2E3F5C", accent: "#4D6383", pattern: "denim" },
       { name: "نيلي مغسول", hex: "#4D6383", accent: "#6E86A6", pattern: "denim" },
@@ -752,7 +752,7 @@ export const products: Product[] = [
     garment: "tee",
     chapter: "salt-and-linen",
     fabricId: "cotton-poplin",
-    price: 38,
+    price: 140,
     colorways: [
       { name: "عاجي / كحلي", hex: "#EFE9DC", accent: "#2F3B4E", pattern: "stripe" },
       { name: "عاجي / قرميدي", hex: "#EFE9DC", accent: "#C47D5A", pattern: "stripe" },
@@ -788,7 +788,7 @@ export const products: Product[] = [
     garment: "dress",
     chapter: "salt-and-linen",
     fabricId: "silk-voile",
-    price: 85,
+    price: 310,
     colorways: [
       { name: "مربعات زبدية", hex: "#E9D8A6", accent: "#B9A26A", pattern: "check" },
       { name: "مربعات مريمية", hex: "#A9B49A", accent: "#717B62", pattern: "check" },
@@ -824,7 +824,7 @@ export const products: Product[] = [
     garment: "trousers",
     chapter: "salt-and-linen",
     fabricId: "flanders-linen",
-    price: 55,
+    price: 200,
     colorways: [
       { name: "رملي", hex: "#D9C7A7", accent: "#7A6744", pattern: "linen" },
       { name: "أزرق الميناء", hex: "#5E7A86", accent: "#2E3F48", pattern: "linen" },
@@ -858,7 +858,7 @@ export const products: Product[] = [
     garment: "knit",
     chapter: "wool-and-weather",
     fabricId: "undyed-merino",
-    price: 75,
+    price: 280,
     colorways: [
       { name: "صدئي", hex: "#A9583A", accent: "#6E3523", pattern: "rib" },
       { name: "شوفاني", hex: "#D8CBB0", accent: "#9C8D6E", pattern: "rib" },
@@ -893,7 +893,7 @@ export const products: Product[] = [
     garment: "coat",
     chapter: "wool-and-weather",
     fabricId: "wool-gabardine",
-    price: 140,
+    price: 520,
     colorways: [
       { name: "جملي", hex: "#B08D63", accent: "#5B4630", pattern: "solid" },
       { name: "كحلي حبري", hex: "#2F3B4E", accent: "#1C2433", pattern: "solid" },
@@ -927,7 +927,7 @@ export const products: Product[] = [
     garment: "jacket",
     chapter: "indigo-hours",
     fabricId: "selvedge-denim",
-    price: 90,
+    price: 330,
     colorways: [{ name: "نيلي مغسول", hex: "#4D6383", accent: "#6E86A6", pattern: "denim" }],
     sizes: KIDS,
     fit: "relaxed",

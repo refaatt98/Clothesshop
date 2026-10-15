@@ -2,8 +2,6 @@ import { ArrowUp, Check } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { subscribeToLetters } from "../lib/api";
-import { currencies, useShop } from "../lib/store";
-import type { Currency } from "../types";
 
 const links = [
   { label: "المتجر", to: "/shop" },
@@ -21,7 +19,6 @@ const socials = [
   { label: "بنترست", href: "https://www.pinterest.com/" },
 ];
 
-const currencyNames: Record<Currency, string> = { USD: "دولار", EUR: "يورو", GBP: "جنيه", JOD: "دينار", AED: "درهم" };
 
 function Letters() {
   const [email, setEmail] = useState("");
@@ -80,7 +77,6 @@ function Letters() {
 }
 
 export function Footer() {
-  const { currency, setCurrency } = useShop();
   return (
     <footer className="mt-24 border-t border-line bg-paper-2/50">
       <div className="wrap flex flex-col gap-8 py-12 md:flex-row md:items-end md:justify-between">
@@ -119,16 +115,6 @@ export function Footer() {
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <label htmlFor="currency" className="sr-only">
-              العملة
-            </label>
-            <select id="currency" value={currency} onChange={(e) => setCurrency(e.target.value as Currency)} className="rounded-full bg-paper px-3 py-1.5 ring-1 ring-line outline-none focus:ring-thread">
-              {currencies.map((c) => (
-                <option key={c} value={c}>
-                  {currencyNames[c]} ({c})
-                </option>
-              ))}
-            </select>
             <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 ring-1 ring-line transition hover:bg-ink hover:text-paper" aria-label="العودة للأعلى">
               <ArrowUp className="h-3 w-3" /> للأعلى
             </button>

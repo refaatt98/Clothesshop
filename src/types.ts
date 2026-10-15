@@ -55,7 +55,7 @@ export interface Product {
   garment: GarmentKind;
   chapter: string; // chapter slug
   fabricId: string;
-  price: number; // USD
+  price: number; // ILS (₪)
   colorways: Colorway[];
   sizes: string[];
   lowSizes?: string[]; // last few
@@ -215,4 +215,4 @@ export interface Order {
   eta: string;
 }
 
-export type Currency = "USD" | "EUR" | "JOD" | "AED" | "GBP";
+export type Currency = "ILS";

@@ -2,8 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { CartLine, Chapter, Currency, Product } from "../types";
 import { getChapters, getProducts } from "./api";
 
-const rates: Record<Currency, number> = { USD: 1, EUR: 0.92, GBP: 0.79, JOD: 0.71, AED: 3.67 };
-export const currencies = Object.keys(rates) as Currency[];
+/** All prices are stored and shown in Israeli new shekels. */
+export const currencies: Currency[] = ["ILS"];
 
 function load<T>(key: string, fallback: T): T {
   try {
@@ -58,7 +58,7 @@ interface ShopState {
 
   currency: Currency;
   setCurrency: (c: Currency) => void;
-  money: (usd: number, digits?: number) => string;
+  money: (amount: number, digits?: number) => string;
 
   toasts: Toast[];
   toast: (text: string, sub?: string) => void;
@@ -73,7 +73,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const [rail, setRail] = useState<CartLine[]>(() => load("ourlet.rail", []));
   const [pinned, setPinned] = useState<string[]>(() => load("ourlet.pinned", []));
   const [looks, setLooks] = useState<SavedLook[]>(() => load("ourlet.looks", []));
-  const [currency, setCurrency] = useState<Currency>(() => load("ourlet.currency", "USD"));
+  const [currency, setCurrency] = useState<Currency>("ILS");
   const [railOpen, setRailOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -131,13 +131,8 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       deleteLook: (id) => setLooks((l) => l.filter((x) => x.id !== id)),
       currency,
       setCurrency,
-      money: (usd, digits = 0) =>
-        new Intl.NumberFormat("en", {
-          style: "currency",
-          currency,
-          maximumFractionDigits: digits || (currency === "JOD" ? 1 : 0),
-          minimumFractionDigits: digits,
-        }).format(usd * rates[currency]),
+      money: (amount, digits = 0) =>
+        `${new Intl.NumberFormat("en", { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(amount)} ₪`,
       toasts,
       toast,
       searchOpen,

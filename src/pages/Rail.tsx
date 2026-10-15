@@ -125,7 +125,7 @@ export default function Rail() {
               </div>
               <div className="flex justify-between">
                 <dt>الشحن</dt>
-                <dd className="font-mono">{toFree > 0 ? "من " + money(14) : "مجاني"}</dd>
+                <dd className="font-mono">{toFree > 0 ? "من " + money(50) : "مجاني"}</dd>
               </div>
               <div className="flex justify-between">
                 <dt>الجمارك</dt>

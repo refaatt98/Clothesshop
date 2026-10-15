@@ -11,7 +11,7 @@ const notices = [
   { text: "رفو مجاني طوال عمر كل قطعة", to: "/mending" },
   { text: "لن نقيم تخفيضات أبداً — وهذا السبب", to: "/journal/why-we-never-have-sales" },
   { text: "بروفات في عمّان ولشبونة وكيوتو", to: "/visit" },
-  { text: "شحن مجاني فوق 250$ · الجمارك مشمولة", to: "/shipping" },
+  { text: "شحن مجاني فوق 900 ₪ · الجمارك مشمولة", to: "/shipping" },
 ];
 
 export const categoryNames: Record<Category, string> = {

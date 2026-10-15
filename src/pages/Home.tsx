@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, ArrowUpLeft, Clock, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { CareSymbol, Marquee, RotatingStamp, Ruler, ScrollThread } from "../components/Decor";
@@ -8,7 +8,7 @@ import { PriceTag } from "../components/PriceTag";
 import { ProductCard } from "../components/ProductCard";
 import { Swatch } from "../components/Swatch";
 import { Button, HandNote, Meter, PinHead, Reveal, SectionHead, Skeleton } from "../components/ui";
-import { getChapters, getFabrics, getJournal, getProducts, getProductsBySlugs, getStores } from "../lib/api";
+import { getChapters, getFabrics, getJournal, getProducts, getProductsBySlugs } from "../lib/api";
 import { formatDate, pad, useAsync, useDocumentTitle } from "../lib/hooks";
 import { useShop } from "../lib/store";
 import type { Department, GarmentKind, Product } from "../types";
@@ -620,46 +620,6 @@ function JournalTeaser() {
   );
 }
 
-// ─── Visit ─────────────────────────────────────────────────────
-function VisitStrip() {
-  const { data } = useAsync(getStores, []);
-  const { money } = useShop();
-  return (
-    <section className="py-12">
-      <div className="wrap">
-        <div className="grid overflow-hidden rounded-md bg-tissue ring-1 ring-line lg:grid-cols-[1.1fr_2fr]">
-          <div className="border-b border-dashed border-ink/20 p-8 lg:border-b-0 lg:border-l">
-            <p className="label text-thread">§ 08 · تفضّلوا</p>
-            <h2 className="mt-3 font-display text-[2.2rem] leading-tight">
-              ثلاث غرف، <em className="text-thread not-italic">وشريط قياس واحد</em>
-            </h2>
-            <p className="mt-4 text-ink-2">احجز بروفة، قصّر بنطالك على حذائك وأنت تنتظر (مجاناً)، أو اترك شيئاً للرفو. الطلبات فوق {money(250)} تُشحن مجاناً.</p>
-            <Button to="/visit#book" className="mt-6">
-              احجز بروفة
-            </Button>
-          </div>
-          <div className="grid sm:grid-cols-3">
-            {(data ?? []).map((s) => (
-              <Link key={s.id} to={`/visit#${s.id}`} className="group border-b border-dashed border-ink/20 p-6 transition last:border-b-0 hover:bg-paper-2 sm:border-b-0 sm:border-l sm:last:border-l-0">
-                <p className="font-display text-[1.9rem] leading-tight group-hover:text-thread">{s.city}</p>
-                <p className="label mt-1 text-ink-3">{s.country}</p>
-                <p className="mt-4 flex gap-2 text-sm text-ink-2">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0" /> {s.address}
-                </p>
-                {s.hours.map((h) => (
-                  <p key={h.days} className="mt-1.5 flex gap-2 text-sm text-ink-2">
-                    <Clock className="mt-0.5 h-4 w-4 shrink-0" /> {h.days}: {h.time}
-                  </p>
-                ))}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export default function Home() {
   useDocumentTitle("");
   return (
@@ -674,7 +634,6 @@ export default function Home() {
       <Ledger />
       <ChapterStack />
       <JournalTeaser />
-      <VisitStrip />
     </>
   );
 }

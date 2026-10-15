@@ -47,7 +47,7 @@ export default function Checkout() {
   const [card, setCard] = useState({ number: "", exp: "", cvc: "" });
   const up = (k: keyof CheckoutDetails, v: string | boolean) => setD((x) => ({ ...x, [k]: v }));
 
-  const shipping = d.delivery === "collect" ? 0 : d.delivery === "express" ? 28 : subtotal >= FREE_SHIPPING_FROM ? 0 : 14;
+  const shipping = d.delivery === "collect" ? 0 : d.delivery === "express" ? 100 : subtotal >= FREE_SHIPPING_FROM ? 0 : 50;
 
   if (!ready) return <div className="wrap py-24 text-center font-hand text-3xl text-chalk">نفرد قطعك…</div>;
   if (!lines.length)
@@ -153,8 +153,8 @@ export default function Checkout() {
                   <div className="grid gap-3">
                     {(
                       [
-                        ["standard", "عادي", "5–8 أيام عمل، مع التتبّع", subtotal >= FREE_SHIPPING_FROM ? "مجاني" : money(14)],
-                        ["express", "سريع", "2–3 أيام عمل، مع التتبّع", money(28)],
+                        ["standard", "عادي", "5–8 أيام عمل، مع التتبّع", subtotal >= FREE_SHIPPING_FROM ? "مجاني" : money(50)],
+                        ["express", "سريع", "2–3 أيام عمل، مع التتبّع", money(100)],
                         ["collect", "استلام من المحلّ", "عمّان أو لشبونة أو كيوتو — ونتأكّد من المقاس معك", "مجاني"],
                       ] as const
                     ).map(([id, t, s, p]) => (

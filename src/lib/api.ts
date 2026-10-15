@@ -30,7 +30,7 @@ import { familyOf } from "./colour";
 const wait = <T,>(value: T, ms = 220): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(structuredClone(value)), ms));
 
-export const FREE_SHIPPING_FROM = 250;
+export const FREE_SHIPPING_FROM = 900; // ₪
 
 const categoryWords: Record<string, string> = {
   outerwear: "معطف معاطف جاكيت جاكيتات",
@@ -201,7 +201,7 @@ export async function placeOrder(lines: CartLine[], details: CheckoutDetails): P
   });
   const subtotal = priced.reduce((s, l) => s + l.price * l.qty, 0);
   const shipping =
-    details.delivery === "collect" ? 0 : details.delivery === "express" ? 28 : subtotal >= FREE_SHIPPING_FROM ? 0 : 14;
+    details.delivery === "collect" ? 0 : details.delivery === "express" ? 100 : subtotal >= FREE_SHIPPING_FROM ? 0 : 50;
   const eta = new Date(Date.now() + (details.delivery === "express" ? 3 : 7) * 86400000);
   const order: Order = {
     number: "OU-" + String(Math.floor(100000 + Math.random() * 899999)),

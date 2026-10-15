@@ -1,9 +1,9 @@
 import { motion } from "motion/react";
-import { X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { departments, sizesIn } from "../lib/departments";
 import type { Department, Product } from "../types";
 import { ProductCard } from "./ProductCard";
+import { SizeFilter } from "./SizeFilter";
 import { Button, EmptyState, Skeleton } from "./ui";
 
 /**
@@ -50,25 +50,8 @@ export function ProductBrowser({ products }: { products: Product[] | null }) {
         })}
       </div>
 
-      <div className="mt-5 flex items-center gap-3">
-        <span className="label shrink-0 text-ink-3">المقاس</span>
-        <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1">
-          {sizes.map((s) => (
-            <button
-              key={s}
-              onClick={() => setSize(size === s ? null : s)}
-              aria-pressed={size === s}
-              className={`h-9 shrink-0 rounded-md px-3 font-mono text-xs ring-1 transition ${size === s ? "bg-thread text-tissue ring-thread" : "bg-tissue ring-line hover:ring-ink/40"}`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-        {size && (
-          <button onClick={() => setSize(null)} className="flex shrink-0 items-center gap-1 text-sm text-ink-3 hover:text-thread">
-            <X className="h-3.5 w-3.5" /> مسح
-          </button>
-        )}
+      <div className="mt-6">
+        <SizeFilter sizes={sizes} value={size} onChange={setSize} />
       </div>
 
       {shown.length === 0 ? (

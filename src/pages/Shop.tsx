@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { categoryNames } from "../components/Header";
 import { ProductCard } from "../components/ProductCard";
+import { SizeFilter } from "../components/SizeFilter";
 import { Breadcrumbs, Button, EmptyState, HandNote, Skeleton } from "../components/ui";
 import { getProducts } from "../lib/api";
 import { colourFamilies } from "../lib/colour";
@@ -19,7 +20,7 @@ const sorts: { id: NonNullable<ProductQuery["sort"]>; label: string }[] = [
   { id: "price-desc", label: "السعر: من الأعلى" },
   { id: "slowest", label: "الأبطأ صنعاً أولاً" },
 ];
-const PRICE_MAX = 700;
+const PRICE_MAX = 2600;
 
 export default function Shop() {
   const [params, setParams] = useSearchParams();
@@ -124,9 +125,9 @@ export default function Shop() {
         <input
           id="max-price"
           type="range"
-          min={60}
+          min={200}
           max={PRICE_MAX}
-          step={10}
+          step={50}
           value={query.maxPrice ?? PRICE_MAX}
           onChange={(e) => set("max", Number(e.target.value) >= PRICE_MAX ? null : e.target.value)}
           className="mt-3 w-full accent-thread"
@@ -237,22 +238,9 @@ export default function Shop() {
           </div>
         </div>
 
-        {/* شريط المقاسات */}
-        <div className="mt-5 flex items-center gap-3 rounded-md bg-tissue p-3 ring-1 ring-line">
-          <span className="label shrink-0 text-ink-3">المقاس</span>
-          <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
-            {sizes.map((s) => (
-              <button
-                key={s}
-                onClick={() => set("size", query.size === s ? null : s)}
-                aria-pressed={query.size === s}
-                className={`h-9 shrink-0 rounded-md px-3 font-mono text-xs ring-1 transition ${query.size === s ? "bg-thread text-tissue ring-thread" : "bg-paper ring-line hover:ring-ink/40"}`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-          {query.dept === "kids" && <span className="ms-auto hidden shrink-0 text-xs text-ink-3 sm:block">بالسنوات</span>}
+        {/* شريط القياس — فلتر المقاسات */}
+        <div className="mt-6">
+          <SizeFilter sizes={sizes} value={query.size} onChange={(s) => set("size", s)} />
         </div>
 
         <div className="mt-8 grid gap-10 lg:grid-cols-[260px_1fr]">

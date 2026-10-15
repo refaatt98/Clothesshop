@@ -79,7 +79,7 @@ export default function Mending() {
           {[
             ["1,204", "قطعة رُفيت في 2026"],
             ["19", "يوماً متوسط العودة"],
-            ["0$", "دفعها أحد مقابل الرفو"],
+            ["0 ₪", "دفعها أحد مقابل الرفو"],
           ].map(([n, l]) => (
             <div key={l}>
               <p className="font-display text-[2.4rem] leading-none">{n}</p>
