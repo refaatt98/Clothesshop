@@ -7,25 +7,25 @@ import { formatDate, useAsync, useDocumentTitle } from "../lib/hooks";
 import { useShop } from "../lib/store";
 
 export default function Pinned() {
-  useDocumentTitle("Pinboard");
+  useDocumentTitle("اللوحة المثبّتة");
   const { pinned, looks, deleteLook, money, bySlug } = useShop();
   const { data, loading } = useAsync(() => getProductsBySlugs(pinned), [pinned.join()]);
 
   return (
     <>
       <PageHeader
-        trail={[{ label: "Home", to: "/" }, { label: "Pinboard" }]}
-        kicker="Your corkboard"
+        trail={[{ label: "الرئيسية", to: "/" }, { label: "اللوحة المثبّتة" }]}
+        kicker="لوحة الفلّين الخاصة بك"
         title={
           <>
-            Pinned <em>for later</em>
+            مثبّتة <em className="text-thread not-italic">لوقت لاحق</em>
           </>
         }
-        intro="Pieces you've pinned and looks you've saved from the dressing table. Kept on this device — no account needed."
+        intro="قطع ثبّتّها وإطلالات حفظتها من طاولة التنسيق. تُحفظ على هذا الجهاز — بلا حاجة لحساب."
       />
       <div className="wrap py-12">
         <h2 className="font-display text-3xl">
-          Pieces <sup className="font-mono text-sm text-thread">{pinned.length}</sup>
+          القطع <sup className="font-mono text-sm text-thread">{pinned.length}</sup>
         </h2>
         {loading && !data ? (
           <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -40,15 +40,15 @@ export default function Pinned() {
             ))}
           </div>
         ) : (
-          <EmptyState title="No pins yet." text="Tap the pin on any piece to keep it here while you think." action={<Button to="/shop">Browse the shop</Button>} />
+          <EmptyState title="لا شيء مثبّت بعد." text="اضغط الدبّوس على أي قطعة لتبقيها هنا ريثما تفكّر." action={<Button to="/shop">تصفّح المتجر</Button>} />
         )}
 
         <h2 className="mt-20 font-display text-3xl">
-          Saved looks <sup className="font-mono text-sm text-thread">{looks.length}</sup>
+          إطلالات محفوظة <sup className="font-mono text-sm text-thread">{looks.length}</sup>
         </h2>
         {looks.length === 0 ? (
           <p className="mt-4 text-ink-2">
-            Nothing saved. <Link to="/dressing-table" className="underline decoration-dashed underline-offset-4 hover:text-thread">Compose a look on the dressing table</Link> and save it.
+            لا شيء محفوظ. <Link to="/dressing-table" className="underline decoration-dashed underline-offset-4 hover:text-thread">نسّق إطلالة على طاولة التنسيق</Link> واحفظها.
           </p>
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -67,10 +67,10 @@ export default function Pinned() {
                   </p>
                   <div className="mt-4 flex gap-3 text-sm">
                     <Link to={`/dressing-table?look=${look.slugs.join(",")}`} className="underline decoration-dashed underline-offset-4 hover:text-thread">
-                      Open on the table
+                      افتحها على الطاولة
                     </Link>
                     <button onClick={() => deleteLook(look.id)} className="text-ink-3 underline decoration-dashed underline-offset-4 hover:text-thread">
-                      Delete
+                      حذف
                     </button>
                   </div>
                 </div>

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Search, X } from "lucide-react";
+import { ArrowLeft, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { searchProducts } from "../lib/api";
@@ -8,7 +8,7 @@ import { useShop } from "../lib/store";
 import type { Product } from "../types";
 import { GarmentFlat } from "./GarmentFlat";
 
-const prompts = ["linen", "coat", "indigo", "rib", "stripe", "dress", "camel", "pleat"];
+const prompts = ["كتّان", "معطف", "نيلي", "تريكو", "مقلّم", "فستان", "جملي", "طيّة"];
 
 export function SearchOverlay() {
   const { searchOpen, setSearchOpen, money } = useShop();
@@ -63,11 +63,11 @@ export function SearchOverlay() {
           exit={{ opacity: 0 }}
           role="dialog"
           aria-modal="true"
-          aria-label="Search"
+          aria-label="بحث"
         >
           <div className="wrap py-6 md:py-10">
             <div className="flex justify-end">
-              <button onClick={close} className="grid h-11 w-11 place-items-center rounded-full ring-1 ring-line hover:bg-paper-2" aria-label="Close search">
+              <button onClick={close} className="grid h-11 w-11 place-items-center rounded-full ring-1 ring-line hover:bg-paper-2" aria-label="إغلاق البحث">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -80,7 +80,7 @@ export function SearchOverlay() {
               className="mx-auto mt-6 max-w-3xl"
             >
               <label htmlFor="search" className="label text-ink-3">
-                Search the rail
+                ابحث في الراف
               </label>
               <div className="mt-2 flex items-center gap-3 border-b-2 border-ink pb-2">
                 <Search className="h-6 w-6 shrink-0 text-ink-3" />
@@ -89,13 +89,13 @@ export function SearchOverlay() {
                   id="search"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Try “linen” or “double pleat”"
+                  placeholder="جرّب «كتّان» أو «طيّتين»"
                   className="min-w-0 flex-1 bg-transparent font-display text-[1.8rem] outline-none placeholder:text-ink-3/50 md:text-[2.6rem]"
                   autoComplete="off"
                 />
                 {q && (
                   <button type="submit" className="hidden shrink-0 items-center gap-1 rounded-full bg-ink px-4 py-2 text-sm text-paper sm:flex">
-                    See all <ArrowRight className="h-4 w-4" />
+                    عرض الكل <ArrowLeft className="h-4 w-4" />
                   </button>
                 )}
               </div>
@@ -115,7 +115,7 @@ export function SearchOverlay() {
 
             <div className="mx-auto mt-10 max-w-3xl">
               {dq && !loading && results.length === 0 && (
-                <p className="font-hand text-3xl text-chalk">Nothing on the rail by that name — try “wool” or “shirt”.</p>
+                <p className="font-hand text-3xl text-chalk">لا شيء على الراف بهذا الاسم — جرّب «صوف» أو «قميص».</p>
               )}
               <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 {results.map((p, i) => (

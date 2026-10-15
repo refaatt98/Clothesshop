@@ -19,10 +19,10 @@ export const bottomSizes = [
 ] as const;
 
 export const fitNotes: Record<Fit, string> = {
-  close: "Close — follows the body. Size up if between sizes.",
-  true: "True — cut to the size chart, with ordinary ease.",
-  relaxed: "Relaxed — roomy through the body, cut to layer.",
-  generous: "Generous — deliberately big. Size down for a neater line.",
+  close: "قصّة ضيّقة — تتبع الجسم. خذ المقاس الأكبر إن كنت بين مقاسين.",
+  true: "قصّة عادية — حسب جدول المقاسات، بمتّسع طبيعي.",
+  relaxed: "قصّة مريحة — واسعة على الجسم، تتّسع لطبقات تحتها.",
+  generous: "قصّة سخيّة — كبيرة عن قصد. خذ مقاساً أصغر لخطّ أكثر ترتيباً.",
 };
 
 const usesWaist = (c: Category) => c === "trousers" || c === "skirts";
@@ -30,14 +30,14 @@ const usesWaist = (c: Category) => c === "trousers" || c === "skirts";
 /** Suggest a size from body measurements. Returns null if we can't help. */
 export function suggestSize(opts: { category: Category; chest?: number; waist?: number; fit: Fit; preference?: "neat" | "easy" }) {
   const { category, chest, waist, fit, preference = "easy" } = opts;
-  if (category === "accessories") return { size: "One size", why: "One size fits all — it's a scarf or a bag." };
+  if (category === "accessories") return { size: "مقاس واحد", why: "مقاس واحد يناسب الجميع — إنه وشاح أو حقيبة." };
 
   if (usesWaist(category) && category === "trousers") {
     if (!waist) return null;
     let idx = bottomSizes.findIndex((s) => waist < s.waist[1]);
     if (idx === -1) idx = bottomSizes.length - 1;
     if (fit === "generous" && preference === "neat") idx = Math.max(0, idx - 1);
-    return { size: bottomSizes[idx].size, why: `Your ${waist} cm waist sits in our ${bottomSizes[idx].size}.` };
+    return { size: bottomSizes[idx].size, why: `خصرك ${waist} سم يقع في مقاسنا ${bottomSizes[idx].size}.` };
   }
 
   const key = usesWaist(category) ? "waist" : "chest";
@@ -45,14 +45,14 @@ export function suggestSize(opts: { category: Category; chest?: number; waist?: 
   if (!value) return null;
   let idx = topSizes.findIndex((s) => value < s[key][1]);
   if (idx === -1) idx = topSizes.length - 1;
-  let note = `Your ${value} cm ${key} sits in our ${topSizes[idx].size}.`;
+  let note = `${key === "waist" ? "خصرك" : "صدرك"} ${value} سم يقع في مقاسنا ${topSizes[idx].size}.`;
   if (fit === "generous" && preference === "neat" && idx > 0) {
     idx -= 1;
-    note += " It's cut generously, so we've taken you down one for a neater line.";
+    note += " القصّة سخيّة، فأنزلناك مقاساً لخطّ أكثر ترتيباً.";
   }
   if (fit === "close" && preference === "easy" && idx < topSizes.length - 1) {
     idx += 1;
-    note += " It's cut close, so we've gone up one for ease.";
+    note += " القصّة ضيّقة، فرفعناك مقاساً للراحة.";
   }
   return { size: topSizes[idx].size, why: note };
 }

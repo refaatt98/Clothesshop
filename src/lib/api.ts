@@ -32,6 +32,26 @@ const wait = <T,>(value: T, ms = 220): Promise<T> =>
 
 export const FREE_SHIPPING_FROM = 250;
 
+const categoryWords: Record<string, string> = {
+  outerwear: "معطف معاطف جاكيت جاكيتات",
+  shirts: "قميص قمصان",
+  knitwear: "تريكو كنزة صوف",
+  tees: "تيشيرت تيشيرتات",
+  trousers: "بنطال بناطيل",
+  dresses: "فستان فساتين",
+  skirts: "تنورة تنانير",
+  accessories: "إكسسوارات حقيبة وشاح",
+};
+
+/** Arabic-friendly matching: drop harakat/shadda, unify alef & ya/ta-marbuta forms. */
+const normalise = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[\u064B-\u0652\u0640]/g, "")
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه");
+
 // ─── Products ──────────────────────────────────────────────────
 export async function getProducts(query: ProductQuery = {}): Promise<Product[]> {
   let list = [...products];
@@ -43,12 +63,9 @@ export async function getProducts(query: ProductQuery = {}): Promise<Product[]> 
   if (size) list = list.filter((p) => p.sizes.includes(size) && !p.soldOutSizes?.includes(size));
   if (maxPrice) list = list.filter((p) => p.price <= maxPrice);
   if (q) {
-    const needle = q.trim().toLowerCase();
+    const needle = normalise(q.trim());
     list = list.filter((p) =>
-      [p.name, p.line, p.category, p.composition, ...p.colorways.map((c) => c.name)]
-        .join(" ")
-        .toLowerCase()
-        .includes(needle),
+      normalise([p.name, p.line, p.category, categoryWords[p.category], p.composition, p.description, ...p.colorways.map((c) => c.name)].join(" ")).includes(needle),
     );
   }
 
@@ -137,7 +154,7 @@ export async function getLegalDoc(slug: string): Promise<LegalDoc | null> {
 const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 
 export async function subscribeToLetters(email: string): Promise<{ ok: true }> {
-  if (!isEmail(email)) throw new Error("That email doesn't look quite right.");
+  if (!isEmail(email)) throw new Error("يبدو أن البريد الإلكتروني غير صحيح.");
   return wait({ ok: true as const }, 600);
 }
 
@@ -147,8 +164,8 @@ export async function sendContactMessage(input: {
   topic: string;
   message: string;
 }): Promise<{ ticket: string }> {
-  if (!isEmail(input.email)) throw new Error("Please check your email address.");
-  if (input.message.trim().length < 10) throw new Error("Tell us a little more — at least a sentence.");
+  if (!isEmail(input.email)) throw new Error("تأكّد من بريدك الإلكتروني من فضلك.");
+  if (input.message.trim().length < 10) throw new Error("أخبرنا أكثر قليلاً — جملة واحدة على الأقل.");
   return wait({ ticket: "C-" + Math.floor(1000 + Math.random() * 9000) }, 700);
 }
 
@@ -158,7 +175,7 @@ export async function requestMend(input: {
   piece: string;
   problem: string;
 }): Promise<{ reference: string; labelSentTo: string }> {
-  if (!isEmail(input.email)) throw new Error("Please check your email address.");
+  if (!isEmail(input.email)) throw new Error("تأكّد من بريدك الإلكتروني من فضلك.");
   return wait({ reference: "M-" + Math.floor(10000 + Math.random() * 89999), labelSentTo: input.email }, 800);
 }
 
@@ -169,12 +186,12 @@ export async function bookFitting(input: {
   name: string;
   email: string;
 }): Promise<{ confirmation: string }> {
-  if (!isEmail(input.email)) throw new Error("Please check your email address.");
+  if (!isEmail(input.email)) throw new Error("تأكّد من بريدك الإلكتروني من فضلك.");
   return wait({ confirmation: "F-" + input.storeId.slice(0, 3).toUpperCase() + Math.floor(100 + Math.random() * 899) }, 700);
 }
 
 export async function placeOrder(lines: CartLine[], details: CheckoutDetails): Promise<Order> {
-  if (!lines.length) throw new Error("Your rail is empty.");
+  if (!lines.length) throw new Error("الراف فارغ.");
   const priced = lines.map((l) => {
     const p = products.find((x) => x.slug === l.slug)!;
     return { ...l, name: p.name, price: p.price };

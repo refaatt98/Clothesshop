@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router";
 import { GarmentFlat } from "../components/GarmentFlat";
 import { NotifyForm } from "../components/NotifyForm";
@@ -7,21 +7,21 @@ import { getChapters, getProducts } from "../lib/api";
 import { useAsync, useDocumentTitle } from "../lib/hooks";
 
 export default function Chapters() {
-  useDocumentTitle("Chapters");
+  useDocumentTitle("الفصول");
   const { data: chapters } = useAsync(getChapters, []);
   const { data: products } = useAsync(() => getProducts(), []);
 
   return (
     <>
       <PageHeader
-        trail={[{ label: "Home", to: "/" }, { label: "Chapters" }]}
-        kicker="Chapters, not seasons"
+        trail={[{ label: "الرئيسية", to: "/" }, { label: "الفصول" }]}
+        kicker="فصول، لا مواسم"
         title={
           <>
-            We publish clothes <em>like a book</em>
+            ننشر الملابس <em className="text-thread not-italic">كما يُنشر كتاب</em>
           </>
         }
-        intro="Instead of a spring and an autumn collection, we write chapters — each one drafted in a particular place, with its own palette and a handful of cloths. Old chapters stay on the rail until their numbered editions run out."
+        intro="بدل مجموعة للربيع وأخرى للخريف، نكتب فصولاً — كل فصل يُرسم في مكان بعينه، بلوحة ألوانه وحفنة من الأقمشة. الفصول القديمة تبقى على الراف حتى تنفد إصداراتها المرقّمة."
       />
 
       <div className="wrap space-y-6 py-14">
@@ -35,28 +35,28 @@ export default function Chapters() {
                 className={`relative grid overflow-hidden rounded-md ring-1 md:grid-cols-[200px_1fr_1.1fr] ${c.status === "current" ? "bg-ink text-paper ring-ink" : "bg-tissue ring-line"}`}
               >
                 {/* envelope flap */}
-                <div className={`flex items-center justify-between border-b border-dashed p-6 md:flex-col md:items-start md:border-b-0 md:border-r ${c.status === "current" ? "border-paper/20" : "border-ink/20"}`}>
-                  <span className="font-display text-[4.5rem] italic leading-none md:text-[6rem]">{c.numeral}</span>
+                <div className={`flex items-center justify-between border-b border-dashed p-6 md:flex-col md:items-start md:border-b-0 md:border-l ${c.status === "current" ? "border-paper/20" : "border-ink/20"}`}>
+                  <span className="font-display text-[4.5rem] leading-none md:text-[6rem]">{c.numeral}</span>
                   <span
                     className={`label rounded-full px-2.5 py-1 ${c.status === "current" ? "bg-thread text-tissue" : upcoming ? "bg-butter text-ink" : "ring-1 ring-current/30"}`}
                   >
-                    {c.status === "current" ? "On the rail now" : upcoming ? "Drafting now" : "Archive · still on sale"}
+                    {c.status === "current" ? "على الراف الآن" : upcoming ? "قيد الرسم الآن" : "أرشيف · ما زال معروضاً"}
                   </span>
                 </div>
                 <div className="p-6 md:p-8">
                   <p className={`label ${c.status === "current" ? "text-paper/60" : "text-ink-3"}`}>{c.season}</p>
-                  <h2 className="mt-2 font-display text-[2.4rem] leading-none md:text-[3rem]">{c.title}</h2>
+                  <h2 className="mt-2 font-display text-[2.4rem] leading-tight md:text-[3rem]">{c.title}</h2>
                   <p className={`mt-4 max-w-md ${c.status === "current" ? "text-paper/80" : "text-ink-2"}`}>{c.intro}</p>
                   <div className="mt-5 flex flex-wrap gap-2">
                     {c.moods.map((m) => (
                       <span key={m} className={`font-hand text-xl ${c.status === "current" ? "text-butter" : "text-chalk"}`}>
-                        #{m.replace(/\s/g, "")}
+                        #{m.replace(/\s/g, "_")}
                       </span>
                     ))}
                   </div>
                   {upcoming ? (
                     <div className="mt-6 max-w-md">
-                      <p className="mb-2 text-sm">Get the first fitting notes before anything goes on sale:</p>
+                      <p className="mb-2 text-sm">احصل على ملاحظات البروفة الأولى قبل أن يُعرض أي شيء للبيع:</p>
                       <NotifyForm />
                     </div>
                   ) : (
@@ -64,18 +64,18 @@ export default function Chapters() {
                       to={`/chapters/${c.slug}`}
                       className={`mt-6 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition hover:-translate-y-0.5 ${c.status === "current" ? "bg-paper text-ink" : "bg-ink text-paper"}`}
                     >
-                      Read the chapter · {pieces.length} pieces <ArrowRight className="h-4 w-4" />
+                      اقرأ الفصل · {pieces.length} قطع <ArrowLeft className="h-4 w-4" />
                     </Link>
                   )}
                 </div>
                 <div className="relative min-h-56 p-6">
                   {/* palette as cloth strips */}
-                  <div className="absolute inset-y-6 right-6 flex w-24 gap-1 md:w-32">
+                  <div className="absolute inset-y-6 left-6 flex w-24 gap-1 md:w-32">
                     {c.palette.map((p) => (
                       <span key={p.hex} className="flex-1 rounded-sm" style={{ background: p.hex }} title={p.name} />
                     ))}
                   </div>
-                  <div className="relative flex h-full items-end gap-2 pr-28 md:pr-40">
+                  <div className="relative flex h-full items-end gap-2 pl-28 md:pl-40">
                     {upcoming ? (
                       <div className="flex gap-2 opacity-70">
                         {(["dress", "camp-shirt"] as const).map((k) => (
@@ -88,9 +88,9 @@ export default function Chapters() {
                       ))
                     )}
                   </div>
-                  {upcoming && <HandNote className="absolute left-6 top-6 text-2xl">still in calico ✂</HandNote>}
+                  {upcoming && <HandNote className="absolute right-6 top-6 text-2xl">ما زال بالكاليكو ✂</HandNote>}
                 </div>
-                <span className={`label absolute bottom-3 left-6 hidden md:block ${c.status === "current" ? "text-paper/40" : "text-ink-3/60"}`}>chapter {i + 1} of {chapters.length}</span>
+                <span className={`label absolute bottom-3 right-6 hidden md:block ${c.status === "current" ? "text-paper/40" : "text-ink-3/60"}`}>الفصل {i + 1} من {chapters.length}</span>
               </article>
             </Reveal>
           );

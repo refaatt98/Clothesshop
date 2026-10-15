@@ -41,7 +41,7 @@ export function SectionHead({
           <span className="h-px w-8 bg-ink-3/50" />
           {kicker}
         </p>
-        <h2 className="mt-3 font-display text-[2.1rem] leading-[1.02] tracking-tight text-balance md:text-[3.2rem]">{title}</h2>
+        <h2 className="mt-3 font-display text-[2.1rem] leading-[1.25] text-balance md:text-[3.1rem]">{title}</h2>
       </div>
       {aside && <div className="md:max-w-sm">{aside}</div>}
     </div>
@@ -65,7 +65,7 @@ export function Button({ children, to, onClick, variant = "ink", type = "button"
   const styles = {
     ink: "bg-ink text-paper hover:bg-ink-2 hover:-translate-y-0.5 shadow-[0_1px_0_#0002,0_10px_24px_-14px_#1e1c19]",
     paper: "bg-tissue text-ink ring-1 ring-ink/15 hover:ring-ink/40 hover:-translate-y-0.5",
-    ghost: "text-ink underline decoration-ink/30 decoration-dashed underline-offset-[6px] hover:decoration-thread px-1 py-1 rounded-none",
+    ghost: "text-ink underline decoration-ink/30 decoration-dashed underline-offset-[8px] hover:decoration-thread px-1 py-1 rounded-none",
     thread: "bg-thread text-tissue hover:-translate-y-0.5 hover:bg-[#a9381f]",
   }[variant];
   const cls = `${base} ${styles} ${className}`;
@@ -110,8 +110,8 @@ export function Skeleton({ className = "" }: { className?: string }) {
 export function Meter({ value, max = 5, label }: { value: number; max?: number; label: string }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="label w-20 shrink-0 text-ink-3">{label}</span>
-      <div className="flex flex-1 gap-1" aria-label={`${label}: ${value} of ${max}`}>
+      <span className="label w-16 shrink-0 text-ink-3">{label}</span>
+      <div className="flex flex-1 gap-1" aria-label={`${label}: ${value} من ${max}`}>
         {Array.from({ length: max }).map((_, i) => (
           <span key={i} className={`h-2 flex-1 rounded-full ${i < value ? "bg-ink" : "bg-ink/10"}`} />
         ))}
@@ -122,7 +122,7 @@ export function Meter({ value, max = 5, label }: { value: number; max?: number; 
 
 export function Breadcrumbs({ trail }: { trail: { label: string; to?: string }[] }) {
   return (
-    <nav aria-label="Breadcrumb" className="label flex flex-wrap items-center gap-2 text-ink-3">
+    <nav aria-label="مسار التنقّل" className="label flex flex-wrap items-center gap-2 text-ink-3">
       {trail.map((t, i) => (
         <span key={t.label} className="flex items-center gap-2">
           {i > 0 && <span className="text-ink-3/50">/</span>}
@@ -159,7 +159,7 @@ export function PageHeader({
       <div className="wrap relative pb-12 pt-10 md:pb-16 md:pt-14">
         {trail && <Breadcrumbs trail={trail} />}
         <p className="label mt-6 text-thread">{kicker}</p>
-        <h1 className="mt-3 max-w-4xl font-display text-[2.6rem] leading-[0.98] tracking-tight text-balance md:text-[4.6rem]">{title}</h1>
+        <h1 className="mt-3 max-w-4xl font-display text-[2.6rem] leading-[1.2] text-balance md:text-[4.4rem]">{title}</h1>
         {intro && <div className="mt-5 max-w-2xl text-[1.05rem] leading-relaxed text-ink-2 md:text-lg">{intro}</div>}
         {children}
       </div>

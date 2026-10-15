@@ -27,7 +27,7 @@ export function PriceTag({
         <p className="font-mono text-[0.95rem] font-bold leading-none text-ink">{money(price)}</p>
         {edition && (
           <p className="mt-1 font-mono text-[0.58rem] uppercase tracking-wider text-ink-3">
-            No.{pad(edition.made)}/{edition.of}
+            رقم {pad(edition.made)}/{edition.of}
           </p>
         )}
       </div>

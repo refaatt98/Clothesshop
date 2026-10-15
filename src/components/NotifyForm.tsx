@@ -3,7 +3,7 @@ import { useState, type FormEvent } from "react";
 import { subscribeToLetters } from "../lib/api";
 
 /** Small inline email form — used for upcoming chapters and the newsletter. */
-export function NotifyForm({ cta = "Tell me first", dark = false }: { cta?: string; dark?: boolean }) {
+export function NotifyForm({ cta = "أخبروني أولاً", dark = false }: { cta?: string; dark?: boolean }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "busy" | "done" | "error">("idle");
   const [msg, setMsg] = useState("");
@@ -16,21 +16,21 @@ export function NotifyForm({ cta = "Tell me first", dark = false }: { cta?: stri
       setState("done");
     } catch (err) {
       setState("error");
-      setMsg(err instanceof Error ? err.message : "Try again");
+      setMsg(err instanceof Error ? err.message : "حاول مرة أخرى");
     }
   }
 
   if (state === "done")
     return (
       <p className={`flex items-center gap-2 ${dark ? "text-butter" : "text-ink"}`} role="status">
-        <Check className="h-4 w-4" /> Noted. You'll hear from us before anyone else.
+        <Check className="h-4 w-4" /> سجّلناك. ستسمع منّا قبل أي أحد.
       </p>
     );
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row">
       <label className="sr-only" htmlFor="notify-email">
-        Email
+        البريد الإلكتروني
       </label>
       <input
         id="notify-email"

@@ -18,22 +18,22 @@ function readOrder(state: unknown): Order | null {
 }
 
 export default function OrderDone() {
-  useDocumentTitle("Fitting slip");
+  useDocumentTitle("إيصال الطلب");
   const { state } = useLocation();
   const { money } = useShop();
   const order = readOrder(state);
 
-  if (!order) return <EmptyState title="No recent order." text="Your fitting slip appears here right after you check out." action={<Button to="/shop">Browse the shop</Button>} />;
+  if (!order) return <EmptyState title="لا طلب حديث." text="يظهر إيصال طلبك هنا مباشرة بعد إتمام الطلب." action={<Button to="/shop">تصفّح المتجر</Button>} />;
 
   return (
     <div className="wrap py-12 md:py-16">
       <div className="mx-auto max-w-2xl text-center">
-        <p className="label text-thread">Order received</p>
-        <h1 className="mt-3 font-display text-[2.6rem] leading-none md:text-[3.8rem]">
-          Thank you, <em>{order.details.name.split(" ")[0]}</em>.
+        <p className="label text-thread">استلمنا طلبك</p>
+        <h1 className="mt-3 font-display text-[2.6rem] leading-tight md:text-[3.8rem]">
+          شكراً لك، <em className="text-thread not-italic">{order.details.name.split(" ")[0]}</em>.
         </h1>
         <p className="mt-4 text-lg text-ink-2">
-          Your pieces are being pressed, numbered and folded in tissue. A copy of this slip is on its way to {order.details.email}.
+          قطعك الآن تُكوى وتُرقّم وتُطوى بورق الباترون. نسخة من هذا الإيصال في طريقها إلى {order.details.email}.
         </p>
       </div>
 
@@ -48,57 +48,57 @@ export default function OrderDone() {
         <div className="bg-tissue bg-ruled px-6 pb-8 pt-4 shadow-[0_30px_60px_-30px_#1e1c1966] md:px-10">
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-display text-2xl italic">Ourlet</p>
-              <p className="label text-ink-3">Fitting slip</p>
+              <p className="font-display text-2xl font-bold">أورليه</p>
+              <p className="label text-ink-3">إيصال الطلب</p>
             </div>
-            <div className="text-right font-mono text-sm">
+            <div className="text-left font-mono text-sm">
               <p className="font-bold">{order.number}</p>
               <p className="text-ink-3">{formatDate(order.placedAt)}</p>
             </div>
           </div>
-          <table className="mt-6 w-full font-mono text-sm">
+          <table className="mt-6 w-full text-sm">
             <tbody>
               {order.lines.map((l) => (
                 <tr key={l.key} className="align-top">
-                  <td className="py-1.5 pr-2">{l.qty}×</td>
+                  <td className="py-1.5 pl-2 font-mono">{l.qty}×</td>
                   <td className="py-1.5">
                     {l.name}
                     <span className="block text-xs text-ink-3">
                       {l.colorway} · {l.size}
                     </span>
                   </td>
-                  <td className="py-1.5 text-right">{money(l.price * l.qty)}</td>
+                  <td className="py-1.5 text-left font-mono">{money(l.price * l.qty)}</td>
                 </tr>
               ))}
               <tr className="border-t border-dashed border-ink/30">
                 <td />
-                <td className="pt-3">Shipping ({order.details.delivery})</td>
-                <td className="pt-3 text-right">{order.shipping ? money(order.shipping) : "free"}</td>
+                <td className="pt-3">الشحن ({order.details.delivery === "express" ? "سريع" : order.details.delivery === "collect" ? "استلام" : "عادي"})</td>
+                <td className="pt-3 text-left font-mono">{order.shipping ? money(order.shipping) : "مجاني"}</td>
               </tr>
               <tr>
                 <td />
-                <td className="py-1 font-bold">Total</td>
-                <td className="py-1 text-right font-bold">{money(order.total)}</td>
+                <td className="py-1 font-bold">الإجمالي</td>
+                <td className="py-1 text-left font-mono font-bold">{money(order.total)}</td>
               </tr>
             </tbody>
           </table>
           <div className="mt-6 grid gap-4 border-t border-dashed border-ink/30 pt-5 text-sm sm:grid-cols-2">
             <div>
-              <p className="label text-ink-3">Going to</p>
+              <p className="label text-ink-3">يُرسل إلى</p>
               <p className="mt-1">
                 {order.details.name}
                 <br />
-                {order.details.delivery === "collect" ? "Collect in shop" : `${order.details.address}, ${order.details.city}, ${order.details.country}`}
+                {order.details.delivery === "collect" ? "استلام من المحلّ" : `${order.details.address}، ${order.details.city}، ${order.details.country}`}
               </p>
             </div>
             <div>
-              <p className="label text-ink-3">Expected</p>
+              <p className="label text-ink-3">الوصول المتوقّع</p>
               <p className="mt-1">{formatDate(order.eta, { weekday: "long", day: "numeric", month: "long" })}</p>
             </div>
           </div>
-          {order.details.giftNote && <p className="mt-6 font-hand text-2xl text-chalk">“{order.details.giftNote}”</p>}
-          <p className="mt-6 font-hand text-2xl text-thread">pressed with care — the Amman workroom</p>
-          <RotatingStamp text="MENDED FOR LIFE · MENDED FOR LIFE · " className="absolute -right-4 -top-10 h-24 w-24 text-thread/70 md:-right-10 md:top-auto md:bottom-6">
+          {order.details.giftNote && <p className="mt-6 font-hand text-2xl text-chalk">«{order.details.giftNote}»</p>}
+          <p className="mt-6 font-hand text-2xl text-thread">كُويت بعناية — مشغل عمّان</p>
+          <RotatingStamp text="رفو مدى الحياة · رفو مدى الحياة · " className="absolute -right-4 -top-10 h-24 w-24 text-thread/70 md:-right-10 md:top-auto md:bottom-6">
             <span className="font-display text-xl italic text-thread">✓</span>
           </RotatingStamp>
         </div>
@@ -106,12 +106,12 @@ export default function OrderDone() {
 
       <div className="mt-12 flex flex-wrap justify-center gap-3">
         <Button onClick={() => window.print()} variant="paper">
-          <Printer className="h-4 w-4" /> Print slip
+          <Printer className="h-4 w-4" /> اطبع الإيصال
         </Button>
         <Button to="/journal/how-to-darn-a-jumper" variant="paper">
-          Learn to mend
+          تعلّم الرفو
         </Button>
-        <Button to="/shop">Keep browsing</Button>
+        <Button to="/shop">تابع التصفّح</Button>
       </div>
     </div>
   );

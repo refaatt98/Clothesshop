@@ -13,7 +13,7 @@ export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList) {
     setState((s) => ({ ...s, loading: true, error: null }));
     fn()
       .then((data) => live && setState({ data, loading: false, error: null }))
-      .catch((e: unknown) => live && setState({ data: null, loading: false, error: e instanceof Error ? e.message : "Something went wrong" }));
+      .catch((e: unknown) => live && setState({ data: null, loading: false, error: e instanceof Error ? e.message : "حدث خطأ ما" }));
     return () => {
       live = false;
     };
@@ -25,7 +25,7 @@ export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList) {
 
 export function useDocumentTitle(title: string) {
   useEffect(() => {
-    document.title = title ? `${title} — Ourlet` : "Ourlet — Clothes drafted by hand";
+    document.title = title ? `${title} — أورليه` : "أورليه — ملابس تُرسم باليد";
   }, [title]);
 }
 
@@ -50,6 +50,6 @@ export function useDebounced<T>(value: T, ms = 200) {
 }
 
 export const formatDate = (iso: string, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" }) =>
-  new Date(iso).toLocaleDateString("en-GB", opts);
+  new Date(iso).toLocaleDateString("ar-u-nu-latn", opts);
 
 export const pad = (n: number, len = 3) => String(n).padStart(len, "0");

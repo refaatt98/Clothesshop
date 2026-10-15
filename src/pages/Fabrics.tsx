@@ -9,15 +9,15 @@ import { useAsync, useDocumentTitle } from "../lib/hooks";
 import type { Fabric } from "../types";
 
 const filters: { id: string; label: string; test: (f: Fabric) => boolean }[] = [
-  { id: "all", label: "All eight", test: () => true },
-  { id: "warm", label: "For cold days", test: (f) => f.warmth >= 4 },
-  { id: "cool", label: "For heat", test: (f) => f.breath >= 5 },
-  { id: "drape", label: "Moves beautifully", test: (f) => f.drape >= 4 },
-  { id: "ages", label: "Ages best", test: (f) => f.age >= 5 },
+  { id: "all", label: "الثمانية كلها", test: () => true },
+  { id: "warm", label: "للأيام الباردة", test: (f) => f.warmth >= 4 },
+  { id: "cool", label: "للحرّ", test: (f) => f.breath >= 5 },
+  { id: "drape", label: "ينسدل بجمال", test: (f) => f.drape >= 4 },
+  { id: "ages", label: "يتعتّق أجمل", test: (f) => f.age >= 5 },
 ];
 
 export default function Fabrics() {
-  useDocumentTitle("Fabric Library");
+  useDocumentTitle("مكتبة الأقمشة");
   const { data: fabrics } = useAsync(getFabrics, []);
   const { data: products } = useAsync(() => getProducts(), []);
   const [filter, setFilter] = useState("all");
@@ -27,19 +27,19 @@ export default function Fabrics() {
   return (
     <>
       <PageHeader
-        trail={[{ label: "Home", to: "/" }, { label: "Fabric Library" }]}
-        kicker="The swatch drawer, opened fully"
+        trail={[{ label: "الرئيسية", to: "/" }, { label: "مكتبة الأقمشة" }]}
+        kicker="درج العيّنات، مفتوحاً بالكامل"
         title={
           <>
-            Eight cloths. <em>We know every mill by name.</em>
+            ثمانية أقمشة. <em className="text-thread not-italic">ونعرف كل مصنع باسمه.</em>
           </>
         }
-        intro="We'd rather know a few cloths deeply than many shallowly. Here's every fabric we cut, where it comes from, how it feels, and what we make from it."
+        intro="نفضّل أن نعرف أقمشة قليلة معرفة عميقة على أن نعرف كثيرها معرفة سطحية. هنا كل قماش نقصّه، من أين يأتي، كيف يُحَسّ، وماذا نصنع منه."
       />
 
       {/* weight ladder */}
       <section className="wrap py-12">
-        <p className="label text-ink-3">The weight ladder · grams per square metre</p>
+        <p className="label text-ink-3">سلّم الأوزان · غرام لكل متر مربّع</p>
         <div className="mt-5 space-y-2">
           {fabrics
             ? [...fabrics]
@@ -56,13 +56,13 @@ export default function Fabrics() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.9, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
                       />
-                      <span className="absolute inset-y-0 right-0 flex items-center font-mono text-xs text-ink-3">{f.gsm}</span>
+                      <span className="absolute inset-y-0 left-0 flex items-center font-mono text-xs text-ink-3">{f.gsm}</span>
                     </div>
                   </a>
                 ))
             : Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-5" />)}
         </div>
-        <HandNote className="mt-4 text-xl">light as a letter ← → heavy as a blanket</HandNote>
+        <HandNote className="mt-4 text-xl">خفيف كرسالة → ← ثقيل كبطّانية</HandNote>
       </section>
 
       <section className="wrap pb-10">
@@ -82,25 +82,25 @@ export default function Fabrics() {
                 <article id={f.id} className="scroll-mt-32 grid gap-8 rounded-md bg-tissue p-6 ring-1 ring-line md:grid-cols-[260px_1fr_260px] md:p-8">
                   <div className="relative">
                     <Swatch hex={f.hex} accent={f.accent} pattern={f.pattern} width={200} height={200} scale={2.6} className="w-full max-w-64" label={f.name} />
-                    <span className="label absolute -bottom-1 left-2 rotate-[-3deg] bg-[#f3e9d2] px-2 py-1 text-ink shadow ring-1 ring-[#d8c49c]">No. {String(i + 1).padStart(2, "0")}</span>
+                    <span className="label absolute -bottom-1 right-2 rotate-[3deg] bg-[#f3e9d2] px-2 py-1 text-ink shadow ring-1 ring-[#d8c49c]">رقم {String(i + 1).padStart(2, "0")}</span>
                   </div>
                   <div>
                     <p className="label text-thread">
                       {f.origin} · {f.mill}
                     </p>
-                    <h2 className="mt-2 font-display text-[2.2rem] leading-none">{f.name}</h2>
+                    <h2 className="mt-2 font-display text-[2.2rem] leading-tight">{f.name}</h2>
                     <p className="mt-1 font-mono text-sm text-ink-3">
-                      {f.fibre} · {f.gsm} gsm
+                      {f.fibre} · {f.gsm} غ/م²
                     </p>
                     <p className="mt-4 leading-relaxed text-ink-2">{f.story}</p>
-                    <p className="mt-3 font-hand text-2xl text-chalk">hand: “{f.hand.toLowerCase()}”</p>
+                    <p className="mt-3 font-hand text-2xl text-chalk">الملمس: «{f.hand}»</p>
                   </div>
                   <div className="space-y-2.5">
-                    <Meter label="Warmth" value={f.warmth} />
-                    <Meter label="Breath" value={f.breath} />
-                    <Meter label="Drape" value={f.drape} />
-                    <Meter label="Ages" value={f.age} />
-                    <p className="label pt-4 text-ink-3">Made into</p>
+                    <Meter label="الدفء" value={f.warmth} />
+                    <Meter label="التنفّس" value={f.breath} />
+                    <Meter label="الانسدال" value={f.drape} />
+                    <Meter label="العتق" value={f.age} />
+                    <p className="label pt-4 text-ink-3">صُنع منه</p>
                     <ul className="space-y-1.5">
                       {made.map((p) => (
                         <li key={p.slug}>
@@ -110,7 +110,7 @@ export default function Fabrics() {
                           </Link>
                         </li>
                       ))}
-                      {!made.length && <li className="text-sm text-ink-3">Coming in Chapter V</li>}
+                      {!made.length && <li className="text-sm text-ink-3">قريباً في الفصل الخامس</li>}
                     </ul>
                   </div>
                 </article>

@@ -12,11 +12,11 @@ import { useShop } from "../lib/store";
 import type { Category, ProductQuery } from "../types";
 
 const sorts: { id: NonNullable<ProductQuery["sort"]>; label: string }[] = [
-  { id: "featured", label: "As hung in the studio" },
-  { id: "new", label: "Newest first" },
-  { id: "price-asc", label: "Price, low to high" },
-  { id: "price-desc", label: "Price, high to low" },
-  { id: "slowest", label: "Slowest made first" },
+  { id: "featured", label: "كما عُلّقت في المشغل" },
+  { id: "new", label: "الأحدث أولاً" },
+  { id: "price-asc", label: "السعر: من الأقل" },
+  { id: "price-desc", label: "السعر: من الأعلى" },
+  { id: "slowest", label: "الأبطأ صنعاً أولاً" },
 ];
 const sizes = ["XS", "S", "M", "L", "XL", "XXL", "26", "28", "30", "32", "34", "36"];
 const PRICE_MAX = 700;
@@ -48,16 +48,16 @@ export default function Shop() {
   };
 
   const activeCount = ["chapter", "colour", "size", "max", "q"].filter((k) => params.get(k)).length;
-  const title = query.category && query.category !== "all" ? categoryNames[query.category] : "Everything on the rail";
-  useDocumentTitle(query.category && query.category !== "all" ? categoryNames[query.category] : "Shop");
+  const title = query.category && query.category !== "all" ? categoryNames[query.category] : "كل ما على الراف";
+  useDocumentTitle(query.category && query.category !== "all" ? categoryNames[query.category] : "المتجر");
 
   const chips = useMemo(() => {
     const c: { k: string; label: string }[] = [];
-    if (query.q) c.push({ k: "q", label: `“${query.q}”` });
+    if (query.q) c.push({ k: "q", label: `«${query.q}»` });
     if (query.chapter) c.push({ k: "chapter", label: chapters.find((x) => x.slug === query.chapter)?.title ?? query.chapter });
     if (query.colourFamily) c.push({ k: "colour", label: colourFamilies.find((x) => x.id === query.colourFamily)?.name ?? "" });
-    if (query.size) c.push({ k: "size", label: `Size ${query.size}` });
-    if (query.maxPrice) c.push({ k: "max", label: `Under ${money(query.maxPrice)}` });
+    if (query.size) c.push({ k: "size", label: `مقاس ${query.size}` });
+    if (query.maxPrice) c.push({ k: "max", label: `أقل من ${money(query.maxPrice)}` });
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, money]);
@@ -65,10 +65,10 @@ export default function Shop() {
   const Filters = (
     <div className="space-y-8">
       <div>
-        <p className="label text-ink-3">Chapter</p>
+        <p className="label text-ink-3">الفصل</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button onClick={() => set("chapter", null)} className={`rounded-full px-3 py-1.5 text-sm ring-1 transition ${!query.chapter ? "bg-ink text-paper ring-ink" : "ring-line hover:ring-ink/40"}`}>
-            All
+            الكل
           </button>
           {chapters
             .filter((c) => c.status !== "upcoming")
@@ -78,13 +78,13 @@ export default function Shop() {
                 onClick={() => set("chapter", query.chapter === c.slug ? null : c.slug)}
                 className={`rounded-full px-3 py-1.5 text-sm ring-1 transition ${query.chapter === c.slug ? "bg-ink text-paper ring-ink" : "ring-line hover:ring-ink/40"}`}
               >
-                <span className="font-display italic">{c.numeral}</span> {c.title}
+                <span className="font-display text-thread">{c.numeral}</span> {c.title}
               </button>
             ))}
         </div>
       </div>
       <div>
-        <p className="label text-ink-3">Colour</p>
+        <p className="label text-ink-3">اللون</p>
         <div className="mt-3 flex flex-wrap gap-3">
           {colourFamilies.map((f) => (
             <button
@@ -95,13 +95,13 @@ export default function Shop() {
               title={f.name}
             >
               <span className={`h-9 w-9 rounded-full ring-1 ring-ink/20 ring-offset-2 ring-offset-paper transition ${query.colourFamily === f.id ? "ring-2 ring-ink" : "group-hover:ring-ink/50"}`} style={{ background: f.hex }} />
-              <span className="max-w-16 text-center text-[0.68rem] leading-tight text-ink-3">{f.name}</span>
+              <span className="max-w-16 text-center text-[0.72rem] leading-tight text-ink-3">{f.name}</span>
             </button>
           ))}
         </div>
       </div>
       <div>
-        <p className="label text-ink-3">Size in stock</p>
+        <p className="label text-ink-3">المقاس المتوفّر</p>
         <div className="mt-3 flex flex-wrap gap-1.5">
           {sizes.map((s) => (
             <button
@@ -117,7 +117,7 @@ export default function Shop() {
       <div>
         <div className="flex items-baseline justify-between">
           <label htmlFor="max-price" className="label text-ink-3">
-            Up to
+            حتى
           </label>
           <span className="font-mono text-sm">{money(query.maxPrice ?? PRICE_MAX)}</span>
         </div>
@@ -133,8 +133,8 @@ export default function Shop() {
         />
       </div>
       <Link to="/fit-guide" className="block rounded-md bg-paper-2 p-4 text-sm text-ink-2 ring-1 ring-line hover:ring-ink/30">
-        <HandNote className="text-xl" rotate={-2}>between sizes?</HandNote>
-        <span className="mt-1 block">Our fit guide suggests a size for each cut →</span>
+        <HandNote className="text-xl" rotate={-2}>بين مقاسين؟</HandNote>
+        <span className="mt-1 block">دليل المقاسات يقترح مقاساً لكل قصّة ←</span>
       </Link>
     </div>
   );
@@ -143,13 +143,13 @@ export default function Shop() {
     <>
       <header className="border-b border-line">
         <div className="wrap pb-8 pt-8 md:pt-10">
-          <Breadcrumbs trail={[{ label: "Home", to: "/" }, { label: "Shop", to: "/shop" }, ...(query.category !== "all" ? [{ label: title }] : [])]} />
+          <Breadcrumbs trail={[{ label: "الرئيسية", to: "/" }, { label: "المتجر", to: "/shop" }, ...(query.category !== "all" ? [{ label: title }] : [])]} />
           <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <h1 className="font-display text-[2.8rem] leading-[0.95] tracking-tight md:text-[4.4rem]">
+            <h1 className="font-display text-[2.8rem] leading-[1.2] md:text-[4.4rem]">
               {title}
-              <sup className="ml-2 align-super font-mono text-base text-thread">{data?.length ?? "…"}</sup>
+              <sup className="ms-2 align-super font-mono text-base text-thread">{data?.length ?? "…"}</sup>
             </h1>
-            <p className="max-w-sm text-ink-2">Numbered pieces in small editions. When an edition is gone, it's gone — then it's on the mending list forever.</p>
+            <p className="max-w-sm text-ink-2">قطع مرقّمة بإصدارات صغيرة. حين ينفد الإصدار، ينفد — ثم يبقى على قائمة الرفو إلى الأبد.</p>
           </div>
 
           {/* envelope tabs */}
@@ -162,7 +162,7 @@ export default function Shop() {
                   onClick={() => set("category", c)}
                   className={`relative shrink-0 rounded-t-md px-4 pb-2.5 pt-3 text-sm transition ${active ? "bg-ink text-paper" : "bg-paper-2 text-ink-2 hover:bg-paper-3"}`}
                 >
-                  {c === "all" ? "All" : categoryNames[c]}
+                  {c === "all" ? "الكل" : categoryNames[c]}
                 </button>
               );
             })}
@@ -175,7 +175,7 @@ export default function Shop() {
         {/* toolbar */}
         <div className="flex flex-wrap items-center gap-3">
           <button onClick={() => setFiltersOpen(true)} className="flex items-center gap-2 rounded-full px-4 py-2 text-sm ring-1 ring-ink/20 lg:hidden">
-            <SlidersHorizontal className="h-4 w-4" /> Filters {activeCount > 0 && <span className="rounded-full bg-thread px-1.5 font-mono text-xs text-tissue">{activeCount}</span>}
+            <SlidersHorizontal className="h-4 w-4" /> الفلاتر {activeCount > 0 && <span className="rounded-full bg-thread px-1.5 font-mono text-xs text-tissue">{activeCount}</span>}
           </button>
           <div className="flex flex-wrap gap-2">
             {chips.map((c) => (
@@ -185,13 +185,13 @@ export default function Shop() {
             ))}
             {chips.length > 1 && (
               <button onClick={() => setParams(query.category !== "all" ? { category: query.category! } : {})} className="px-2 text-sm underline decoration-dashed underline-offset-4">
-                Clear all
+                مسح الكل
               </button>
             )}
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ms-auto flex items-center gap-2">
             <label htmlFor="sort" className="sr-only">
-              Sort
+              الترتيب
             </label>
             <select id="sort" value={query.sort} onChange={(e) => set("sort", e.target.value === "featured" ? null : e.target.value)} className="rounded-full bg-tissue px-3 py-2 text-sm ring-1 ring-line outline-none focus:ring-thread">
               {sorts.map((s) => (
@@ -200,12 +200,12 @@ export default function Shop() {
                 </option>
               ))}
             </select>
-            <div className="hidden rounded-full p-1 ring-1 ring-line sm:flex" role="group" aria-label="View">
+            <div className="hidden rounded-full p-1 ring-1 ring-line sm:flex" role="group" aria-label="طريقة العرض">
               <button onClick={() => setView("rail")} className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs ${view === "rail" ? "bg-ink text-paper" : ""}`} aria-pressed={view === "rail"}>
-                <Rows3 className="h-3.5 w-3.5" /> On hangers
+                <Rows3 className="h-3.5 w-3.5" /> على الشمّاعات
               </button>
               <button onClick={() => setView("flat")} className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs ${view === "flat" ? "bg-ink text-paper" : ""}`} aria-pressed={view === "flat"}>
-                <LayoutGrid className="h-3.5 w-3.5" /> Laid flat
+                <LayoutGrid className="h-3.5 w-3.5" /> ممدودة
               </button>
             </div>
           </div>
@@ -225,13 +225,13 @@ export default function Shop() {
               </div>
             ) : data && data.length === 0 ? (
               <EmptyState
-                title="Nothing on this rail."
-                text="No pieces match all of those at once. Loosen a filter or two — or tell us what you were hoping for."
+                title="لا شيء على هذا الراف."
+                text="لا قطع تطابق كل هذه الشروط معاً. خفّف فلتراً أو اثنين — أو أخبرنا عمّا كنت تبحث."
                 action={
                   <div className="flex gap-3">
-                    <Button onClick={() => setParams({})}>Show everything</Button>
+                    <Button onClick={() => setParams({})}>اعرض كل شيء</Button>
                     <Button to="/contact" variant="paper">
-                      Request a piece
+                      اطلب قطعة
                     </Button>
                   </div>
                 }
@@ -245,12 +245,12 @@ export default function Shop() {
                 ))}
                 {data && data.length > 4 && (
                   <div className="col-span-2 row-start-3 flex flex-col justify-between rounded-md bg-ink p-6 text-paper md:col-span-1">
-                    <p className="label text-paper/60">A note from the cutting table</p>
-                    <p className="my-6 font-display text-[1.6rem] leading-tight">
-                      “Every hem has 6 cm left inside, so it can be let down in ten years.”
+                    <p className="label text-paper/60">ملاحظة من طاولة القصّ</p>
+                    <p className="my-6 font-display text-[1.7rem] leading-snug">
+                      «في كل حاشية 6 سم مخبّأة في الداخل، لتُطال بعد عشر سنوات.»
                     </p>
                     <Link to="/mending" className="font-hand text-2xl text-butter hover:underline">
-                      read about mending for life →
+                      اقرأ عن الرفو مدى الحياة ←
                     </Link>
                   </div>
                 )}
@@ -272,18 +272,18 @@ export default function Shop() {
               exit={{ y: "100%" }}
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               role="dialog"
-              aria-label="Filters"
+              aria-label="الفلاتر"
             >
               <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-ink/20" />
               <div className="mb-6 flex items-center justify-between">
-                <p className="font-display text-2xl">Filter the rail</p>
-                <button onClick={() => setFiltersOpen(false)} className="grid h-10 w-10 place-items-center rounded-full ring-1 ring-line" aria-label="Close filters">
+                <p className="font-display text-2xl">صفِّ الراف</p>
+                <button onClick={() => setFiltersOpen(false)} className="grid h-10 w-10 place-items-center rounded-full ring-1 ring-line" aria-label="إغلاق الفلاتر">
                   <X className="h-4 w-4" />
                 </button>
               </div>
               {Filters}
               <Button onClick={() => setFiltersOpen(false)} className="mt-8 w-full">
-                Show {data?.length ?? 0} pieces
+                اعرض {data?.length ?? 0} قطعة
               </Button>
             </motion.div>
           </>

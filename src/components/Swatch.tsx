@@ -38,7 +38,7 @@ export function Swatch({
   const uid = useId().replace(/:/g, "");
   const d = pinkedPath(width, height);
   return (
-    <svg viewBox={`-2 -2 ${width + 8} ${height + 8}`} className={className} role="img" aria-label={label ?? "fabric swatch"}>
+    <svg viewBox={`-2 -2 ${width + 8} ${height + 8}`} className={className} role="img" aria-label={label ?? "عيّنة قماش"}>
       <defs>
         <FabricPatternDef id={`s-${uid}`} hex={hex} accent={accent} pattern={pattern} scale={scale} />
       </defs>

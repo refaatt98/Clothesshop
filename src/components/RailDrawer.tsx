@@ -14,16 +14,16 @@ export function StitchProgress({ value }: { value: number }) {
     <div className="relative h-3" aria-hidden>
       <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 border-t border-dashed border-ink/25" />
       <motion.div
-        className="absolute left-0 top-1/2 h-[2px] -translate-y-1/2"
+        className="absolute right-0 top-1/2 h-[2px] -translate-y-1/2"
         style={{ backgroundImage: "repeating-linear-gradient(to right, #c2432e 0 7px, transparent 7px 11px)" }}
         initial={{ width: 0 }}
         animate={{ width: `${pct * 100}%` }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       />
       <motion.span
-        className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-thread bg-paper"
-        initial={{ left: 0 }}
-        animate={{ left: `${pct * 100}%` }}
+        className="absolute top-1/2 h-3 w-3 translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-thread bg-paper"
+        initial={{ right: 0 }}
+        animate={{ right: `${pct * 100}%` }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       />
     </div>
@@ -58,21 +58,21 @@ export function RailDrawer() {
           <motion.aside
             role="dialog"
             aria-modal="true"
-            aria-label="Your rail"
-            className="fixed inset-y-0 right-0 z-[90] flex w-full max-w-[460px] flex-col bg-paper shadow-[-30px_0_60px_-30px_#1e1c1966]"
-            initial={{ x: "100%" }}
+            aria-label="الراف الخاص بك"
+            className="fixed inset-y-0 left-0 z-[90] flex w-full max-w-[460px] flex-col bg-paper shadow-[30px_0_60px_-30px_#1e1c1966]"
+            initial={{ x: "-100%" }}
             animate={{ x: 0 }}
-            exit={{ x: "100%" }}
+            exit={{ x: "-100%" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="flex items-center justify-between border-b border-line px-5 py-4">
               <div>
-                <p className="label text-ink-3">Your rail</p>
+                <p className="label text-ink-3">الراف الخاص بك</p>
                 <p className="font-display text-2xl">
-                  {railCount} {railCount === 1 ? "piece" : "pieces"} hanging
+                  {railCount === 0 ? "لا شيء معلّق" : railCount === 1 ? "قطعة واحدة معلّقة" : railCount === 2 ? "قطعتان معلّقتان" : `${railCount} قطع معلّقة`}
                 </p>
               </div>
-              <button onClick={() => setRailOpen(false)} className="grid h-11 w-11 place-items-center rounded-full ring-1 ring-line hover:bg-paper-2" aria-label="Close rail">
+              <button onClick={() => setRailOpen(false)} className="grid h-11 w-11 place-items-center rounded-full ring-1 ring-line hover:bg-paper-2" aria-label="إغلاق الراف">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -85,14 +85,14 @@ export function RailDrawer() {
             {lines.length === 0 ? (
               <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
                 <RailIcon className="h-14 w-14 text-ink-3" />
-                <p className="mt-4 font-display text-2xl">An empty rail.</p>
-                <p className="mt-2 text-ink-2">Every piece here is numbered and made in small runs. Hang something you'll wear for years.</p>
+                <p className="mt-4 font-display text-2xl">راف فارغ.</p>
+                <p className="mt-2 text-ink-2">كل قطعة هنا مرقّمة وتُصنع بكميات صغيرة. علّق شيئاً ستلبسه لسنوات.</p>
                 <div className="mt-6 flex gap-3">
                   <Link to="/shop" onClick={() => setRailOpen(false)} className="rounded-full bg-ink px-5 py-2.5 text-sm text-paper">
-                    Browse the shop
+                    تصفّح المتجر
                   </Link>
                   <Link to="/dressing-table" onClick={() => setRailOpen(false)} className="rounded-full px-5 py-2.5 text-sm ring-1 ring-ink/20">
-                    Compose a look
+                    نسّق إطلالة
                   </Link>
                 </div>
               </div>
@@ -102,10 +102,10 @@ export function RailDrawer() {
                   <p className="text-sm text-ink-2">
                     {toFree > 0 ? (
                       <>
-                        <span className="font-semibold text-ink">{money(toFree)}</span> more and we'll ship it free, duties included.
+                        بقي <span className="font-semibold text-ink">{money(toFree)}</span> ونشحنه لك مجاناً، مع الجمارك.
                       </>
                     ) : (
-                      <>Shipping is on us. Duties too.</>
+                      <>الشحن علينا. والجمارك أيضاً.</>
                     )}
                   </p>
                   <div className="mt-2">
@@ -120,9 +120,9 @@ export function RailDrawer() {
                         <motion.li
                           key={line.key}
                           layout
-                          initial={{ opacity: 0, y: -20, rotate: -3 }}
+                          initial={{ opacity: 0, y: -20, rotate: 3 }}
                           animate={{ opacity: 1, y: 0, rotate: 0 }}
-                          exit={{ opacity: 0, x: 60 }}
+                          exit={{ opacity: 0, x: -60 }}
                           className="flex gap-4 rounded-md bg-tissue p-3 ring-1 ring-line"
                         >
                           <Link to={`/piece/${product.slug}`} onClick={() => setRailOpen(false)} className="flex w-20 shrink-0 flex-col items-center rounded bg-mat p-1.5">
@@ -134,20 +134,20 @@ export function RailDrawer() {
                               <Link to={`/piece/${product.slug}`} onClick={() => setRailOpen(false)} className="font-display text-lg leading-tight hover:text-thread">
                                 {product.name}
                               </Link>
-                              <button onClick={() => removeFromRail(line.key)} className="-mr-1 -mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-3 hover:bg-paper-2 hover:text-ink" aria-label={`Remove ${product.name}`}>
+                              <button onClick={() => removeFromRail(line.key)} className="-me-1 -mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-3 hover:bg-paper-2 hover:text-ink" aria-label={`إزالة ${product.name}`}>
                                 <X className="h-4 w-4" />
                               </button>
                             </div>
                             <p className="label mt-1 text-ink-3">
-                              {line.colorway} · size {line.size}
+                              {line.colorway} · مقاس {line.size}
                             </p>
                             <div className="mt-auto flex items-center justify-between pt-3">
                               <div className="flex items-center rounded-full ring-1 ring-line">
-                                <button onClick={() => setQty(line.key, line.qty - 1)} className="grid h-8 w-8 place-items-center" aria-label="One fewer">
+                                <button onClick={() => setQty(line.key, line.qty - 1)} className="grid h-8 w-8 place-items-center" aria-label="أنقص واحدة">
                                   <Minus className="h-3.5 w-3.5" />
                                 </button>
                                 <span className="w-6 text-center font-mono text-sm">{line.qty}</span>
-                                <button onClick={() => setQty(line.key, line.qty + 1)} className="grid h-8 w-8 place-items-center" aria-label="One more">
+                                <button onClick={() => setQty(line.key, line.qty + 1)} className="grid h-8 w-8 place-items-center" aria-label="زِد واحدة">
                                   <Plus className="h-3.5 w-3.5" />
                                 </button>
                               </div>
@@ -161,10 +161,10 @@ export function RailDrawer() {
                 </ul>
                 <div className="border-t border-line bg-tissue px-5 pb-6 pt-4">
                   <div className="flex items-baseline justify-between">
-                    <span className="text-ink-2">Subtotal</span>
+                    <span className="text-ink-2">المجموع</span>
                     <span className="font-mono text-xl font-bold">{money(subtotal)}</span>
                   </div>
-                  <p className="mt-1 font-hand text-xl text-chalk">≈ {hours} hours of somebody's careful work</p>
+                  <p className="mt-1 font-hand text-xl text-chalk">≈ {hours} ساعة من عمل يدٍ متأنّية</p>
                   <button
                     onClick={() => {
                       setRailOpen(false);
@@ -172,10 +172,10 @@ export function RailDrawer() {
                     }}
                     className="mt-4 w-full rounded-full bg-ink py-3.5 font-medium text-paper transition hover:bg-ink-2"
                   >
-                    Go to the fitting room — checkout
+                    إلى غرفة القياس — إتمام الطلب
                   </button>
                   <Link to="/rail" onClick={() => setRailOpen(false)} className="mt-3 block text-center text-sm underline decoration-dashed underline-offset-4 hover:text-thread">
-                    View full rail
+                    عرض الراف كاملاً
                   </Link>
                 </div>
               </>

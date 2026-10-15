@@ -13,7 +13,7 @@ export default function Chapter() {
   const { data: c, loading } = useAsync(() => getChapter(slug), [slug]);
   const { data: all } = useAsync(getChapters, []);
   const { data: pieces } = useAsync(() => getProducts({ chapter: slug }), [slug]);
-  useDocumentTitle(c ? `Chapter ${c.numeral}: ${c.title}` : "Chapter");
+  useDocumentTitle(c ? `الفصل ${c.numeral}: ${c.title}` : "فصل");
 
   if (loading && !c)
     return (
@@ -21,7 +21,7 @@ export default function Chapter() {
         <Skeleton className="h-96" />
       </div>
     );
-  if (!c) return <EmptyState title="No such chapter." text="That chapter isn't in the book." action={<Button to="/chapters">All chapters</Button>} />;
+  if (!c) return <EmptyState title="لا يوجد فصل كهذا." text="هذا الفصل ليس في الكتاب." action={<Button to="/chapters">كل الفصول</Button>} />;
 
   const idx = all?.findIndex((x) => x.slug === c.slug) ?? -1;
   const prev = all && idx > 0 ? all[idx - 1] : null;
@@ -38,16 +38,16 @@ export default function Chapter() {
         </div>
         <div className="wrap relative grid gap-8 py-12 md:grid-cols-[auto_1fr] md:items-end md:py-16">
           <motion.span
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="font-display text-[8rem] italic leading-[0.75] text-thread md:text-[14rem]"
+            className="font-display text-[8rem] leading-[0.9] text-thread md:text-[13rem]"
           >
             {c.numeral}
           </motion.span>
           <div>
-            <Breadcrumbs trail={[{ label: "Chapters", to: "/chapters" }, { label: c.title }]} />
+            <Breadcrumbs trail={[{ label: "الفصول", to: "/chapters" }, { label: c.title }]} />
             <p className="label mt-5 text-ink-3">{c.season}</p>
-            <h1 className="mt-2 font-display text-[3rem] leading-[0.95] md:text-[5rem]">{c.title}</h1>
+            <h1 className="mt-2 font-display text-[3rem] leading-tight md:text-[5rem]">{c.title}</h1>
             <p className="mt-4 max-w-2xl text-lg text-ink-2">{c.intro}</p>
           </div>
         </div>
@@ -56,20 +56,20 @@ export default function Chapter() {
       <section className="wrap grid gap-12 py-16 lg:grid-cols-[1.4fr_1fr]">
         <div className="columns-1 gap-10 text-[1.05rem] leading-relaxed text-ink-2 md:columns-2">
           {c.story.map((para, i) => (
-            <p key={i} className={`mb-5 break-inside-avoid ${i === 0 ? "first-letter:float-left first-letter:mr-2 first-letter:font-display first-letter:text-[4.2rem] first-letter:leading-[0.8] first-letter:text-ink" : ""}`}>
+            <p key={i} className={`mb-5 break-inside-avoid ${i === 0 ? "first-letter:font-display first-letter:text-[1.6rem] first-letter:text-thread" : ""}`}>
               {para}
             </p>
           ))}
         </div>
         <div className="space-y-6">
           <div className="relative rounded-md bg-tissue p-6 ring-1 ring-line">
-            <PinHead className="absolute -top-3 right-6 h-7 w-7" />
-            <p className="label text-ink-3">Palette card</p>
+            <PinHead className="absolute -top-3 left-6 h-7 w-7" />
+            <p className="label text-ink-3">بطاقة الألوان</p>
             <div className="mt-4 grid grid-cols-5 gap-2">
               {c.palette.map((p) => (
                 <div key={p.hex}>
                   <div className="grid aspect-[3/5] place-items-end rounded-sm p-1 ring-1 ring-ink/10" style={{ background: p.hex }}>
-                    <span className={`font-mono text-[0.55rem] ${isDark(p.hex) ? "text-paper/80" : "text-ink/60"}`}>{p.hex.slice(1)}</span>
+                    <span dir="ltr" className={`font-mono text-[0.55rem] ${isDark(p.hex) ? "text-paper/80" : "text-ink/60"}`}>{p.hex.slice(1)}</span>
                   </div>
                   <p className="mt-1 text-[0.7rem] leading-tight text-ink-2">{p.name}</p>
                 </div>
@@ -83,23 +83,23 @@ export default function Chapter() {
               </span>
             ))}
           </div>
-          <blockquote className="border-l-2 border-thread pl-5 font-display text-[1.7rem] italic leading-snug">“{c.note}”</blockquote>
+          <blockquote className="border-s-2 border-thread ps-5 font-display text-[1.8rem] leading-snug">«{c.note}»</blockquote>
         </div>
       </section>
 
       <section className="wrap py-10">
         {c.status === "upcoming" ? (
           <div className="rounded-md bg-ink p-8 text-paper md:p-12">
-            <p className="label text-paper/60">Not on sale yet</p>
-            <h2 className="mt-3 font-display text-[2.4rem] leading-none">This chapter is still paper.</h2>
-            <p className="mt-3 max-w-lg text-paper/75">Leave your email and we'll send fitting notes and first looks before anything is sewn in its final cloth.</p>
+            <p className="label text-paper/60">ليس للبيع بعد</p>
+            <h2 className="mt-3 font-display text-[2.4rem] leading-tight">هذا الفصل ما زال ورقاً.</h2>
+            <p className="mt-3 max-w-lg text-paper/75">اترك بريدك وسنرسل لك ملاحظات البروفات والإطلالات الأولى قبل أن يُخاط أي شيء بقماشه النهائي.</p>
             <div className="mt-6 max-w-lg">
               <NotifyForm dark />
             </div>
           </div>
         ) : (
           <>
-            <SectionHead kicker={`${pieces?.length ?? "…"} pieces`} title={<>Everything in <em>{c.title}</em></>} />
+            <SectionHead kicker={`${pieces?.length ?? "…"} قطع`} title={<>كل ما في <em className="text-thread not-italic">{c.title}</em></>} />
             <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
               {pieces?.map((p, i) => (
                 <Reveal key={p.slug} delay={i * 0.04}>
@@ -112,26 +112,26 @@ export default function Chapter() {
         )}
       </section>
 
-      <nav className="wrap mt-10 grid gap-4 border-t border-dashed border-ink/20 pt-8 sm:grid-cols-2" aria-label="Chapter navigation">
+      <nav className="wrap mt-10 grid gap-4 border-t border-dashed border-ink/20 pt-8 sm:grid-cols-2" aria-label="التنقّل بين الفصول">
         {prev ? (
           <Link to={`/chapters/${prev.slug}`} className="group rounded-md p-4 ring-1 ring-line hover:ring-ink/30">
             <span className="label flex items-center gap-1 text-ink-3">
-              <ArrowLeft className="h-3.5 w-3.5" /> Previous
+              <ArrowRight className="h-3.5 w-3.5" /> السابق
             </span>
             <span className="mt-1 block font-display text-2xl group-hover:text-thread">
-              <em>{prev.numeral}</em> {prev.title}
+              <span className="text-thread">{prev.numeral}</span> {prev.title}
             </span>
           </Link>
         ) : (
           <span />
         )}
         {next && (
-          <Link to={`/chapters/${next.slug}`} className="group rounded-md p-4 text-right ring-1 ring-line hover:ring-ink/30">
+          <Link to={`/chapters/${next.slug}`} className="group rounded-md p-4 text-left ring-1 ring-line hover:ring-ink/30">
             <span className="label flex items-center justify-end gap-1 text-ink-3">
-              Next <ArrowRight className="h-3.5 w-3.5" />
+              التالي <ArrowLeft className="h-3.5 w-3.5" />
             </span>
             <span className="mt-1 block font-display text-2xl group-hover:text-thread">
-              <em>{next.numeral}</em> {next.title}
+              <span className="text-thread">{next.numeral}</span> {next.title}
             </span>
           </Link>
         )}

@@ -10,24 +10,24 @@ import type { Category, Product } from "../types";
 
 type Slot = "outer" | "top" | "bottom" | "finish";
 
-const shortLabel: Record<Slot, string> = { outer: "Outer", top: "Top", bottom: "Bottom", finish: "Finish" };
+const shortLabel: Record<Slot, string> = { outer: "خارجي", top: "علوي", bottom: "سفلي", finish: "لمسة" };
 
 const slotInfo: Record<Slot, { label: string; cats: Category[]; pos: string; rot: number }> = {
-  outer: { label: "Outer layer", cats: ["outerwear"], pos: "left-[2%] top-[6%] w-[34%]", rot: -7 },
-  top: { label: "Top", cats: ["shirts", "knitwear", "tees", "dresses"], pos: "left-[33%] top-[3%] w-[30%]", rot: 4 },
-  bottom: { label: "Bottom", cats: ["trousers", "skirts"], pos: "left-[63%] top-[9%] w-[30%]", rot: -3 },
-  finish: { label: "To finish", cats: ["accessories"], pos: "left-[38%] top-[50%] w-[22%]", rot: 12 },
+  outer: { label: "الطبقة الخارجية", cats: ["outerwear"], pos: "left-[2%] top-[6%] w-[34%]", rot: -7 },
+  top: { label: "القطعة العلوية", cats: ["shirts", "knitwear", "tees", "dresses"], pos: "left-[33%] top-[3%] w-[30%]", rot: 4 },
+  bottom: { label: "القطعة السفلية", cats: ["trousers", "skirts"], pos: "left-[63%] top-[9%] w-[30%]", rot: -3 },
+  finish: { label: "لمسة أخيرة", cats: ["accessories"], pos: "left-[38%] top-[50%] w-[22%]", rot: 12 },
 };
 const slots = Object.keys(slotInfo) as Slot[];
 
 const tables = [
-  { id: "oak", name: "Oak", bg: "#e4d3b6" },
-  { id: "linen", name: "Linen", bg: "#ece4d4" },
-  { id: "chalk", name: "Chalk", bg: "#f3f0ea" },
-  { id: "slate", name: "Slate", bg: "#d6d3cc" },
+  { id: "oak", name: "سنديان", bg: "#e4d3b6" },
+  { id: "linen", name: "كتّان", bg: "#ece4d4" },
+  { id: "chalk", name: "طباشير", bg: "#f3f0ea" },
+  { id: "slate", name: "أردواز", bg: "#d6d3cc" },
 ];
 
-const lookNames = ["Ferry to work", "Long lunch", "Sunday market", "First frost", "Studio day", "Late train", "Harbour walk", "Reading room"];
+const lookNames = ["معدّية إلى العمل", "غداء طويل", "سوق الجمعة", "أول صقيع", "يوم في المشغل", "القطار الأخير", "مشوار الميناء", "غرفة القراءة"];
 
 interface Pick {
   slug: string;
@@ -37,7 +37,7 @@ interface Pick {
 const slotOf = (p: Product): Slot => slots.find((s) => slotInfo[s].cats.includes(p.category))!;
 
 export default function DressingTable() {
-  useDocumentTitle("Dressing Table");
+  useDocumentTitle("طاولة التنسيق");
   const { catalog, addToRail, money, saveLook, toast, setRailOpen } = useShop();
   const [params] = useSearchParams();
   const [picks, setPicks] = useState<Partial<Record<Slot, Pick>>>({});
@@ -116,27 +116,27 @@ export default function DressingTable() {
       if (product.soldOutSizes?.includes(size)) return skipped.push(product.name);
       addToRail({ slug: product.slug, colorway: product.colorways[pick.cw].name, size });
     });
-    toast(`${shown.length - skipped.length} pieces hung on your rail`, skipped.length ? `${skipped.join(", ")} — sold out in your size` : `Look total ${money(total)}`);
+    toast(`عُلّقت ${shown.length - skipped.length} قطع على الراف`, skipped.length ? `${skipped.join("، ")} — نفد مقاسك` : `مجموع الإطلالة ${money(total)}`);
     setRailOpen(true);
   };
 
   const save = () => {
     const name = `${lookNames[Math.floor(Math.random() * lookNames.length)]}`;
     saveLook(name, shown.map((i) => i.product.slug));
-    toast("Look saved to your pinboard", `“${name}”`);
+    toast("حُفظت الإطلالة في لوحتك", `«${name}»`);
   };
 
   return (
     <>
       <PageHeader
-        trail={[{ label: "Home", to: "/" }, { label: "Dressing Table" }]}
-        kicker="Compose a look"
+        trail={[{ label: "الرئيسية", to: "/" }, { label: "طاولة التنسيق" }]}
+        kicker="نسّق إطلالة"
         title={
           <>
-            The <em>Dressing Table</em>
+            طاولة <em className="text-thread not-italic">التنسيق</em>
           </>
         }
-        intro="This is how we style in the studio: everything laid out flat on the big table. Choose a piece for each layer, swap colours, and drag things around until it feels right."
+        intro="هكذا ننسّق في المشغل: كل شيء ممدود على الطاولة الكبيرة. اختر قطعة لكل طبقة، بدّل الألوان، واسحب القطع وحرّكها حتى تشعر أنها صحيحة."
       />
 
       <section className="wrap grid gap-8 py-10 lg:grid-cols-[1fr_400px]">
@@ -144,7 +144,7 @@ export default function DressingTable() {
         <div>
           <div ref={tableRef} className="relative aspect-[5/4] overflow-hidden rounded-[10px] ring-1 ring-line transition-colors duration-700 md:aspect-[16/11]" style={{ background: table.bg }}>
             <div className="pointer-events-none absolute inset-0 bg-dots opacity-50" />
-            <span className="label absolute left-4 top-3 text-ink-3">table no. 2 · {table.name.toLowerCase()}</span>
+            <span className="label absolute right-4 top-3 text-ink-3">الطاولة رقم 2 · {table.name}</span>
             <AnimatePresence>
               {shown.map(({ slot, pick, product }) => {
                 const c = product.colorways[pick.cw];
@@ -171,21 +171,21 @@ export default function DressingTable() {
             </AnimatePresence>
             {shown.length === 0 && (
               <div className="absolute inset-0 grid place-items-center">
-                <HandNote className="text-3xl">an empty table. pick something →</HandNote>
+                <HandNote className="text-3xl">طاولة فارغة. اختر شيئاً ←</HandNote>
               </div>
             )}
-            <HandNote className="absolute bottom-3 right-4 hidden text-xl sm:block">drag pieces to rearrange</HandNote>
+            <HandNote className="absolute bottom-3 left-4 hidden text-xl sm:block">اسحب القطع لترتيبها</HandNote>
           </div>
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="label text-ink-3">Table</span>
+              <span className="label text-ink-3">الطاولة</span>
               {tables.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setTable(t)}
                   title={t.name}
-                  aria-label={`${t.name} table`}
+                  aria-label={`طاولة ${t.name}`}
                   aria-pressed={t.id === table.id}
                   className={`h-7 w-7 rounded-full ring-1 ring-ink/20 ring-offset-2 ring-offset-paper ${t.id === table.id ? "ring-2 ring-ink" : ""}`}
                   style={{ background: t.bg }}
@@ -194,13 +194,13 @@ export default function DressingTable() {
             </div>
             <div className="flex flex-wrap gap-2">
               <button onClick={shuffle} className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm ring-1 ring-ink/20 hover:bg-ink hover:text-paper">
-                <Shuffle className="h-4 w-4" /> Shuffle
+                <Shuffle className="h-4 w-4" /> خلط عشوائي
               </button>
               <button onClick={() => setResetKey((k) => k + 1)} className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm ring-1 ring-ink/20 hover:bg-ink hover:text-paper">
-                <RotateCcw className="h-4 w-4" /> Tidy
+                <RotateCcw className="h-4 w-4" /> رتّب
               </button>
               <button onClick={save} disabled={!shown.length} className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm ring-1 ring-ink/20 hover:bg-ink hover:text-paper disabled:opacity-40">
-                <Bookmark className="h-4 w-4" /> Save look
+                <Bookmark className="h-4 w-4" /> احفظ الإطلالة
               </button>
             </div>
           </div>
@@ -221,11 +221,11 @@ export default function DressingTable() {
               <p className="font-display text-xl">{slotInfo[active].label}</p>
               {picks[active] && (
                 <button onClick={() => choose(active, null)} className="text-xs underline decoration-dashed underline-offset-4 hover:text-thread">
-                  Leave empty
+                  اتركها فارغة
                 </button>
               )}
             </div>
-            {active === "bottom" && hasDress && <p className="mt-1 text-xs text-ink-3">You've chosen a dress — the bottom is hidden until you swap it.</p>}
+            {active === "bottom" && hasDress && <p className="mt-1 text-xs text-ink-3">اخترت فستاناً — القطعة السفلية مخفية حتى تبدّله.</p>}
             <div className="no-scrollbar mt-3 grid grid-cols-3 gap-2">
               {bySlot[active].map((p) => {
                 const sel = picks[active]?.slug === p.slug;
@@ -242,7 +242,7 @@ export default function DressingTable() {
               if (!p) return null;
               return (
                 <div className="mt-4 flex items-center gap-2 border-t border-dashed border-ink/20 pt-3">
-                  <span className="label text-ink-3">Colour</span>
+                  <span className="label text-ink-3">اللون</span>
                   {p.colorways.map((col, i) => (
                     <button
                       key={col.name}
@@ -259,7 +259,7 @@ export default function DressingTable() {
           </div>
 
           <div className="rounded-md bg-ink p-5 text-paper">
-            <p className="label text-paper/60">This look</p>
+            <p className="label text-paper/60">هذه الإطلالة</p>
             <ul className="mt-3 space-y-1.5 text-sm">
               {shown.map(({ product, pick }) => (
                 <li key={product.slug} className="flex justify-between gap-3">
@@ -272,7 +272,7 @@ export default function DressingTable() {
             </ul>
             <div className="mt-4 grid grid-cols-2 gap-3 border-t border-paper/15 pt-4">
               <label className="text-xs text-paper/60">
-                Your size
+                مقاسك
                 <select value={letter} onChange={(e) => setLetter(e.target.value)} className="mt-1 block w-full rounded-md bg-paper/10 px-2 py-1.5 font-mono text-sm text-paper">
                   {["XS", "S", "M", "L", "XL", "XXL"].map((s) => (
                     <option key={s} className="text-ink">
@@ -282,7 +282,7 @@ export default function DressingTable() {
                 </select>
               </label>
               <label className="text-xs text-paper/60">
-                Trouser waist
+                خصر البنطال
                 <select value={waist} onChange={(e) => setWaist(e.target.value)} className="mt-1 block w-full rounded-md bg-paper/10 px-2 py-1.5 font-mono text-sm text-paper">
                   {["26", "28", "30", "32", "34", "36"].map((s) => (
                     <option key={s} className="text-ink">
@@ -293,11 +293,11 @@ export default function DressingTable() {
               </label>
             </div>
             <div className="mt-4 flex items-baseline justify-between">
-              <span className="font-hand text-xl text-butter">{hours} hours of handwork</span>
+              <span className="font-hand text-xl text-butter">{hours} ساعة عمل يدوي</span>
               <span className="font-mono text-2xl font-bold">{money(total)}</span>
             </div>
             <Button onClick={hangAll} disabled={!shown.length} variant="thread" className="mt-4 w-full">
-              Hang the whole look on my rail
+              علّق الإطلالة كاملة على الراف
             </Button>
           </div>
         </aside>

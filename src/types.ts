@@ -35,7 +35,7 @@ export type Category =
 export type Fit = "close" | "true" | "relaxed" | "generous";
 
 export interface PassportStage {
-  stage: "Fibre" | "Spun" | "Woven" | "Knitted" | "Dyed" | "Cut" | "Sewn" | "Pressed";
+  stage: string; // e.g. "الألياف", "الغزل"
   place: string;
   maker: string;
   note: string;
@@ -130,7 +130,7 @@ export interface WearerNote {
   size: string;
   height: string;
   text: string;
-  fitVerdict: "runs small" | "true to size" | "runs large";
+  fitVerdict: "أصغر من المعتاد" | "مطابق للمقاس" | "أكبر من المعتاد";
 }
 
 export interface Store {
@@ -147,7 +147,7 @@ export interface Store {
 
 export interface Faq {
   id: string;
-  group: "Orders" | "Sizing" | "Mending" | "Shipping" | "The House";
+  group: "الطلبات" | "المقاسات" | "الرفو" | "الشحن" | "عن الدار";
   q: string;
   a: string;
 }

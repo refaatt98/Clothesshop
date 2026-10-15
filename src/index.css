@@ -26,10 +26,10 @@
   --color-brass: #b38a4a; /* rail, pins, hangers */
 
   /* Type */
-  --font-display: "Bodoni Moda", "Didot", Georgia, serif;
-  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Courier Prime", "Courier New", ui-monospace, monospace;
-  --font-hand: "Reenie Beanie", "Segoe Print", cursive;
+  --font-display: "Amiri", "Times New Roman", serif; /* عناوين — نسخ كلاسيكي */
+  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif; /* نص */
+  --font-mono: "Courier Prime", "IBM Plex Sans Arabic", ui-monospace, monospace; /* أرقام وملصقات */
+  --font-hand: "Aref Ruqaa", "Amiri", serif; /* ملاحظات الخيّاط بخط الرقعة */
 
   /* Motion */
   --ease-tailor: cubic-bezier(0.22, 1, 0.36, 1);
@@ -77,6 +77,12 @@
   ::selection {
     background: var(--color-butter);
     color: var(--color-ink);
+  }
+  /* Arabic letters must join — never space them apart */
+  [dir="rtl"] *,
+  [dir="rtl"] *::before,
+  [dir="rtl"] *::after {
+    letter-spacing: 0 !important;
   }
   :focus-visible {
     outline: 2px dashed var(--color-thread);
@@ -161,9 +167,10 @@
 
 /* Small caps label used everywhere: 'No. 034 / 120' */
 @utility label {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   text-transform: uppercase;
 }
 

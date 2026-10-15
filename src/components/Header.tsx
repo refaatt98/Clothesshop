@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
-import { ArrowUpRight, Menu, Search, X } from "lucide-react";
+import { ArrowUpLeft, Menu, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router";
 import { useLockBody } from "../lib/hooks";
@@ -9,43 +9,43 @@ import { GarmentFlat } from "./GarmentFlat";
 import { PinHead } from "./ui";
 
 const notices = [
-  { text: "Free mending for the life of every piece", to: "/mending" },
-  { text: "We will never hold a sale — here's why", to: "/journal/why-we-never-have-sales" },
-  { text: "Fittings in Amman, Lisbon & Kyoto", to: "/visit" },
-  { text: "Free shipping over $250 · duties included", to: "/shipping" },
+  { text: "رفو مجاني طوال عمر كل قطعة", to: "/mending" },
+  { text: "لن نقيم تخفيضات أبداً — وهذا السبب", to: "/journal/why-we-never-have-sales" },
+  { text: "بروفات في عمّان ولشبونة وكيوتو", to: "/visit" },
+  { text: "شحن مجاني فوق 250$ · الجمارك مشمولة", to: "/shipping" },
 ];
 
 export const categoryNames: Record<Category, string> = {
-  outerwear: "Outerwear",
-  shirts: "Shirts",
-  knitwear: "Knitwear",
-  tees: "T-shirts",
-  trousers: "Trousers",
-  dresses: "Dresses",
-  skirts: "Skirts",
-  accessories: "Accessories",
+  outerwear: "معاطف وجاكيتات",
+  shirts: "قمصان",
+  knitwear: "تريكو",
+  tees: "تيشيرتات",
+  trousers: "بناطيل",
+  dresses: "فساتين",
+  skirts: "تنانير",
+  accessories: "إكسسوارات",
 };
 
-const leftNav = [
-  { to: "/shop", label: "Shop" },
-  { to: "/chapters", label: "Chapters" },
-  { to: "/fabrics", label: "Fabric Library" },
-  { to: "/dressing-table", label: "Dressing Table" },
+const startNav = [
+  { to: "/shop", label: "المتجر" },
+  { to: "/chapters", label: "الفصول" },
+  { to: "/fabrics", label: "مكتبة الأقمشة" },
+  { to: "/dressing-table", label: "طاولة التنسيق" },
 ];
-const rightNav = [
-  { to: "/journal", label: "Journal" },
-  { to: "/atelier", label: "Atelier" },
+const endNav = [
+  { to: "/journal", label: "اليوميات" },
+  { to: "/atelier", label: "المشغل" },
 ];
 
 export function Logo({ className = "" }: { className?: string }) {
   return (
-    <Link to="/" className={`group inline-flex flex-col items-center leading-none ${className}`} aria-label="Ourlet — home">
-      <span className="font-display text-[1.9rem] italic tracking-[-0.02em] md:text-[2.2rem]">
-        Our<span className="not-italic">let</span>
+    <Link to="/" className={`group inline-flex flex-col items-center leading-none ${className}`} aria-label="أورليه — الرئيسية">
+      <span className="font-display text-[2rem] font-bold leading-none md:text-[2.3rem]">
+        أورليه<span className="text-thread">.</span>
       </span>
-      <span className="mt-1 flex items-center gap-1.5 font-mono text-[0.55rem] uppercase tracking-[0.32em] text-ink-3">
+      <span className="mt-1.5 flex items-center gap-1.5 font-mono text-[0.58rem] uppercase text-ink-3" dir="ltr">
         <span className="h-px w-3 bg-thread transition-all group-hover:w-6" />
-        atelier · est. 2014
+        OURLET · EST. 2014
         <span className="h-px w-3 bg-thread transition-all group-hover:w-6" />
       </span>
     </Link>
@@ -61,6 +61,7 @@ export function RailIcon({ className = "" }: { className?: string }) {
   );
 }
 
+/** شريط القياس تحت الهيدر — يمتلئ بالخيط الأحمر كلما نزلت في الصفحة. */
 function MeasuringTape() {
   const { scrollYProgress } = useScroll();
   const x = useSpring(scrollYProgress, { stiffness: 140, damping: 30 });
@@ -69,14 +70,12 @@ function MeasuringTape() {
       <div
         className="absolute inset-0 opacity-70"
         style={{
-          backgroundImage:
-            "repeating-linear-gradient(to right, #1e1c19 0 1px, transparent 1px 8px), repeating-linear-gradient(to right, #1e1c19 0 1px, transparent 1px 40px)",
+          backgroundImage: "repeating-linear-gradient(to left, #1e1c19 0 1px, transparent 1px 8px), repeating-linear-gradient(to left, #1e1c19 0 1px, transparent 1px 40px)",
           backgroundSize: "100% 3px, 100% 6px",
           backgroundRepeat: "repeat-x",
-          backgroundPosition: "0 0, 0 0",
         }}
       />
-      <motion.div className="absolute inset-y-0 left-0 w-full origin-left bg-thread/80 mix-blend-multiply" style={{ scaleX: x }} />
+      <motion.div className="absolute inset-y-0 right-0 w-full origin-right bg-thread/80 mix-blend-multiply" style={{ scaleX: x }} />
     </div>
   );
 }
@@ -97,11 +96,11 @@ function ShopPanel({ onClose }: { onClose: () => void }) {
     >
       <div className="wrap grid grid-cols-12 gap-8 py-10">
         <div className="col-span-4">
-          <p className="label text-ink-3">By garment</p>
+          <p className="label text-ink-3">حسب القطعة</p>
           <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-1">
             <li>
               <Link onClick={onClose} to="/shop" className="flex items-baseline justify-between border-b border-dashed border-line py-2 font-display text-lg hover:text-thread">
-                Everything <span className="font-mono text-xs text-ink-3">{products.length}</span>
+                كل شيء <span className="font-mono text-xs text-ink-3">{products.length}</span>
               </Link>
             </li>
             {(Object.keys(categoryNames) as Category[]).map((c) => (
@@ -114,38 +113,36 @@ function ShopPanel({ onClose }: { onClose: () => void }) {
           </ul>
         </div>
         <div className="col-span-3">
-          <p className="label text-ink-3">Ways in</p>
+          <p className="label text-ink-3">طرق للدخول</p>
           <ul className="mt-4 space-y-3 text-[0.95rem]">
-            <li><Link onClick={onClose} className="hover:text-thread" to="/shop?sort=new">Newest on the rail</Link></li>
-            <li><Link onClick={onClose} className="hover:text-thread" to="/shop?sort=slowest">Slowest made (most hours)</Link></li>
-            <li><Link onClick={onClose} className="hover:text-thread" to="/dressing-table">Compose a look</Link></li>
-            <li><Link onClick={onClose} className="hover:text-thread" to="/fabrics">Shop by cloth</Link></li>
-            <li><Link onClick={onClose} className="hover:text-thread" to="/fit-guide">Find your size</Link></li>
-            <li><Link onClick={onClose} className="hover:text-thread" to="/pinned">Your pinboard</Link></li>
+            <li><Link onClick={onClose} className="hover:text-thread" to="/shop?sort=new">الأحدث على الراف</Link></li>
+            <li><Link onClick={onClose} className="hover:text-thread" to="/shop?sort=slowest">الأبطأ صنعاً (أكثر ساعات)</Link></li>
+            <li><Link onClick={onClose} className="hover:text-thread" to="/dressing-table">نسّق إطلالة</Link></li>
+            <li><Link onClick={onClose} className="hover:text-thread" to="/fabrics">تسوّق حسب القماش</Link></li>
+            <li><Link onClick={onClose} className="hover:text-thread" to="/fit-guide">اعرف مقاسك</Link></li>
+            <li><Link onClick={onClose} className="hover:text-thread" to="/pinned">لوحتك المثبّتة</Link></li>
           </ul>
         </div>
-        {current && feature && <Link
-          onClick={onClose}
-          to={`/chapters/${current.slug}`}
-          className="group col-span-5 grid grid-cols-5 items-center gap-6 rounded-md bg-tissue p-5 ring-1 ring-line transition hover:ring-ink/30"
-        >
-          <div className="col-span-2 bg-mat rounded p-3">
-            <GarmentFlat kind={feature.garment} {...feature.colorways[0]} className="w-full" />
-          </div>
-          <div className="col-span-3">
-            <p className="label text-thread">Chapter {current.numeral} · now showing</p>
-            <p className="mt-2 font-display text-3xl leading-none">{current.title}</p>
-            <p className="mt-3 text-sm text-ink-2">{current.intro}</p>
-            <div className="mt-4 flex gap-1">
-              {current.palette.map((p) => (
-                <span key={p.hex} className="h-4 w-4 rounded-full ring-1 ring-ink/15" style={{ background: p.hex }} title={p.name} />
-              ))}
+        {current && feature && (
+          <Link onClick={onClose} to={`/chapters/${current.slug}`} className="group col-span-5 grid grid-cols-5 items-center gap-6 rounded-md bg-tissue p-5 ring-1 ring-line transition hover:ring-ink/30">
+            <div className="col-span-2 rounded bg-mat p-3">
+              <GarmentFlat kind={feature.garment} {...feature.colorways[0]} className="w-full" />
             </div>
-            <span className="mt-4 inline-flex items-center gap-1 text-sm underline decoration-dashed underline-offset-4 group-hover:text-thread">
-              Read the chapter <ArrowUpRight className="h-4 w-4" />
-            </span>
-          </div>
-        </Link>}
+            <div className="col-span-3">
+              <p className="label text-thread">الفصل {current.numeral} · يُعرض الآن</p>
+              <p className="mt-2 font-display text-3xl leading-tight">{current.title}</p>
+              <p className="mt-2 text-sm text-ink-2">{current.intro}</p>
+              <div className="mt-4 flex gap-1">
+                {current.palette.map((p) => (
+                  <span key={p.hex} className="h-4 w-4 rounded-full ring-1 ring-ink/15" style={{ background: p.hex }} title={p.name} />
+                ))}
+              </div>
+              <span className="mt-4 inline-flex items-center gap-1 text-sm underline decoration-dashed underline-offset-4 group-hover:text-thread">
+                اقرأ الفصل <ArrowUpLeft className="h-4 w-4" />
+              </span>
+            </div>
+          </Link>
+        )}
       </div>
     </motion.div>
   );
@@ -153,12 +150,7 @@ function ShopPanel({ onClose }: { onClose: () => void }) {
 
 function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   useLockBody(open);
-  const links = [
-    ...leftNav,
-    ...rightNav,
-    { to: "/pinned", label: "Pinboard" },
-    { to: "/visit", label: "Visit & fittings" },
-  ];
+  const links = [...startNav, ...endNav, { to: "/pinned", label: "اللوحة المثبّتة" }, { to: "/visit", label: "زيارة وبروفات" }];
   return (
     <AnimatePresence>
       {open && (
@@ -173,34 +165,28 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
           <div className="wrap relative flex min-h-full flex-col pb-10 pt-5">
             <div className="flex items-center justify-between">
               <Logo />
-              <button onClick={onClose} className="grid h-11 w-11 place-items-center rounded-full ring-1 ring-ink/20" aria-label="Close menu">
+              <button onClick={onClose} className="grid h-11 w-11 place-items-center rounded-full ring-1 ring-ink/20" aria-label="إغلاق القائمة">
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <p className="label mt-10 text-ink-3">Pattern envelope · contents</p>
+            <p className="label mt-10 text-ink-3">ظرف الباترون · المحتويات</p>
             <ul className="mt-4">
               {links.map((l, i) => (
-                <motion.li
-                  key={l.to}
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 + i * 0.04 }}
-                  className="border-b border-dashed border-ink/20"
-                >
-                  <Link to={l.to} onClick={onClose} className="flex items-baseline gap-4 py-3.5">
+                <motion.li key={l.to} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 + i * 0.04 }} className="border-b border-dashed border-ink/20">
+                  <Link to={l.to} onClick={onClose} className="flex items-baseline gap-4 py-3">
                     <span className="font-mono text-xs text-thread">{String(i + 1).padStart(2, "0")}</span>
-                    <span className="font-display text-[2rem] leading-none">{l.label}</span>
+                    <span className="font-display text-[2rem] leading-snug">{l.label}</span>
                   </Link>
                 </motion.li>
               ))}
             </ul>
             <div className="mt-auto pt-10 text-sm text-ink-2">
-              <p className="font-hand text-2xl text-chalk">mended for life, every piece ↓</p>
+              <p className="font-hand text-2xl text-chalk">كل قطعة تُرفأ مدى الحياة ↓</p>
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
-                <Link onClick={onClose} to="/mending" className="underline decoration-dashed underline-offset-4">Mending</Link>
-                <Link onClick={onClose} to="/fit-guide" className="underline decoration-dashed underline-offset-4">Fit guide</Link>
-                <Link onClick={onClose} to="/help" className="underline decoration-dashed underline-offset-4">Help</Link>
-                <Link onClick={onClose} to="/contact" className="underline decoration-dashed underline-offset-4">Contact</Link>
+                <Link onClick={onClose} to="/mending" className="underline decoration-dashed underline-offset-4">الرفو</Link>
+                <Link onClick={onClose} to="/fit-guide" className="underline decoration-dashed underline-offset-4">دليل المقاسات</Link>
+                <Link onClick={onClose} to="/help" className="underline decoration-dashed underline-offset-4">المساعدة</Link>
+                <Link onClick={onClose} to="/contact" className="underline decoration-dashed underline-offset-4">تواصل</Link>
               </div>
             </div>
           </div>
@@ -227,7 +213,7 @@ export function Header() {
   }, [pathname]);
 
   const navCls = ({ isActive }: { isActive: boolean }) =>
-    `relative py-2 text-[0.88rem] tracking-tight transition-colors hover:text-thread ${isActive ? "text-ink after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:bg-thread" : "text-ink-2"}`;
+    `relative py-2 text-[0.95rem] transition-colors hover:text-thread ${isActive ? "text-ink after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:bg-thread" : "text-ink-2"}`;
 
   return (
     <>
@@ -235,8 +221,8 @@ export function Header() {
         <div className="wrap flex h-9 items-center justify-center overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div key={notice} initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -14, opacity: 0 }} transition={{ duration: 0.35 }}>
-              <Link to={notices[notice].to} className="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.14em] hover:text-butter">
-                <span className="text-thread">✂</span> {notices[notice].text} <ArrowUpRight className="h-3 w-3" />
+              <Link to={notices[notice].to} className="flex items-center gap-2 text-[0.8rem] hover:text-butter">
+                <span className="text-thread">✂</span> {notices[notice].text} <ArrowUpLeft className="h-3 w-3" />
               </Link>
             </motion.div>
           </AnimatePresence>
@@ -246,11 +232,11 @@ export function Header() {
       <header className="sticky top-0 z-50 bg-paper/92 backdrop-blur-md" onMouseLeave={() => setPanel(false)}>
         <div className="wrap grid h-[72px] grid-cols-[1fr_auto_1fr] items-center gap-4 md:h-[84px]">
           <div className="flex items-center gap-2">
-            <button onClick={() => setMenu(true)} className="-ml-2 grid h-11 w-11 place-items-center lg:hidden" aria-label="Open menu">
+            <button onClick={() => setMenu(true)} className="-ms-2 grid h-11 w-11 place-items-center lg:hidden" aria-label="فتح القائمة">
               <Menu className="h-5 w-5" />
             </button>
-            <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary">
-              {leftNav.map((l) => (
+            <nav className="hidden items-center gap-6 lg:flex" aria-label="التنقّل الرئيسي">
+              {startNav.map((l) => (
                 <NavLink key={l.to} to={l.to} className={navCls} onMouseEnter={() => setPanel(l.to === "/shop")}>
                   {l.label}
                 </NavLink>
@@ -261,27 +247,23 @@ export function Header() {
           <Logo />
 
           <div className="flex items-center justify-end gap-1 md:gap-2">
-            <nav className="mr-3 hidden items-center gap-6 lg:flex" aria-label="Secondary">
-              {rightNav.map((l) => (
+            <nav className="me-3 hidden items-center gap-6 lg:flex" aria-label="تنقّل ثانوي">
+              {endNav.map((l) => (
                 <NavLink key={l.to} to={l.to} className={navCls} onMouseEnter={() => setPanel(false)}>
                   {l.label}
                 </NavLink>
               ))}
             </nav>
-            <button onClick={() => setSearchOpen(true)} className="grid h-11 w-11 place-items-center rounded-full transition hover:bg-paper-2" aria-label="Search">
+            <button onClick={() => setSearchOpen(true)} className="grid h-11 w-11 place-items-center rounded-full transition hover:bg-paper-2" aria-label="بحث">
               <Search className="h-[19px] w-[19px]" strokeWidth={1.6} />
             </button>
-            <Link to="/pinned" className="relative hidden h-11 w-11 place-items-center rounded-full transition hover:bg-paper-2 sm:grid" aria-label={`Pinboard, ${pinned.length} pinned`}>
+            <Link to="/pinned" className="relative hidden h-11 w-11 place-items-center rounded-full transition hover:bg-paper-2 sm:grid" aria-label={`اللوحة المثبّتة، ${pinned.length} قطع`}>
               <PinHead className="h-6 w-6" colour={pinned.length ? "#c2432e" : "#b9b0a2"} />
-              {pinned.length > 0 && <span className="absolute right-1 top-1 font-mono text-[0.6rem] font-bold">{pinned.length}</span>}
+              {pinned.length > 0 && <span className="absolute end-1 top-1 font-mono text-[0.6rem] font-bold">{pinned.length}</span>}
             </Link>
-            <button
-              onClick={() => setRailOpen(true)}
-              className="relative flex h-11 items-center gap-2 rounded-full pl-2.5 pr-3 transition hover:bg-paper-2"
-              aria-label={`Open your rail, ${railCount} pieces`}
-            >
+            <button onClick={() => setRailOpen(true)} className="relative flex h-11 items-center gap-2 rounded-full pe-3 ps-2.5 transition hover:bg-paper-2" aria-label={`افتح الراف، ${railCount} قطع`}>
               <RailIcon className="h-6 w-6" />
-              <span className="hidden font-mono text-xs md:inline">Rail</span>
+              <span className="hidden text-sm md:inline">الراف</span>
               <motion.span
                 key={railCount}
                 initial={{ scale: 1.6 }}

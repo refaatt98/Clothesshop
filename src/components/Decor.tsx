@@ -52,7 +52,7 @@ export function Marquee({ items, className = "" }: { items: ReactNode[]; classNa
   const row = (
     <div className="flex shrink-0 items-center gap-10 pr-10">
       {items.map((it, i) => (
-        <span key={i} className="flex items-center gap-10 whitespace-nowrap">
+        <span key={i} dir="rtl" className="flex items-center gap-10 whitespace-nowrap">
           {it}
           <span className="text-thread">✂</span>
         </span>
@@ -60,7 +60,7 @@ export function Marquee({ items, className = "" }: { items: ReactNode[]; classNa
     </div>
   );
   return (
-    <div className={`relative flex overflow-hidden ${className}`}>
+    <div dir="ltr" className={`relative flex overflow-hidden ${className}`}>
       <div className="flex w-max animate-marquee hover:[animation-play-state:paused]">
         {row}
         {row}
@@ -78,7 +78,7 @@ export function RotatingStamp({ text, className = "", children }: { text: string
         <defs>
           <path id={id} d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0" />
         </defs>
-        <text fontFamily="Courier Prime, monospace" fontSize="8.6" letterSpacing="2.2" fill="currentColor">
+        <text fontFamily="IBM Plex Sans Arabic, sans-serif" fontSize="9" fill="currentColor">
           <textPath href={`#${id}`}>{text}</textPath>
         </text>
       </motion.svg>

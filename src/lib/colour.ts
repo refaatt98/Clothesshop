@@ -1,9 +1,9 @@
 export const colourFamilies = [
-  { id: "light", name: "Lime-wash & ecru", hex: "#F1ECE1" },
-  { id: "earth", name: "Sand & clay", hex: "#C9A27E" },
-  { id: "blue", name: "Harbour & indigo", hex: "#4D6383" },
-  { id: "green", name: "Moss & sage", hex: "#8D9A78" },
-  { id: "dark", name: "Slate & ink", hex: "#3A3835" },
+  { id: "light", name: "أبيض وعاجي", hex: "#F1ECE1" },
+  { id: "earth", name: "رملي وطيني", hex: "#C9A27E" },
+  { id: "blue", name: "أزرق ونيلي", hex: "#4D6383" },
+  { id: "green", name: "طحلبي ومريمية", hex: "#8D9A78" },
+  { id: "dark", name: "أردوازي وحبري", hex: "#3A3835" },
 ] as const;
 
 export type ColourFamily = (typeof colourFamilies)[number]["id"];
