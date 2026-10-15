@@ -53,7 +53,7 @@ interface ShopState {
 
   currency: Currency;
   setCurrency: (c: Currency) => void;
-  money: (usd: number) => string;
+  money: (usd: number, digits?: number) => string;
 
   toasts: Toast[];
   toast: (text: string, sub?: string) => void;
@@ -116,12 +116,12 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       deleteLook: (id) => setLooks((l) => l.filter((x) => x.id !== id)),
       currency,
       setCurrency,
-      money: (usd) =>
+      money: (usd, digits = 0) =>
         new Intl.NumberFormat("en", {
           style: "currency",
           currency,
-          maximumFractionDigits: currency === "JOD" ? 1 : 0,
-          minimumFractionDigits: 0,
+          maximumFractionDigits: digits || (currency === "JOD" ? 1 : 0),
+          minimumFractionDigits: digits,
         }).format(usd * rates[currency]),
       toasts,
       toast,
