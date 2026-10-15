@@ -181,3 +181,17 @@ export function EmptyState({ title, text, action }: { title: string; text: strin
     </div>
   );
 }
+
+/** Shared text-field style for every form in the house. */
+export const inputCls =
+  "mt-1.5 w-full rounded-md bg-tissue px-3.5 py-3 text-[0.95rem] ring-1 ring-line outline-none transition placeholder:text-ink-3/60 focus:ring-2 focus:ring-thread";
+
+export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+  return (
+    <label className="block">
+      <span className="label text-ink-3">{label}</span>
+      {children}
+      {hint && <span className="mt-1 block text-xs text-ink-3">{hint}</span>}
+    </label>
+  );
+}

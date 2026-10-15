@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
 import { useShop } from "../lib/store";
 import { Footer } from "./Footer";
@@ -61,7 +61,9 @@ export function Layout() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Outlet />
+        <Suspense fallback={<div className="wrap py-32 text-center font-hand text-3xl text-chalk">نفرد الباترون…</div>}>
+          <Outlet />
+        </Suspense>
       </motion.main>
       <Footer />
       <RailDrawer />

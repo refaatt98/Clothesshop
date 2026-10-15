@@ -73,7 +73,8 @@ export function Marquee({ items, className = "" }: { items: ReactNode[]; classNa
 export function RotatingStamp({ text, className = "", children }: { text: string; className?: string; children?: ReactNode }) {
   const id = "stamp" + useId().replace(/:/g, "");
   return (
-    <div className={`relative ${className}`}>
+    <div className={className}>
+      <div className="relative h-full w-full">
       <motion.svg viewBox="0 0 100 100" className="h-full w-full" animate={{ rotate: 360 }} transition={{ duration: 28, ease: "linear", repeat: Infinity }} aria-hidden>
         <defs>
           <path id={id} d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0" />
@@ -83,6 +84,7 @@ export function RotatingStamp({ text, className = "", children }: { text: string
         </text>
       </motion.svg>
       <div className="absolute inset-0 grid place-items-center">{children}</div>
+      </div>
     </div>
   );
 }
