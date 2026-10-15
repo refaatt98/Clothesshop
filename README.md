@@ -19,7 +19,22 @@ npm run build     # فحص TypeScript + بناء نسخة الإنتاج في di
 npm run preview   # تشغيل نسخة الإنتاج محلياً
 ```
 
-> عند النشر على استضافة ثابتة (Netlify/Vercel…)، وجّه كل المسارات إلى `index.html` لأن التنقّل يتم عبر React Router.
+## النشر على Netlify
+
+كل الإعدادات جاهزة في `netlify.toml` (أمر البناء، مجلّد النشر، نسخة Node، التحويلات، والهيدرز):
+
+1. ادخل [app.netlify.com](https://app.netlify.com) ← **Add new site** ← **Import an existing project** ← **GitHub**.
+2. اختر المستودع `refaatt98/Clothesshop` والفرع الذي تريد نشره.
+3. لا تغيّر أي شيء في الإعدادات — Netlify يقرأها من `netlify.toml` تلقائياً — واضغط **Deploy**.
+
+بعدها كل `git push` على الفرع ينشر الموقع تلقائياً، وكل Pull Request يحصل على رابط معاينة خاص.
+
+ما يفعله `netlify.toml`:
+- **البناء:** `npm run build` ← ينشر مجلّد `dist` على Node 22.
+- **تحويل SPA:** أي مسار يُخدم `index.html` (حالة 200) ليعمل React Router عند فتح أي رابط مباشرة أو عمل Refresh.
+- **تحويلات 301 لروابط مألوفة:** `/cart` ← `/rail`، `/products/:slug` ← `/piece/:slug`، `/about` ← `/atelier`، `/faq` ← `/help`، `/blog/*` ← `/journal/*`، `/privacy` ← `/legal/privacy`… وغيرها.
+- **الأمان:** CSP (يسمح بخطوط Google وبـ Supabase مستقبلاً)، HSTS، منع الـ iframe، وغيرها.
+- **الكاش:** ملفات `/assets/*` تُخزّن سنة كاملة (أسماؤها فيها hash)، و`index.html` دائماً جديد.
 
 ## الستاك
 

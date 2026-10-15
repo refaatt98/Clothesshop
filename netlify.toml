@@ -1,0 +1,173 @@
+# ─────────────────────────────────────────────────────────────
+# Netlify — أورليه
+# كل ما يحتاجه Netlify ليبني الموقع وينشره من Git تلقائياً.
+# ─────────────────────────────────────────────────────────────
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--no-audit --no-fund"
+
+# ─── Redirects ───────────────────────────────────────────────
+# Netlify reads these top to bottom; the first match wins.
+# Friendly / conventional URLs people might type or that other
+# shops use, sent permanently (301) to our real routes.
+
+[[redirects]]
+  from = "/cart"
+  to = "/rail"
+  status = 301
+
+[[redirects]]
+  from = "/bag"
+  to = "/rail"
+  status = 301
+
+[[redirects]]
+  from = "/basket"
+  to = "/rail"
+  status = 301
+
+[[redirects]]
+  from = "/wishlist"
+  to = "/pinned"
+  status = 301
+
+[[redirects]]
+  from = "/favorites"
+  to = "/pinned"
+  status = 301
+
+[[redirects]]
+  from = "/products"
+  to = "/shop"
+  status = 301
+
+[[redirects]]
+  from = "/products/:slug"
+  to = "/piece/:slug"
+  status = 301
+
+[[redirects]]
+  from = "/product/:slug"
+  to = "/piece/:slug"
+  status = 301
+
+[[redirects]]
+  from = "/collections"
+  to = "/chapters"
+  status = 301
+
+[[redirects]]
+  from = "/collections/:slug"
+  to = "/chapters/:slug"
+  status = 301
+
+[[redirects]]
+  from = "/blog"
+  to = "/journal"
+  status = 301
+
+[[redirects]]
+  from = "/blog/:slug"
+  to = "/journal/:slug"
+  status = 301
+
+[[redirects]]
+  from = "/about"
+  to = "/atelier"
+  status = 301
+
+[[redirects]]
+  from = "/faq"
+  to = "/help"
+  status = 301
+
+[[redirects]]
+  from = "/size-guide"
+  to = "/fit-guide"
+  status = 301
+
+[[redirects]]
+  from = "/returns"
+  to = "/shipping"
+  status = 301
+
+[[redirects]]
+  from = "/repairs"
+  to = "/mending"
+  status = 301
+
+[[redirects]]
+  from = "/stores"
+  to = "/visit"
+  status = 301
+
+[[redirects]]
+  from = "/book"
+  to = "/visit#book"
+  status = 301
+
+[[redirects]]
+  from = "/fabric"
+  to = "/fabrics"
+  status = 301
+
+[[redirects]]
+  from = "/privacy"
+  to = "/legal/privacy"
+  status = 301
+
+[[redirects]]
+  from = "/terms"
+  to = "/legal/terms"
+  status = 301
+
+[[redirects]]
+  from = "/accessibility"
+  to = "/legal/accessibility"
+  status = 301
+
+[[redirects]]
+  from = "/legal"
+  to = "/legal/privacy"
+  status = 301
+
+# SPA fallback — must stay LAST. Every other path is served the app,
+# and React Router shows the right page (or its own 404 page).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ─── Headers ─────────────────────────────────────────────────
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+
+# Vite fingerprints these files (name-hash.js), so they can be cached forever.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# The HTML shell must always be fresh so new deploys show up immediately.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/favicon.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
