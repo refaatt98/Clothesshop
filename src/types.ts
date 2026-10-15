@@ -98,6 +98,7 @@ export interface Fabric {
   fibre: string;
   gsm: number;
   hand: string;
+  soft: number; // 1-5 — how soft it feels on skin
   warmth: number; // 1-5
   breath: number; // 1-5
   drape: number; // 1-5

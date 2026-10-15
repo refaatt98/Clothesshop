@@ -3,13 +3,14 @@ import { ArrowLeft, ArrowRight, ArrowUpLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { CareSymbol, Marquee, RotatingStamp, Ruler, ScrollThread } from "../components/Decor";
+import { FabricQualities } from "../components/FabricQualities";
 import { GarmentFlat } from "../components/GarmentFlat";
 import { PriceTag } from "../components/PriceTag";
 import { ProductCard } from "../components/ProductCard";
 import { Swatch } from "../components/Swatch";
-import { Button, HandNote, Meter, PinHead, Reveal, SectionHead, Skeleton } from "../components/ui";
-import { getChapters, getFabrics, getJournal, getProducts, getProductsBySlugs } from "../lib/api";
-import { formatDate, pad, useAsync, useDocumentTitle } from "../lib/hooks";
+import { Button, HandNote, PinHead, Reveal, SectionHead, Skeleton } from "../components/ui";
+import { getChapters, getFabrics, getProducts, getProductsBySlugs } from "../lib/api";
+import { pad, useAsync, useDocumentTitle } from "../lib/hooks";
 import { useShop } from "../lib/store";
 import type { Department, GarmentKind, Product } from "../types";
 import { departments } from "../lib/departments";
@@ -405,15 +406,12 @@ function SwatchDrawer() {
             {f && (
               <motion.div key={f.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mt-8 rounded-md bg-tissue p-6 ring-1 ring-line">
                 <p className="label text-ink-3">
-                  {f.origin} · {f.gsm} غ/م²
+                  {f.origin}
                 </p>
                 <h3 className="mt-1 font-display text-3xl">{f.name}</h3>
                 <p className="mt-1 font-hand text-2xl text-chalk">«{f.hand}»</p>
-                <div className="mt-5 space-y-2.5">
-                  <Meter label="الدفء" value={f.warmth} />
-                  <Meter label="التنفّس" value={f.breath} />
-                  <Meter label="الانسدال" value={f.drape} />
-                  <Meter label="العتق" value={f.age} />
+                <div className="mt-5">
+                  <FabricQualities fabric={f} />
                 </div>
                 <Link to={`/fabrics#${f.id}`} className="mt-6 inline-flex items-center gap-1 text-sm underline decoration-dashed underline-offset-4 hover:text-thread">
                   حكايته والقطع المصنوعة منه <ArrowUpLeft className="h-4 w-4" />
@@ -442,48 +440,6 @@ function SwatchDrawer() {
             {!data && Array.from({ length: 8 }).map((_, n) => <Skeleton key={n} className="aspect-square" />)}
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Ledger ────────────────────────────────────────────────────
-function Ledger() {
-  const rows = [
-    ["قطع صُنعت", "2,140", "كل واحدة مرقّمة"],
-    ["قطع رُفيت", "1,204", "مجاناً، كما وعدنا"],
-    ["متوسط الساعات لكل قطعة", "7.8", "من القصّ إلى الكيّ"],
-    ["صنّاع على كشف الرواتب", "14", "بأجر يزيد 22% عن أجر المعيشة"],
-    ["بلاستيك في طرودنا", "0 غ", "ورق، كرتون، شريط قطني"],
-    ["تخفيضات أُقيمت", "0", "ولن تُقام"],
-  ];
-  return (
-    <section className="py-20 md:py-28">
-      <div className="wrap grid gap-12 lg:grid-cols-12">
-        <div className="lg:col-span-4">
-          <SectionHead no="04" kicker="الدفتر المفتوح · 2026" title={<>نضع دفاترنا <em className="text-thread not-italic">على الطاولة</em></>} />
-          <p className="mt-5 text-ink-2">أرقام مشغلنا لهذا العام، تُكتب كل ربع سنة في الدفتر نفسه.</p>
-          <Button to="/atelier" variant="ghost" className="mt-6">
-            تعرّف إلى الصنّاع
-          </Button>
-        </div>
-        <Reveal className="lg:col-span-8">
-          <div className="relative overflow-hidden rounded-md bg-tissue bg-ruled pr-10 ring-1 ring-line md:pr-16">
-            <div className="absolute inset-y-0 right-7 w-px bg-thread/50 md:right-12" />
-            <table className="w-full">
-              <tbody>
-                {rows.map(([k, v, note], n) => (
-                  <tr key={k} className="border-b border-transparent">
-                    <td className="py-[0.5rem] pl-3 align-bottom text-[0.92rem] text-ink-2">{pad(n + 1, 2)}. {k}</td>
-                    <td className="hidden py-[0.5rem] align-bottom font-hand text-lg text-chalk md:table-cell">{note}</td>
-                    <td className="py-[0.5rem] pl-5 text-left align-bottom font-display text-[1.6rem] leading-none md:pl-8 md:text-[2rem]">{v}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="pb-4 pl-6 pt-2 text-left font-hand text-2xl text-thread">التوقيع: ل.ح — أيلول 2026</p>
-          </div>
-        </Reveal>
       </div>
     </section>
   );
@@ -523,7 +479,7 @@ function DressingTeaser() {
           <HandNote className="absolute bottom-5 left-6 text-2xl">الإطلالة رقم 07 — «معدّية إلى العمل»</HandNote>
         </div>
         <div className="order-1 lg:order-2">
-          <SectionHead no="05" kicker="طاولة التنسيق" title={<>افرد الإطلالة <em className="text-thread not-italic">على الطاولة</em>، كما نفعل في المشغل</>} />
+          <SectionHead no="04" kicker="طاولة التنسيق" title={<>افرد الإطلالة <em className="text-thread not-italic">على الطاولة</em>، كما نفعل في المشغل</>} />
           <p className="mt-5 max-w-lg text-ink-2">
             اختر طبقة خارجية، وقطعة علوية، وسفلية، وشيئاً لليدين. بدّل الألوان، اخلط عشوائياً، احفظ الإطلالات التي تحبّها، وعلّقها كلها على الراف دفعة واحدة.
           </p>
@@ -548,7 +504,7 @@ function ChapterStack() {
     <section className="py-20 md:py-28">
       <div className="wrap">
         <SectionHead
-          no="06"
+          no="05"
           kicker="الفصول"
           title={
             <>
@@ -589,37 +545,6 @@ function ChapterStack() {
   );
 }
 
-// ─── Journal ───────────────────────────────────────────────────
-function JournalTeaser() {
-  const { data } = useAsync(getJournal, []);
-  return (
-    <section className="py-20 md:py-28">
-      <div className="wrap">
-        <SectionHead no="07" kicker="اليوميات" title={<>ملاحظات من <em className="text-thread not-italic">المشغل</em></>} aside={<Button to="/journal" variant="ghost">كل اليوميات ←</Button>} />
-        <div className="mt-12 grid gap-8 md:grid-cols-3">
-          {(data?.slice(0, 3) ?? []).map((j, n) => (
-            <Reveal key={j.slug} delay={n * 0.08}>
-              <Link to={`/journal/${j.slug}`} className="group block">
-                <div className="relative grid aspect-[4/3] place-items-center overflow-hidden rounded-md ring-1 ring-line" style={{ background: j.cover.tint }}>
-                  <div className="absolute inset-0 bg-dots opacity-40" />
-                  <GarmentFlat kind={j.cover.garment} hex={j.cover.hex} accent={j.cover.accent} pattern={j.cover.pattern} className="relative h-[78%] transition duration-700 group-hover:rotate-[-4deg] group-hover:scale-105" />
-                  <span className="label absolute right-4 top-4 text-ink-3">{j.kicker}</span>
-                </div>
-                <p className="label mt-4 text-ink-3">
-                  {formatDate(j.date)} · {j.readMins} دقائق قراءة
-                </p>
-                <h3 className="mt-2 font-display text-[1.6rem] leading-snug group-hover:text-thread">{j.title}</h3>
-                <p className="mt-2 line-clamp-2 text-ink-2">{j.excerpt}</p>
-              </Link>
-            </Reveal>
-          ))}
-          {!data && Array.from({ length: 3 }).map((_, n) => <Skeleton key={n} className="aspect-[4/3]" />)}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export default function Home() {
   useDocumentTitle("");
   return (
@@ -631,9 +556,7 @@ export default function Home() {
       <FibreToHem />
       <SwatchDrawer />
       <DressingTeaser />
-      <Ledger />
       <ChapterStack />
-      <JournalTeaser />
     </>
   );
 }

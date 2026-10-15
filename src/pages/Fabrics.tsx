@@ -2,8 +2,10 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { GarmentFlat } from "../components/GarmentFlat";
+import { FabricQualities } from "../components/FabricQualities";
 import { Swatch } from "../components/Swatch";
-import { HandNote, Meter, PageHeader, Reveal, Skeleton } from "../components/ui";
+import { weightWord } from "../lib/fabric";
+import { HandNote, PageHeader, Reveal, Skeleton } from "../components/ui";
 import { getFabrics, getProducts } from "../lib/api";
 import { useAsync, useDocumentTitle } from "../lib/hooks";
 import type { Fabric } from "../types";
@@ -12,8 +14,8 @@ const filters: { id: string; label: string; test: (f: Fabric) => boolean }[] = [
   { id: "all", label: "الثمانية كلها", test: () => true },
   { id: "warm", label: "للأيام الباردة", test: (f) => f.warmth >= 4 },
   { id: "cool", label: "للحرّ", test: (f) => f.breath >= 5 },
-  { id: "drape", label: "ينسدل بجمال", test: (f) => f.drape >= 4 },
-  { id: "ages", label: "يتعتّق أجمل", test: (f) => f.age >= 5 },
+  { id: "soft", label: "ناعم جداً", test: (f) => f.soft >= 5 },
+  { id: "strong", label: "يعيش طويلاً", test: (f) => f.age >= 5 },
 ];
 
 export default function Fabrics() {
@@ -39,7 +41,7 @@ export default function Fabrics() {
 
       {/* weight ladder */}
       <section className="wrap py-12">
-        <p className="label text-ink-3">سلّم الأوزان · غرام لكل متر مربّع</p>
+        <p className="label text-ink-3">من الأخفّ إلى الأثقل</p>
         <div className="mt-5 space-y-2">
           {fabrics
             ? [...fabrics]
@@ -56,7 +58,7 @@ export default function Fabrics() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.9, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
                       />
-                      <span className="absolute inset-y-0 left-0 flex items-center font-mono text-xs text-ink-3">{f.gsm}</span>
+                      <span className="absolute inset-y-0 left-0 flex items-center text-xs text-ink-3">{weightWord(f.gsm)}</span>
                     </div>
                   </a>
                 ))
@@ -90,16 +92,13 @@ export default function Fabrics() {
                     </p>
                     <h2 className="mt-2 font-display text-[2.2rem] leading-tight">{f.name}</h2>
                     <p className="mt-1 font-mono text-sm text-ink-3">
-                      {f.fibre} · {f.gsm} غ/م²
+                      {f.fibre} · الوزن: {weightWord(f.gsm)}
                     </p>
                     <p className="mt-4 leading-relaxed text-ink-2">{f.story}</p>
                     <p className="mt-3 font-hand text-2xl text-chalk">الملمس: «{f.hand}»</p>
                   </div>
                   <div className="space-y-2.5">
-                    <Meter label="الدفء" value={f.warmth} />
-                    <Meter label="التنفّس" value={f.breath} />
-                    <Meter label="الانسدال" value={f.drape} />
-                    <Meter label="العتق" value={f.age} />
+                    <FabricQualities fabric={f} />
                     <p className="label pt-4 text-ink-3">صُنع منه</p>
                     <ul className="space-y-1.5">
                       {made.map((p) => (

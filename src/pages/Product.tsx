@@ -4,10 +4,12 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import { CareSymbol, Ruler } from "../components/Decor";
 import { categoryNames } from "../components/Header";
+import { FabricQualities } from "../components/FabricQualities";
 import { GarmentFlat } from "../components/GarmentFlat";
+import { weightWord } from "../lib/fabric";
 import { ProductCard } from "../components/ProductCard";
 import { Swatch } from "../components/Swatch";
-import { Breadcrumbs, Button, EmptyState, HandNote, Meter, PinHead, SectionHead, Skeleton } from "../components/ui";
+import { Breadcrumbs, Button, EmptyState, HandNote, PinHead, SectionHead, Skeleton } from "../components/ui";
 import { getFabric, getProduct, getProductsBySlugs } from "../lib/api";
 import { fitNotes, suggestSize } from "../lib/fit";
 import { pad, useAsync, useDocumentTitle } from "../lib/hooks";
@@ -184,7 +186,7 @@ export default function Product() {
                 {view === "cloth" && (
                   <motion.div key={`cloth-${c.name}`} className="absolute inset-[8%] grid place-items-center" initial={{ opacity: 0, scale: 1.1 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
                     <Swatch hex={c.hex} accent={c.accent} pattern={c.pattern} width={200} height={200} scale={4.5} className="w-[86%]" label={`قماش ${c.name} عن قرب`} />
-                    <HandNote className="absolute bottom-0 left-2">{fabric ? `${fabric.name}، ${fabric.gsm} غ/م²` : ""}</HandNote>
+                    <HandNote className="absolute bottom-0 left-2">{fabric ? `${fabric.name}، ${weightWord(fabric.gsm)}` : ""}</HandNote>
                   </motion.div>
                 )}
                 {view === "measure" && (
@@ -320,9 +322,7 @@ export default function Product() {
               {fabric && (
                 <div className="mt-4 space-y-2 rounded-md bg-paper-2 p-4">
                   <p className="font-display text-lg text-ink">{fabric.name} — {fabric.origin}</p>
-                  <Meter label="الدفء" value={fabric.warmth} />
-                  <Meter label="التنفّس" value={fabric.breath} />
-                  <Meter label="الانسدال" value={fabric.drape} />
+                  <FabricQualities fabric={fabric} />
                   <Link to={`/fabrics#${fabric.id}`} className="mt-2 inline-block text-sm underline decoration-dashed underline-offset-4 hover:text-thread">اقرأ عن هذا القماش ←</Link>
                 </div>
               )}
