@@ -44,7 +44,7 @@ export default function Atelier() {
             بدأ كل شيء <em className="text-thread not-italic">ببطانية عسكرية قديمة.</em>
           </>
         }
-        intro="Tareq Project مشغل صغير في جبل عمّان، وآخر صيفي على ساحل البرتغال. أربعة عشر صانعاً، ماكينات قديمة، وجدار طويل من الباترونات الورقية. نصنع ملابس قليلة، ونعتني بها طويلاً."
+        intro="Tareq Project مشغل صغير في بديا، محافظة سلفيت، فلسطين. أربعة عشر صانعاً، ماكينات قديمة، وجدار طويل من الباترونات الورقية. نصنع ملابس قليلة، ونعتني بها طويلاً."
       />
 
       {/* صورة المشغل: طاولة قصّ مرسومة */}
@@ -67,8 +67,8 @@ export default function Atelier() {
               </motion.div>
             ))}
           </div>
-          <HandNote className="absolute bottom-4 left-6 hidden text-2xl sm:block">الطاولة الكبيرة، عمّان — صباح الثلاثاء</HandNote>
-          <RotatingStamp text="مشغل Tareq Project · عمّان · منذ 2014 · " className="absolute bottom-4 right-6 hidden h-24 w-24 text-ink/60 md:block">
+          <HandNote className="absolute bottom-4 left-6 hidden text-2xl sm:block">الطاولة الكبيرة، بديا — صباح الثلاثاء</HandNote>
+          <RotatingStamp text="Tareq Project · بديا · فلسطين · " className="absolute bottom-4 right-6 hidden h-24 w-24 text-ink/60 md:block">
             <span className="font-display text-xl font-bold">١٤</span>
           </RotatingStamp>
         </div>
@@ -133,7 +133,7 @@ export default function Atelier() {
           <div>
             <p className="label text-paper/60">تعال وانظر بنفسك</p>
             <h2 className="mt-3 font-display text-[2.4rem] leading-tight">جدار الباترونات مفتوح للزوّار.</h2>
-            <p className="mt-3 max-w-lg text-paper/75">احجز بروفة في عمّان واطلب أن نصعد بك إلى الطابق العلوي. وفي أول سبت من كل شهر، مدرسة رفو مجانية.</p>
+            <p className="mt-3 max-w-lg text-paper/75">احجز بروفة في بديا واطلب أن نصعد بك إلى الطابق العلوي. وفي أول سبت من كل شهر، مدرسة رفو مجانية.</p>
           </div>
           <div className="flex flex-wrap gap-3 md:justify-end">
             <Button to="/visit#book" variant="thread">

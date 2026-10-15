@@ -10,11 +10,11 @@ export default function Shipping() {
   const { money } = useShop();
 
   const regions = [
-    ["الأردن", "1–2 يوم عمل", "مشمولة", "مجاني فوق " + money(FREE_SHIPPING_FROM)],
-    ["دول الخليج", "2–4 أيام عمل", "مشمولة", "مجاني فوق " + money(FREE_SHIPPING_FROM)],
-    ["الاتحاد الأوروبي وبريطانيا", "3–5 أيام عمل", "مشمولة", "مجاني فوق " + money(FREE_SHIPPING_FROM)],
-    ["بقية الشرق الأوسط", "4–7 أيام عمل", "تُدفع عند الاستلام", money(50)],
-    ["أمريكا واليابان وآسيا", "4–8 أيام عمل", "تُدفع عند الاستلام", money(100)],
+    ["بديا ومحافظة سلفيت", "اليوم نفسه أو التالي", "متاح", "مجاني"],
+    ["الضفة الغربية", "1–2 يوم عمل", "متاح", money(20) + " · مجاني فوق " + money(FREE_SHIPPING_FROM)],
+    ["القدس", "2–3 أيام عمل", "متاح", money(20) + " · مجاني فوق " + money(FREE_SHIPPING_FROM)],
+    ["الداخل (أراضي 48)", "2–4 أيام عمل", "متاح", money(20) + " · مجاني فوق " + money(FREE_SHIPPING_FROM)],
+    ["الأردن والخارج", "5–10 أيام عمل", "غير متاح", "حسب الوجهة — راسلنا"],
   ];
 
   const returnSteps = [
@@ -34,7 +34,7 @@ export default function Shipping() {
             يصل مطويّاً بورق الباترون، <em className="text-thread not-italic">ومعه بطاقة بخط اليد.</em>
           </>
         }
-        intro={`شحن مجاني فوق ${money(FREE_SHIPPING_FROM)}. الجمارك مشمولة إلى الأردن والخليج وأوروبا. إرجاع مجاني خلال 30 يوماً.`}
+        intro={`نوصل لكل مدن وقرى الضفة الغربية والقدس والداخل، والدفع عند الاستلام متاح. التوصيل مجاني فوق ${money(FREE_SHIPPING_FROM)}، والإرجاع مجاني خلال 30 يوماً.`}
       />
 
       <section className="wrap py-14">
@@ -45,7 +45,7 @@ export default function Shipping() {
               <tr>
                 <th className="p-4 text-start font-medium">الوجهة</th>
                 <th className="p-4 text-start font-medium">المدة</th>
-                <th className="p-4 text-start font-medium">الجمارك</th>
+                <th className="p-4 text-start font-medium">الدفع عند الاستلام</th>
                 <th className="p-4 text-start font-medium">الكلفة</th>
               </tr>
             </thead>
@@ -61,7 +61,7 @@ export default function Shipping() {
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-sm text-ink-3">الشحن السريع متاح لكل الوجهات بـ {money(100)}. والاستلام من محلّاتنا مجاني دائماً.</p>
+        <p className="mt-3 text-sm text-ink-3">التوصيل السريع خلال 24 ساعة داخل الضفة بـ {money(40)}. والاستلام من محلّنا في بديا مجاني دائماً.</p>
       </section>
 
       <section className="wrap py-10">

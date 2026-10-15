@@ -30,7 +30,7 @@ const origins: Record<string, PassportStage[]> = {
   "undyed-merino": [
     { stage: "الألياف", place: "جزر فوكلاند", maker: "قطعان ملوّنة طبيعياً", note: "يُفرز الصوف حسب لونه الطبيعي" },
     { stage: "الغزل", place: "هاليفاكس، إنجلترا", maker: "غزّال بدفعات صغيرة", note: "يُمزج مع 10% كشمير" },
-    { stage: "الحياكة", place: "عمّان، الأردن", maker: "غرفة التريكو في Tareq Project", note: "آلة مسطّحة من 1974" },
+    { stage: "الحياكة", place: "بديا، فلسطين", maker: "غرفة التريكو في Tareq Project", note: "آلة مسطّحة من 1974" },
   ],
   "hemp-canvas": [
     { stage: "الألياف", place: "موريش، رومانيا", maker: "قنّب بعلي", note: "بلا ريّ ولا مبيدات" },
@@ -44,7 +44,7 @@ const origins: Record<string, PassportStage[]> = {
   ],
 };
 
-const make = (fabricId: string, cutter: string, city = "عمّان، الأردن"): PassportStage[] => [
+const make = (fabricId: string, cutter: string, city = "بديا، فلسطين"): PassportStage[] => [
   ...origins[fabricId],
   { stage: "القصّ", place: city, maker: cutter, note: "يُقصّ باليد، طبقة واحدة، على الورق" },
   { stage: "الخياطة", place: city, maker: "مشغل Tareq Project", note: "صانع واحد يخيط القطعة كاملة" },
@@ -218,7 +218,7 @@ export const products: Product[] = [
     details: ["ياقة من قطعة واحدة", "أزرار من قشر جوز الهند", "فتحات جانبية عند حاشية مستقيمة", "جيب خارجي واحد", "مغسول مسبقاً، لا ينكمش"],
     care: ["غسالة على 30°", "يجف في الظل", "لا يُكوى أبداً — لن نخبر أحداً"],
     cutterNote: "وسّعنا طرف الكم قليلاً ليدخل النسيم. تفصيل صغير، وفرق كبير في الرابعة عصراً.",
-    passport: make("flanders-linen", "عمر صالح", "إريسيرا، البرتغال"),
+    passport: make("flanders-linen", "عمر صالح", "بديا، فلسطين"),
     measurements: [
       { label: "الصدر", cm: 60 },
       { label: "الطول", cm: 70 },
@@ -368,7 +368,7 @@ export const products: Product[] = [
     details: ["حبل شدّ داخلي مخفي", "طيّة واحدة عميقة", "جيوب مائلة ببطانة كتّان", "ساق واسعة مستقيمة بثنية 2 سم"],
     care: ["غسالة على 30°", "يجف في الظل", "التجاعيد مسموحة"],
     cutterNote: "وضعنا الطيّة أبعد بسنتيمتر عن المعتاد لتنفتح حين تمشي لا حين تقف.",
-    passport: make("flanders-linen", "عمر صالح", "إريسيرا، البرتغال"),
+    passport: make("flanders-linen", "عمر صالح", "بديا، فلسطين"),
     measurements: [
       { label: "الخصر", cm: 38 },
       { label: "ارتفاع الخصر", cm: 32 },
@@ -481,7 +481,7 @@ export const products: Product[] = [
     details: ["مقصوص على الوَرب", "جيوب جانبية مخفية", "درزات فرنسية في كل مكان", "رباط خلفي من نفس القماش"],
     care: ["غسالة على 30°", "يُجفّف مسطّحاً ليحفظ الوَرب", "بخار خفيف"],
     cutterNote: "الكتّان على الوَرب عنيد. نتركه معلّقاً 48 ساعة قبل أن نسوّي الحاشية.",
-    passport: make("flanders-linen", "رانيا خوري", "إريسيرا، البرتغال"),
+    passport: make("flanders-linen", "رانيا خوري", "بديا، فلسطين"),
     measurements: [
       { label: "الصدر", cm: 47 },
       { label: "الخصر", cm: 40 },
@@ -590,7 +590,7 @@ export const products: Product[] = [
     details: ["مصبوغ الخيط، لا مطبوع", "خطوط متطابقة عند الدرزات الجانبية", "قصّة مربّعة تناسب القارب"],
     care: ["غسالة على 30°", "يُنشر ليجف"],
     cutterNote: "مطابقة الخطوط عبر الدرزة الجانبية عمل مزعج. نفعله على أي حال.",
-    passport: make("cotton-poplin", "عمر صالح", "إريسيرا، البرتغال"),
+    passport: make("cotton-poplin", "عمر صالح", "بديا، فلسطين"),
     measurements: [
       { label: "الصدر", cm: 54 },
       { label: "الطول", cm: 68 },
@@ -769,7 +769,7 @@ export const products: Product[] = [
     details: ["مصبوغ الخيط، لا مطبوع", "درزات مسطّحة لا تحكّ", "كتف بكبسة للبس السهل في المقاسات الصغيرة"],
     care: ["غسالة على 30°", "يُنشر ليجف"],
     cutterNote: "قصصناه أطول بـ 3 سم من المعتاد. الأطفال يكبرون، والتيشيرت يجب أن يلحق بهم.",
-    passport: make("cotton-poplin", "عمر صالح", "إريسيرا، البرتغال"),
+    passport: make("cotton-poplin", "عمر صالح", "بديا، فلسطين"),
     measurements: [
       { label: "الصدر", cm: 36 },
       { label: "الطول", cm: 46 },
@@ -840,7 +840,7 @@ export const products: Product[] = [
     details: ["خصر مطّاطي مع حبل", "ركب مدعّمة من الداخل", "حاشية بثنية تُفكّ حين يطول"],
     care: ["غسالة على 30°", "يجف في الظل"],
     cutterNote: "الثنية عند الكاحل 4 سم. فكّوها في الصيف القادم.",
-    passport: make("flanders-linen", "عمر صالح", "إريسيرا، البرتغال"),
+    passport: make("flanders-linen", "عمر صالح", "بديا، فلسطين"),
     measurements: [
       { label: "الخصر", cm: 26 },
       { label: "الطول الداخلي", cm: 48 },

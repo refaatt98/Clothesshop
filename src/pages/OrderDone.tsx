@@ -97,7 +97,7 @@ export default function OrderDone() {
             </div>
           </div>
           {order.details.giftNote && <p className="mt-6 font-hand text-2xl text-chalk">«{order.details.giftNote}»</p>}
-          <p className="mt-6 font-hand text-2xl text-thread">كُويت بعناية — مشغل عمّان</p>
+          <p className="mt-6 font-hand text-2xl text-thread">كُويت بعناية — مشغل بديا</p>
           <RotatingStamp text="رفو مدى الحياة · رفو مدى الحياة · " className="absolute -right-4 -top-10 h-24 w-24 text-thread/70 md:-right-10 md:top-auto md:bottom-6">
             <span className="font-display text-xl italic text-thread">✓</span>
           </RotatingStamp>

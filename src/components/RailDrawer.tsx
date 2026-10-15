@@ -102,10 +102,10 @@ export function RailDrawer() {
                   <p className="text-sm text-ink-2">
                     {toFree > 0 ? (
                       <>
-                        بقي <span className="font-semibold text-ink">{money(toFree)}</span> ونشحنه لك مجاناً، مع الجمارك.
+                        بقي <span className="font-semibold text-ink">{money(toFree)}</span> ونوصله لك مجاناً.
                       </>
                     ) : (
-                      <>الشحن علينا. والجمارك أيضاً.</>
+                      <>التوصيل علينا.</>
                     )}
                   </p>
                   <div className="mt-2">

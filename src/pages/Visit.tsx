@@ -7,9 +7,7 @@ import { formatDate, useAsync, useDocumentTitle } from "../lib/hooks";
 
 /** Which weekdays each room opens (0 = Sunday). */
 const openDays: Record<string, number[]> = {
-  amman: [0, 1, 2, 3, 4, 5, 6],
-  lisbon: [0, 2, 3, 4, 5, 6],
-  kyoto: [0, 4, 5, 6],
+  bidya: [0, 1, 2, 3, 4, 6], // closed Fridays
 };
 const slots = ["11:00", "12:30", "14:00", "15:30", "17:00", "18:30"];
 
@@ -34,7 +32,7 @@ function StreetSketch({ seed }: { seed: number }) {
 export default function Visit() {
   useDocumentTitle("زيارة وبروفات");
   const { data: stores } = useAsync(getStores, []);
-  const [storeId, setStoreId] = useState("amman");
+  const [storeId, setStoreId] = useState("bidya");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [who, setWho] = useState({ name: "", email: "" });
@@ -54,7 +52,7 @@ export default function Visit() {
   }, [storeId]);
 
   const chosenDay = days.find((d) => d.toISOString() === date);
-  const availableSlots = chosenDay && storeId === "amman" && chosenDay.getDay() === 5 ? slots.filter((s) => s >= "15:00") : slots;
+  const availableSlots = slots;
   const store = stores?.find((s) => s.id === storeId);
 
   async function submit(e: FormEvent) {
@@ -76,16 +74,16 @@ export default function Visit() {
     <>
       <PageHeader
         trail={[{ label: "الرئيسية", to: "/" }, { label: "زيارة وبروفات" }]}
-        kicker="ثلاث غرف"
+        kicker="محلّنا في بديا"
         title={
           <>
             تعال وجرّبها. <em className="text-thread not-italic">القهوة علينا.</em>
           </>
         }
-        intro="في كل غرفة شريط قياس، ومرآة جيدة، وشخص يعرف القماش. نقصّر البناطيل على حذائك وأنت تنتظر — مجاناً."
+        intro="محلّنا تحت المشغل مباشرة في بديا، محافظة سلفيت. فيه شريط قياس، ومرآة جيدة، وشخص يعرف القماش. نقصّر البناطيل على حذائك وأنت تنتظر — مجاناً."
       />
 
-      <section className="wrap grid gap-6 py-14 lg:grid-cols-3">
+      <section className="wrap mx-auto grid max-w-3xl gap-6 py-14">
         {!stores && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-96" />)}
         {stores?.map((s, i) => (
           <Reveal key={s.id} delay={i * 0.08}>
@@ -181,7 +179,7 @@ export default function Visit() {
           ) : (
             <form onSubmit={submit} className="mt-8 grid gap-8 lg:grid-cols-2">
               <div className="space-y-6">
-                <div>
+                <div className={stores && stores.length > 1 ? "" : "hidden"}>
                   <p className="label text-paper/60">الغرفة</p>
                   <div className="mt-2 grid grid-cols-3 gap-2">
                     {stores?.map((s) => (

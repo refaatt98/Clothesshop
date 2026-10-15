@@ -40,7 +40,7 @@ export default function Contact() {
             اكتب لنا. <em className="text-thread not-italic">يقرأ رسالتك إنسان.</em>
           </>
         }
-        intro="نردّ عادة خلال يوم عمل واحد، من المشغل في عمّان. للأسئلة السريعة، اطّلع أولاً على الأسئلة الشائعة."
+        intro="نردّ عادة خلال يوم عمل واحد، من المشغل في بديا. للأسئلة السريعة، اطّلع أولاً على الأسئلة الشائعة."
       />
 
       <section className="wrap grid gap-10 py-14 lg:grid-cols-[1.4fr_1fr]">

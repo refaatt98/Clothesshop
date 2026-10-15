@@ -97,7 +97,7 @@ function Hero() {
             .
           </h1>
           <p className="mt-7 max-w-md text-[1.08rem] leading-relaxed text-ink-2">
-            تُرسم باليد في مشغلنا في عمّان، تُقصّ واحدة واحدة، تُرقّم كاللوحات المطبوعة — وتُرفأ مجاناً طوال عمرها.
+            تُرسم باليد في مشغلنا في بديا، تُقصّ واحدة واحدة، تُرقّم كاللوحات المطبوعة — وتُرفأ مجاناً طوال عمرها.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Button to="/shop">
@@ -215,7 +215,7 @@ function CareBand() {
     <span className="flex items-center gap-3"><CareSymbol kind="iron" /> يُكوى ويُرقّم</span>,
     <span className="flex items-center gap-3"><CareSymbol kind="flat" /> يُطوى بورق الباترون</span>,
     <span className="flex items-center gap-3"><CareSymbol kind="hand" /> يُرفأ مجاناً، مدى الحياة</span>,
-    <span className="flex items-center gap-3"><CareSymbol kind="dry" /> الجمارك مشمولة</span>,
+    <span className="flex items-center gap-3"><CareSymbol kind="dry" /> الدفع عند الاستلام</span>,
     <span className="flex items-center gap-3"><CareSymbol kind="noBleach" /> بلا تخفيضات. أبداً.</span>,
   ];
   return (

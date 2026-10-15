@@ -38,7 +38,7 @@ export default function Checkout() {
     phone: "",
     address: "",
     city: "",
-    country: "الأردن",
+    country: "فلسطين",
     postcode: "",
     delivery: "standard",
     giftNote: "",
@@ -47,7 +47,7 @@ export default function Checkout() {
   const [card, setCard] = useState({ number: "", exp: "", cvc: "" });
   const up = (k: keyof CheckoutDetails, v: string | boolean) => setD((x) => ({ ...x, [k]: v }));
 
-  const shipping = d.delivery === "collect" ? 0 : d.delivery === "express" ? 100 : subtotal >= FREE_SHIPPING_FROM ? 0 : 50;
+  const shipping = d.delivery === "collect" ? 0 : d.delivery === "express" ? 40 : subtotal >= FREE_SHIPPING_FROM ? 0 : 20;
 
   if (!ready) return <div className="wrap py-24 text-center font-hand text-3xl text-chalk">نفرد قطعك…</div>;
   if (!lines.length)
@@ -139,7 +139,7 @@ export default function Checkout() {
                     </Field>
                     <Field label="الدولة">
                       <select value={d.country} onChange={(e) => up("country", e.target.value)} className={inputCls}>
-                        {["الأردن", "الإمارات", "السعودية", "قطر", "الكويت", "لبنان", "فلسطين", "مصر", "البرتغال", "المملكة المتحدة", "ألمانيا", "فرنسا", "اليابان", "الولايات المتحدة", "أخرى"].map((c) => (
+                        {["فلسطين", "الأردن", "الإمارات", "السعودية", "قطر", "الكويت", "مصر", "أخرى"].map((c) => (
                           <option key={c}>{c}</option>
                         ))}
                       </select>
@@ -153,9 +153,9 @@ export default function Checkout() {
                   <div className="grid gap-3">
                     {(
                       [
-                        ["standard", "عادي", "5–8 أيام عمل، مع التتبّع", subtotal >= FREE_SHIPPING_FROM ? "مجاني" : money(50)],
-                        ["express", "سريع", "2–3 أيام عمل، مع التتبّع", money(100)],
-                        ["collect", "استلام من المحلّ", "عمّان أو لشبونة أو كيوتو — ونتأكّد من المقاس معك", "مجاني"],
+                        ["standard", "عادي", "1–3 أيام لكل مناطق الضفة والقدس والداخل — الدفع عند الاستلام متاح", subtotal >= FREE_SHIPPING_FROM ? "مجاني" : money(20)],
+                        ["express", "سريع", "خلال 24 ساعة في الضفة الغربية", money(40)],
+                        ["collect", "استلام من المحلّ", "من محلّنا في بديا — ونتأكّد من المقاس معك", "مجاني"],
                       ] as const
                     ).map(([id, t, s, p]) => (
                       <label key={id} className={`flex cursor-pointer items-center gap-4 rounded-md p-4 ring-1 transition ${d.delivery === id ? "bg-tissue ring-2 ring-ink" : "ring-line hover:ring-ink/30"}`}>
@@ -296,7 +296,7 @@ export default function Checkout() {
               <dd className="font-mono">{shipping ? money(shipping) : "مجاني"}</dd>
             </div>
             <div className="flex justify-between">
-              <dt>الجمارك والضرائب</dt>
+              <dt>الضريبة</dt>
               <dd>مشمولة</dd>
             </div>
             <div className="flex items-baseline justify-between pt-2">
