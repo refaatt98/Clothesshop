@@ -127,7 +127,7 @@ export default function Mending() {
           <div>
             <p className="label text-thread">بطاقة طلب رفو</p>
             <h2 className="mt-2 font-display text-[2.4rem] leading-tight">ما الذي يحتاج إصلاحاً؟</h2>
-            <p className="mt-3 text-ink-2">املأ البطاقة وسنرسل لك ملصق الشحن المجاني فوراً. إن لم تكن متأكّداً من اسم القطعة، اختر «قطعة أخرى من أورليه».</p>
+            <p className="mt-3 text-ink-2">املأ البطاقة وسنرسل لك ملصق الشحن المجاني فوراً. إن لم تكن متأكّداً من اسم القطعة، اختر «قطعة أخرى من Tareq Project».</p>
             {form.piece && catalog && (
               <div className="mt-6 grid h-48 place-items-center rounded-md bg-mat">
                 {(() => {
@@ -177,7 +177,7 @@ export default function Mending() {
                       {p.name}
                     </option>
                   ))}
-                  <option value="other">قطعة أخرى من أورليه</option>
+                  <option value="other">قطعة أخرى من Tareq Project</option>
                 </select>
               </Field>
               <div>

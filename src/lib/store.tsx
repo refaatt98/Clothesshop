@@ -70,9 +70,9 @@ interface ShopState {
 const ShopContext = createContext<ShopState | null>(null);
 
 export function ShopProvider({ children }: { children: ReactNode }) {
-  const [rail, setRail] = useState<CartLine[]>(() => load("ourlet.rail", []));
-  const [pinned, setPinned] = useState<string[]>(() => load("ourlet.pinned", []));
-  const [looks, setLooks] = useState<SavedLook[]>(() => load("ourlet.looks", []));
+  const [rail, setRail] = useState<CartLine[]>(() => load("tareq.rail", []));
+  const [pinned, setPinned] = useState<string[]>(() => load("tareq.pinned", []));
+  const [looks, setLooks] = useState<SavedLook[]>(() => load("tareq.looks", []));
   const [currency, setCurrency] = useState<Currency>("ILS");
   const [railOpen, setRailOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -85,10 +85,10 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     getChapters().then(setChapters);
   }, []);
 
-  useEffect(() => save("ourlet.rail", rail), [rail]);
-  useEffect(() => save("ourlet.pinned", pinned), [pinned]);
-  useEffect(() => save("ourlet.looks", looks), [looks]);
-  useEffect(() => save("ourlet.currency", currency), [currency]);
+  useEffect(() => save("tareq.rail", rail), [rail]);
+  useEffect(() => save("tareq.pinned", pinned), [pinned]);
+  useEffect(() => save("tareq.looks", looks), [looks]);
+  useEffect(() => save("tareq.currency", currency), [currency]);
 
   const toast = useCallback((text: string, sub?: string) => {
     const id = Date.now() + Math.random();

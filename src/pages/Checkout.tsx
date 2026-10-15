@@ -71,7 +71,7 @@ export default function Checkout() {
     setBusy(true);
     try {
       const order = await placeOrder(rail, d);
-      sessionStorage.setItem("ourlet.lastOrder", JSON.stringify(order));
+      sessionStorage.setItem("tareq.lastOrder", JSON.stringify(order));
       clearRail();
       navigate("/checkout/done", { state: order });
     } catch (err) {

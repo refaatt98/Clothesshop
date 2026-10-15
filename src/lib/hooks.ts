@@ -25,7 +25,7 @@ export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList) {
 
 export function useDocumentTitle(title: string) {
   useEffect(() => {
-    document.title = title ? `${title} — أورليه` : "أورليه — ملابس تُرسم باليد";
+    document.title = title ? `${title} — Tareq Project` : "Tareq Project — ملابس تُرسم باليد";
   }, [title]);
 }
 

@@ -10,7 +10,7 @@ import type { Order } from "../types";
 function readOrder(state: unknown): Order | null {
   if (state && typeof state === "object" && "number" in state) return state as Order;
   try {
-    const raw = sessionStorage.getItem("ourlet.lastOrder");
+    const raw = sessionStorage.getItem("tareq.lastOrder");
     return raw ? (JSON.parse(raw) as Order) : null;
   } catch {
     return null;
@@ -48,7 +48,7 @@ export default function OrderDone() {
         <div className="bg-tissue bg-ruled px-6 pb-8 pt-4 shadow-[0_30px_60px_-30px_#1e1c1966] md:px-10">
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-display text-2xl font-bold">أورليه</p>
+              <p className="font-display text-2xl font-bold">Tareq Project</p>
               <p className="label text-ink-3">إيصال الطلب</p>
             </div>
             <div className="text-left font-mono text-sm">

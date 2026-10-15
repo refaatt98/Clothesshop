@@ -30,7 +30,7 @@ const origins: Record<string, PassportStage[]> = {
   "undyed-merino": [
     { stage: "الألياف", place: "جزر فوكلاند", maker: "قطعان ملوّنة طبيعياً", note: "يُفرز الصوف حسب لونه الطبيعي" },
     { stage: "الغزل", place: "هاليفاكس، إنجلترا", maker: "غزّال بدفعات صغيرة", note: "يُمزج مع 10% كشمير" },
-    { stage: "الحياكة", place: "عمّان، الأردن", maker: "غرفة التريكو في أورليه", note: "آلة مسطّحة من 1974" },
+    { stage: "الحياكة", place: "عمّان، الأردن", maker: "غرفة التريكو في Tareq Project", note: "آلة مسطّحة من 1974" },
   ],
   "hemp-canvas": [
     { stage: "الألياف", place: "موريش، رومانيا", maker: "قنّب بعلي", note: "بلا ريّ ولا مبيدات" },
@@ -47,8 +47,8 @@ const origins: Record<string, PassportStage[]> = {
 const make = (fabricId: string, cutter: string, city = "عمّان، الأردن"): PassportStage[] => [
   ...origins[fabricId],
   { stage: "القصّ", place: city, maker: cutter, note: "يُقصّ باليد، طبقة واحدة، على الورق" },
-  { stage: "الخياطة", place: city, maker: "مشغل أورليه", note: "صانع واحد يخيط القطعة كاملة" },
-  { stage: "الكيّ", place: city, maker: "مشغل أورليه", note: "تُبخّر، تُرقّم، وتُطوى بورق الباترون" },
+  { stage: "الخياطة", place: city, maker: "مشغل Tareq Project", note: "صانع واحد يخيط القطعة كاملة" },
+  { stage: "الكيّ", place: city, maker: "مشغل Tareq Project", note: "تُبخّر، تُرقّم، وتُطوى بورق الباترون" },
 ];
 
 /** مقاسات الأطفال بالسنوات */

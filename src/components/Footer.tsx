@@ -82,7 +82,7 @@ export function Footer() {
       <div className="wrap flex flex-col gap-8 py-12 md:flex-row md:items-end md:justify-between">
         <div>
           <Link to="/" className="font-display text-[2rem] font-bold leading-none">
-            أورليه<span className="text-thread">.</span>
+            <span dir="ltr">Tareq Project</span><span className="text-thread">.</span>
           </Link>
           <p className="mt-2 max-w-xs text-sm text-ink-2">ملابس تُرسم على الورق، تُقصّ باليد، وتُرفأ مجاناً مدى الحياة.</p>
         </div>
@@ -104,7 +104,7 @@ export function Footer() {
       <div className="border-t border-line">
         <div className="wrap flex flex-col gap-4 py-5 text-xs text-ink-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <span>© 2026 أورليه</span>
+            <span>© 2026 Tareq Project</span>
             <Link to="/legal/privacy" className="hover:text-thread">الخصوصية</Link>
             <Link to="/legal/terms" className="hover:text-thread">الشروط</Link>
             <Link to="/legal/accessibility" className="hover:text-thread">إمكانية الوصول</Link>

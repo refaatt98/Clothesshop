@@ -363,7 +363,7 @@ export function GarmentFlat({ kind, hex, accent, pattern, className, shadow = tr
 
       {kind === "tote" && (
         <text x="100" y="162.5" textAnchor="middle" fontFamily="Courier Prime, monospace" fontSize="7" letterSpacing="1.5" fill={INK} opacity="0.75">
-          OURLET
+          TAREQ
         </text>
       )}
     </svg>

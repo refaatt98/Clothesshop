@@ -8,7 +8,7 @@ import { useAsync, useDocumentTitle } from "../lib/hooks";
 
 const promises = [
   { t: "لا تخفيضات. أبداً.", d: "نصنع إصدارات مرقّمة بقدر ما نستطيع بيعه بسعر عادل، فلا يتراكم فائض نحتاج لتصريفه." },
-  { t: "رفو مدى الحياة", d: "ثقب، زرّ، حاشية، سحّاب — كل قطعة من أورليه تُصلح مجاناً طوال عمرها، أيّاً كان مالكها." },
+  { t: "رفو مدى الحياة", d: "ثقب، زرّ، حاشية، سحّاب — كل قطعة من Tareq Project تُصلح مجاناً طوال عمرها، أيّاً كان مالكها." },
   { t: "صانع واحد لكل قطعة", d: "من يبدأ القطعة يُنهيها. لا خطوط إنتاج، ولا أيادٍ مجهولة." },
   { t: "صفر بلاستيك", d: "ورق باترون، كرتون مُعاد تدويره، وشريط قطني. والبطاقة مكتوبة باليد." },
   { t: "أجور معلنة", d: "كل من في المشغل يتقاضى 22% فوق أجر المعيشة على الأقل. ننشر الرقم كل سنة." },
@@ -23,7 +23,7 @@ function NameLabel({ name, index }: { name: string; index: number }) {
       <div className="pointer-events-none absolute inset-1.5 rounded-sm border border-dashed border-ink/30" />
       <p className="font-hand text-[2rem] leading-none text-thread">{name.split(" ")[0]}</p>
       <p className="mt-1 font-mono text-[0.6rem] uppercase text-ink-3" dir="ltr">
-        OURLET · HAND-MADE
+        TAREQ PROJECT · HAND-MADE
       </p>
     </div>
   );
@@ -44,7 +44,7 @@ export default function Atelier() {
             بدأ كل شيء <em className="text-thread not-italic">ببطانية عسكرية قديمة.</em>
           </>
         }
-        intro="أورليه مشغل صغير في جبل عمّان، وآخر صيفي على ساحل البرتغال. أربعة عشر صانعاً، ماكينات قديمة، وجدار طويل من الباترونات الورقية. نصنع ملابس قليلة، ونعتني بها طويلاً."
+        intro="Tareq Project مشغل صغير في جبل عمّان، وآخر صيفي على ساحل البرتغال. أربعة عشر صانعاً، ماكينات قديمة، وجدار طويل من الباترونات الورقية. نصنع ملابس قليلة، ونعتني بها طويلاً."
       />
 
       {/* صورة المشغل: طاولة قصّ مرسومة */}
@@ -68,7 +68,7 @@ export default function Atelier() {
             ))}
           </div>
           <HandNote className="absolute bottom-4 left-6 hidden text-2xl sm:block">الطاولة الكبيرة، عمّان — صباح الثلاثاء</HandNote>
-          <RotatingStamp text="مشغل أورليه · عمّان · منذ 2014 · " className="absolute bottom-4 right-6 hidden h-24 w-24 text-ink/60 md:block">
+          <RotatingStamp text="مشغل Tareq Project · عمّان · منذ 2014 · " className="absolute bottom-4 right-6 hidden h-24 w-24 text-ink/60 md:block">
             <span className="font-display text-xl font-bold">١٤</span>
           </RotatingStamp>
         </div>

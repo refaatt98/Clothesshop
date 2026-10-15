@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
-import { ArrowUpLeft, Menu, Search, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router";
 import { useLockBody } from "../lib/hooks";
@@ -7,12 +7,8 @@ import { useShop } from "../lib/store";
 import type { Category } from "../types";
 import { PinHead } from "./ui";
 
-const notices = [
-  { text: "رفو مجاني طوال عمر كل قطعة", to: "/mending" },
-  { text: "لن نقيم تخفيضات أبداً — وهذا السبب", to: "/journal/why-we-never-have-sales" },
-  { text: "بروفات في عمّان ولشبونة وكيوتو", to: "/visit" },
-  { text: "شحن مجاني فوق 900 ₪ · الجمارك مشمولة", to: "/shipping" },
-];
+/** Welcome lines in the top bar — they gently take turns. */
+const welcomes = ["أهلاً وسهلاً بك في Tareq Project", "سعداء بزيارتك — خذ وقتك وتجوّل بين القطع", "كل قطعة هنا صُنعت بحبّ، ونتمنى أن تجد ما يشبهك"];
 
 export const categoryNames: Record<Category, string> = {
   outerwear: "معاطف وجاكيتات",
@@ -49,13 +45,13 @@ function useIsActive() {
 
 export function Logo({ className = "" }: { className?: string }) {
   return (
-    <Link to="/" className={`group inline-flex flex-col items-center leading-none ${className}`} aria-label="أورليه — الرئيسية">
-      <span className="font-display text-[2rem] font-bold leading-none md:text-[2.3rem]">
-        أورليه<span className="text-thread">.</span>
+    <Link to="/" className={`group inline-flex flex-col items-center leading-none ${className}`} aria-label="Tareq Project — الرئيسية">
+      <span className="whitespace-nowrap font-display text-[1.55rem] font-bold leading-none md:text-[2.1rem]" dir="ltr">
+        Tareq Project<span className="text-thread">.</span>
       </span>
-      <span className="mt-1.5 flex items-center gap-1.5 font-mono text-[0.58rem] uppercase text-ink-3" dir="ltr">
+      <span className="mt-1.5 flex items-center gap-1.5 text-[0.62rem] text-ink-3">
         <span className="h-px w-3 bg-thread transition-all group-hover:w-6" />
-        OURLET · EST. 2014
+        مشغل خياطة · منذ 2014
         <span className="h-px w-3 bg-thread transition-all group-hover:w-6" />
       </span>
     </Link>
@@ -143,7 +139,7 @@ export function Header() {
   const isActive = useIsActive();
 
   useEffect(() => {
-    const t = setInterval(() => setNotice((n) => (n + 1) % notices.length), 4200);
+    const t = setInterval(() => setNotice((n) => (n + 1) % welcomes.length), 4200);
     return () => clearInterval(t);
   }, []);
   useEffect(() => {
@@ -159,9 +155,9 @@ export function Header() {
         <div className="wrap flex h-9 items-center justify-center overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div key={notice} initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -14, opacity: 0 }} transition={{ duration: 0.35 }}>
-              <Link to={notices[notice].to} className="flex items-center gap-2 text-[0.8rem] hover:text-butter">
-                <span className="text-thread">✂</span> {notices[notice].text} <ArrowUpLeft className="h-3 w-3" />
-              </Link>
+              <p className="flex items-center gap-2 text-[0.82rem]">
+                <span className="text-thread">✦</span> {welcomes[notice]} <span className="text-thread">✦</span>
+              </p>
             </motion.div>
           </AnimatePresence>
         </div>
