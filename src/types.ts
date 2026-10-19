@@ -238,7 +238,16 @@ export interface Order {
   items: OrderItem[];
   adminNote?: string | null;
   updatedAt?: string;
+  paymentStatus?: PaymentStatus;
+  zoneId?: string | null;
 }
+
+export type PaymentStatus = "unpaid" | "paid" | "refunded";
+export const PAYMENT_STATUSES: { id: PaymentStatus; label: string }[] = [
+  { id: "unpaid", label: "غير مدفوع" },
+  { id: "paid", label: "مدفوع" },
+  { id: "refunded", label: "مُرجع" },
+];
 
 export interface PromoCode {
   id: string;

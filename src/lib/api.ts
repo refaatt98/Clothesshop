@@ -14,6 +14,7 @@ import type {
   Order,
   OrderInput,
   OrderStatus,
+  PaymentStatus,
   ProcessStep,
   Product,
   ProductFilter,
@@ -187,6 +188,8 @@ export const mapOrder = (r: Row): Order => ({
   createdAt: r.created_at,
   adminNote: r.admin_note,
   updatedAt: r.updated_at,
+  paymentStatus: r.payment_status,
+  zoneId: r.zone_id,
   items: (r.items ?? r.order_items ?? []).map((i: Row) => ({
     id: i.id,
     productId: i.product_id,
@@ -500,14 +503,134 @@ export async function adminSaveSettings(s: SiteInfo) {
 
 // ─── الطلبات ──────────────────────────────────────────────
 
-export async function adminListOrders(opts: { status?: string; q?: string; limit?: number } = {}): Promise<Order[]> {
-  let query = supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }).limit(opts.limit ?? 200);
-  if (opts.status) query = query.eq("status", opts.status);
+export interface OrderQuery {
+  status?: string;
+  q?: string;
+  from?: string; // ISO
+  to?: string; // ISO
+  zone?: string;
+  payment?: string;
+  page?: number; // يبدأ من 1
+  pageSize?: number;
+  limit?: number;
+}
+
+function applyOrderFilters<T extends { or: (f: string) => T; eq: (c: string, v: string) => T; gte: (c: string, v: string) => T; lt: (c: string, v: string) => T }>(
+  query: T,
+  opts: OrderQuery,
+  withStatus: boolean,
+): T {
+  let qy = query;
+  if (withStatus && opts.status) qy = qy.eq("status", opts.status);
+  if (opts.zone) qy = qy.eq("zone_name", opts.zone);
+  if (opts.payment) qy = qy.eq("payment_status", opts.payment);
+  if (opts.from) qy = qy.gte("created_at", opts.from);
+  if (opts.to) qy = qy.lt("created_at", opts.to);
   if (opts.q?.trim()) {
-    const t = opts.q.trim().replace(/[%,()]/g, " ");
-    query = query.or(`customer_name.ilike.%${t}%,phone.ilike.%${t}%,number.ilike.%${t}%,city.ilike.%${t}%`);
+    const t = opts.q.trim().replace(/^#/, "").replace(/[%,()]/g, " ");
+    qy = qy.or(`customer_name.ilike.%${t}%,phone.ilike.%${t}%,number.ilike.%${t}%,city.ilike.%${t}%`);
   }
-  return check(await query).map(mapOrder);
+  return qy;
+}
+
+export async function adminListOrders(opts: OrderQuery = {}): Promise<Order[]> {
+  return (await adminPageOrders({ ...opts, page: 1, pageSize: opts.limit ?? 500 })).orders;
+}
+
+export async function adminPageOrders(opts: OrderQuery = {}): Promise<{ orders: Order[]; total: number }> {
+  const size = opts.pageSize ?? 10;
+  const page = Math.max(1, opts.page ?? 1);
+  let query = supabase.from("orders").select("*, order_items(*)", { count: "exact" }).order("created_at", { ascending: false });
+  query = applyOrderFilters(query, opts, true);
+  const res = await query.range((page - 1) * size, page * size - 1);
+  if (res.error) throw new Error(translateError(res.error.message));
+  return { orders: (res.data ?? []).map(mapOrder), total: res.count ?? 0 };
+}
+
+/** ملخص لكروت صفحة الطلبات (بدون فلتر الحالة) */
+export async function adminOrdersSummary(opts: OrderQuery = {}) {
+  let query = supabase.from("orders").select("status,total,payment_status");
+  query = applyOrderFilters(query, opts, false);
+  const rows = check(await query) as Row[];
+  const counts: Record<string, number> = {};
+  let collected = 0;
+  let pending = 0;
+  for (const r of rows) {
+    counts[r.status] = (counts[r.status] ?? 0) + 1;
+    const t = num(r.total);
+    if (r.status === "cancelled" || r.payment_status === "refunded") continue;
+    if (r.payment_status === "paid" || r.status === "delivered") collected += t;
+    else pending += t;
+  }
+  return { counts, all: rows.length, collected, pending };
+}
+
+export async function adminOrderZones(): Promise<string[]> {
+  const rows = check(await supabase.from("orders").select("zone_name")) as Row[];
+  return [...new Set(rows.map((r) => r.zone_name as string).filter(Boolean))];
+}
+
+export async function adminBulkStatus(ids: string[], status: OrderStatus) {
+  check(await supabase.from("orders").update({ status }).in("id", ids));
+}
+
+export async function adminUpdateOrderFields(
+  id: string,
+  patch: Partial<{ name: string; phone: string; zoneId: string | null; zoneName: string; isPickup: boolean; city: string; address: string; notes: string | null; adminNote: string | null; paymentStatus: PaymentStatus; deliveryFee: number; discount: number }>,
+) {
+  const row: Row = {
+    customer_name: patch.name,
+    phone: patch.phone,
+    zone_id: patch.zoneId,
+    zone_name: patch.zoneName,
+    is_pickup: patch.isPickup,
+    city: patch.city,
+    address: patch.address,
+    notes: patch.notes,
+    admin_note: patch.adminNote,
+    payment_status: patch.paymentStatus,
+    delivery_fee: patch.deliveryFee,
+    discount: patch.discount,
+  };
+  Object.keys(row).forEach((k) => row[k] === undefined && delete row[k]);
+  check(await supabase.from("orders").update(row).eq("id", id));
+  if (patch.deliveryFee !== undefined || patch.discount !== undefined) await adminRecalcOrder(id);
+}
+
+/** بيعيد حساب المجموع والإجمالي من القطع */
+export async function adminRecalcOrder(orderId: string) {
+  const items = check(await supabase.from("order_items").select("price,qty").eq("order_id", orderId)) as Row[];
+  const o = check(await supabase.from("orders").select("delivery_fee,gift_wrap_fee,discount").eq("id", orderId).single()) as Row;
+  const subtotal = items.reduce((s, i) => s + num(i.price) * i.qty, 0);
+  const total = Math.max(subtotal + num(o.delivery_fee) + num(o.gift_wrap_fee) - num(o.discount), 0);
+  check(await supabase.from("orders").update({ subtotal, total }).eq("id", orderId));
+}
+
+export async function adminUpdateOrderItem(orderId: string, itemId: string, patch: { price?: number; qty?: number; note?: string | null }) {
+  const row: Row = { price: patch.price, qty: patch.qty, note: patch.note };
+  Object.keys(row).forEach((k) => row[k] === undefined && delete row[k]);
+  check(await supabase.from("order_items").update(row).eq("id", itemId));
+  await adminRecalcOrder(orderId);
+}
+
+export async function adminAddOrderItem(orderId: string, product: Product, qty = 1) {
+  check(
+    await supabase.from("order_items").insert({
+      order_id: orderId,
+      product_id: product.id,
+      name: product.name,
+      image: product.images[0] ?? null,
+      art: product.art,
+      price: product.price,
+      qty,
+    }),
+  );
+  await adminRecalcOrder(orderId);
+}
+
+export async function adminRemoveOrderItem(orderId: string, itemId: string) {
+  check(await supabase.from("order_items").delete().eq("id", itemId));
+  await adminRecalcOrder(orderId);
 }
 
 export async function adminGetOrder(id: string): Promise<{ order: Order; events: { status: OrderStatus; createdAt: string }[] } | null> {
@@ -517,10 +640,11 @@ export async function adminGetOrder(id: string): Promise<{ order: Order; events:
   return { order: mapOrder(data), events: ev.map((e: Row) => ({ status: e.status, createdAt: e.created_at })) };
 }
 
-export async function adminUpdateOrder(id: string, patch: { status?: OrderStatus; adminNote?: string | null }) {
+export async function adminUpdateOrder(id: string, patch: { status?: OrderStatus; adminNote?: string | null; paymentStatus?: PaymentStatus }) {
   const row: Row = {};
   if (patch.status) row.status = patch.status;
   if (patch.adminNote !== undefined) row.admin_note = patch.adminNote;
+  if (patch.paymentStatus) row.payment_status = patch.paymentStatus;
   check(await supabase.from("orders").update(row).eq("id", id));
 }
 

@@ -245,3 +245,128 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ══ طباعة الفواتير ══════════════════════════════════════ */
+.print-area {
+  display: none;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  body::before {
+    display: none !important;
+  }
+  body > *:not(.print-area) {
+    display: none !important;
+  }
+  .print-area {
+    display: block;
+    color: #1f1410;
+    font-family: var(--font-sans);
+    font-size: 12pt;
+  }
+  .invoice {
+    break-after: page;
+    page-break-after: always;
+  }
+  .invoice:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+  .inv-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #4a2a18;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+  .inv-logo {
+    height: 70px;
+    width: auto;
+  }
+  .inv-meta {
+    text-align: left;
+  }
+  .inv-meta h1 {
+    font-size: 18pt;
+    font-weight: 700;
+  }
+  .inv-num {
+    font-size: 15pt;
+    font-weight: 700;
+    direction: ltr;
+  }
+  .inv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .inv-grid > div {
+    border: 1px dashed #b9a493;
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .inv-grid h2 {
+    font-size: 10pt;
+    color: #6e4c38;
+    margin-bottom: 4px;
+  }
+  .inv-table,
+  .inv-sum {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .inv-table th,
+  .inv-table td {
+    border-bottom: 1px solid #e4d5c4;
+    padding: 7px 6px;
+    text-align: right;
+    vertical-align: top;
+  }
+  .inv-table th {
+    background: #f5ede3;
+    font-size: 10pt;
+  }
+  .inv-sub {
+    font-size: 9.5pt;
+    color: #6e4c38;
+  }
+  .inv-bottom {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 16px;
+    margin-top: 14px;
+  }
+  .inv-notes p {
+    margin-bottom: 6px;
+    font-size: 10.5pt;
+  }
+  .inv-sum td {
+    padding: 5px 6px;
+  }
+  .inv-sum td:last-child {
+    text-align: left;
+    direction: ltr;
+  }
+  .inv-total td {
+    border-top: 2px solid #4a2a18;
+    font-weight: 700;
+    font-size: 13pt;
+  }
+  .inv-foot {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 10pt;
+    color: #6e4c38;
+    border-top: 1px dashed #b9a493;
+    padding-top: 10px;
+  }
+}

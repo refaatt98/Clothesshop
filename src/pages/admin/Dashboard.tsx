@@ -116,7 +116,7 @@ export default function AdminDashboard() {
         <ul className="divide-y divide-dashed divide-line">
           {latest?.map((o) => (
             <li key={o.id}>
-              <Link to={`/admin/orders/${o.id}`} className="flex flex-wrap items-center justify-between gap-2 py-3 hover:bg-cream-2/50">
+              <Link to={`/admin/orders?order=${o.id}`} className="flex flex-wrap items-center justify-between gap-2 py-3 hover:bg-cream-2/50">
                 <span className="min-w-0">
                   <b className="tabular-nums">{o.number}</b> · {o.name}
                   <span className="block text-xs text-cocoa-3">{fmtDate(o.createdAt)} · {o.zoneName}</span>
