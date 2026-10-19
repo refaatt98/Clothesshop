@@ -1,5 +1,5 @@
 {
-  "name": "tareq-project",
+  "name": "banan-store",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
     "lucide-react": "^1.57.0",
     "motion": "^14.2.0",
     "react": "^19.3.1",

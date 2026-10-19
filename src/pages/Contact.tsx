@@ -1,131 +1,129 @@
-import { motion } from "motion/react";
-import { Check, Mail, Phone } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { Check, ChevronDown, Clock, LoaderCircle, Mail, Phone } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router";
-import { Button, Field, HandNote, inputCls, PageHeader, Skeleton } from "../components/ui";
-import { getStores, sendContactMessage } from "../lib/api";
-import { useAsync, useDocumentTitle } from "../lib/hooks";
+import { InstagramIcon, WhatsappIcon } from "../components/Icons";
+import { PageHero, Reveal, SectionHeading } from "../components/ui";
+import { getFaqs, submitContact, whatsappLink } from "../lib/api";
+import { useAsync, useTitle } from "../lib/hooks";
+import { useSite } from "../lib/site";
 
-const topics = ["سؤال عن قطعة", "طلبي", "المقاسات", "الرفو", "إرجاع أو استبدال", "طلب قطعة خاصة", "صحافة وتعاون", "شيء آخر"];
+const channelsFor = (site: ReturnType<typeof useSite>["site"]) => [
+  { icon: WhatsappIcon, title: "واتساب", value: "أسرع طريقة", href: whatsappLink(site.whatsapp, "مرحبا بَنان 🤍"), tint: "bg-sage-soft" },
+  { icon: InstagramIcon, title: "إنستغرام", value: `@${site.instagram}`, href: `https://instagram.com/${site.instagram}`, tint: "bg-rose-soft" },
+  { icon: Phone, title: "اتصال", value: site.phone, href: `tel:${site.phone.replace(/\s/g, "")}`, tint: "bg-gold-soft" },
+  { icon: Mail, title: "البريد", value: site.email, href: `mailto:${site.email}`, tint: "bg-cream-2" },
+];
+
+function Faq({ q, a, i }: { q: string; a: string; i: number }) {
+  const [open, setOpen] = useState(i === 0);
+  return (
+    <div className="stitched rounded-3xl bg-linen">
+      <button onClick={() => setOpen((o) => !o)} aria-expanded={open} className="relative z-10 flex w-full items-center justify-between gap-4 p-5 text-start font-semibold">
+        {q}
+        <motion.span animate={{ rotate: open ? 180 : 0 }} className="shrink-0"><ChevronDown className="size-5" /></motion.span>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+            <p className="px-5 pb-5 leading-8 text-cocoa-2">{a}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function Contact() {
-  useDocumentTitle("راسلنا");
-  const { data: stores } = useAsync(getStores, []);
-  const [form, setForm] = useState({ name: "", email: "", topic: topics[0], message: "" });
-  const [state, setState] = useState<"idle" | "busy" | "done">("idle");
+  useTitle("تواصلي معنا");
+  const { site } = useSite();
+  const channels = channelsFor(site);
+  const { data: faqs } = useAsync(getFaqs, []);
+  const [form, setForm] = useState({ name: "", phone: "", message: "" });
+  const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState("");
-  const [ticket, setTicket] = useState("");
 
-  async function submit(e: FormEvent) {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (form.name.trim().length < 2 || form.message.trim().length < 5) {
+      setError("اكتبي اسمك ورسالتك لو سمحتِ");
+      return;
+    }
     setError("");
-    setState("busy");
+    setState("sending");
     try {
-      const r = await sendContactMessage(form);
-      setTicket(r.ticket);
+      await submitContact(form);
       setState("done");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "حدث خطأ ما");
       setState("idle");
+      setError(err instanceof Error ? err.message : "ما وصلت الرسالة، جرّبي كمان مرة");
+      return;
     }
-  }
+    setForm({ name: "", phone: "", message: "" });
+  };
 
   return (
     <>
-      <PageHeader
-        trail={[{ label: "الرئيسية", to: "/" }, { label: "راسلنا" }]}
-        kicker="ورقة رسائل"
-        title={
-          <>
-            اكتب لنا. <em className="text-thread not-italic">يقرأ رسالتك إنسان.</em>
-          </>
-        }
-        intro="نردّ عادة خلال يوم عمل واحد، من المشغل في بديا. للأسئلة السريعة، اطّلع أولاً على الأسئلة الشائعة."
-      />
+      <PageHero eyebrow="تواصلي معنا" title="منحب نسمع منك" text="سؤال، فكرة، أو بس بدك تحكي مرحبا — إحنا هون." />
 
-      <section className="wrap grid gap-10 py-14 lg:grid-cols-[1.4fr_1fr]">
-        <div className="rounded-md bg-tissue bg-ruled p-6 ring-1 ring-line md:p-10">
-          {state === "done" ? (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} role="status">
-              <span className="grid h-12 w-12 place-items-center rounded-full bg-sage text-tissue">
-                <Check className="h-6 w-6" />
-              </span>
-              <h2 className="mt-4 font-display text-3xl">وصلت رسالتك، {form.name.split(" ")[0]}.</h2>
-              <p className="mt-2 text-ink-2">
-                رقم التذكرة <span className="font-mono font-bold text-ink">{ticket}</span>. سنردّ على <span dir="ltr">{form.email}</span> خلال يوم عمل.
-              </p>
-              <HandNote className="mt-4 text-2xl">— رانيا، من طاولة الرسائل</HandNote>
-              <div className="mt-6 flex gap-3">
-                <Button
-                  variant="paper"
-                  onClick={() => {
-                    setState("idle");
-                    setForm({ ...form, message: "" });
-                  }}
-                >
-                  رسالة أخرى
-                </Button>
-                <Button to="/shop">عُد إلى المتجر</Button>
-              </div>
-            </motion.div>
-          ) : (
-            <form onSubmit={submit} className="space-y-5">
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="اسمك">
-                  <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} autoComplete="name" />
-                </Field>
-                <Field label="بريدك الإلكتروني">
-                  <input required type="email" dir="ltr" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputCls} autoComplete="email" />
-                </Field>
-              </div>
-              <div>
-                <span className="label text-ink-3">الموضوع</span>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {topics.map((t) => (
-                    <button type="button" key={t} onClick={() => setForm({ ...form, topic: t })} className={`rounded-full px-3 py-1.5 text-sm ring-1 ${form.topic === t ? "bg-ink text-paper ring-ink" : "bg-paper ring-line hover:ring-ink/40"}`}>
-                      {t}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <Field label="رسالتك" hint="إن كان الأمر عن طلب، أضف رقمه (يبدأ بـ OU-).">
-                <textarea required rows={6} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className={inputCls} />
-              </Field>
-              {error && (
-                <p className="text-sm text-thread" role="alert">
-                  {error}
-                </p>
-              )}
-              <Button type="submit" disabled={state === "busy"}>
-                {state === "busy" ? "نطوي الرسالة…" : "أرسل الرسالة"}
-              </Button>
-            </form>
-          )}
+      <section className="container-b py-12 md:py-16">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          {channels.map((c, i) => (
+            <Reveal key={c.title} delay={i * 0.06}>
+              <a href={c.href} target={c.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className={`stitched group flex h-full flex-col items-center gap-3 rounded-[1.75rem] p-5 text-center transition hover:-translate-y-1 ${c.tint}`}>
+                <span className="grid size-12 place-items-center rounded-full bg-linen transition group-hover:rotate-12"><c.icon className="size-6" /></span>
+                <span className="font-semibold">{c.title}</span>
+                <span className="break-all text-sm text-cocoa-2" dir={c.title === "واتساب" ? undefined : "ltr"}>{c.value}</span>
+              </a>
+            </Reveal>
+          ))}
         </div>
 
-        <aside className="space-y-4">
-          <p className="label text-ink-3">أو تواصل مع محلّ مباشرة</p>
-          {!stores && <Skeleton className="h-40" />}
-          {stores?.map((s) => (
-            <div key={s.id} className="rounded-md p-5 ring-1 ring-line">
-              <p className="font-display text-2xl">
-                {s.city} <span className="text-base text-ink-3">· {s.country}</span>
-              </p>
-              <a href={`tel:${s.phone.replace(/\s/g, "")}`} className="mt-3 flex items-center gap-2 text-ink-2 hover:text-thread">
-                <Phone className="h-4 w-4" /> <span dir="ltr">{s.phone}</span>
-              </a>
-              <a href={`mailto:${s.email}`} className="mt-1 flex items-center gap-2 text-ink-2 hover:text-thread">
-                <Mail className="h-4 w-4" /> <span dir="ltr">{s.email}</span>
-              </a>
+        <div className="mt-14 grid gap-10 lg:grid-cols-2">
+          <Reveal>
+            <form onSubmit={submit} noValidate className="rounded-[2rem] border border-dashed border-line bg-linen p-6 md:p-8">
+              <h2 className="font-display text-3xl">ابعتيلنا رسالة</h2>
+              <p className="mt-1 text-sm text-cocoa-3"><Clock className="me-1 inline size-4" /> منرد عادةً خلال ساعات — {site.hours}</p>
+              <AnimatePresence mode="wait">
+                {state === "done" ? (
+                  <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 flex flex-col items-center gap-3 py-8 text-center">
+                    <span className="grid size-16 place-items-center rounded-full bg-sage text-white"><Check className="size-8" /></span>
+                    <p className="font-serif text-2xl">وصلت رسالتك! 🤍</p>
+                    <p className="text-cocoa-2">رح نرد عليكِ بأقرب وقت.</p>
+                    <button type="button" onClick={() => setState("idle")} className="mt-2 text-sm font-semibold text-rose underline underline-offset-4">رسالة جديدة</button>
+                  </motion.div>
+                ) : (
+                  <motion.div key="form" exit={{ opacity: 0 }} className="mt-6 space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label htmlFor="cn" className="label">الاسم</label>
+                        <input id="cn" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="field" autoComplete="name" />
+                      </div>
+                      <div>
+                        <label htmlFor="cp" className="label">الجوال (اختياري)</label>
+                        <input id="cp" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="field text-right" dir="ltr" inputMode="tel" autoComplete="tel" />
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor="cm" className="label">رسالتك</label>
+                      <textarea id="cm" rows={5} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="field resize-none" />
+                    </div>
+                    <p className="min-h-5 text-sm text-rose" role="alert">{error}</p>
+                    <button disabled={state === "sending"} className="btn btn-primary w-full">
+                      {state === "sending" ? (<><LoaderCircle className="size-4 animate-spin" /> عم نرسل...</>) : "إرسال"}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </form>
+          </Reveal>
+
+          <div id="faq" className="scroll-mt-28">
+            <SectionHeading eyebrow="أسئلة بتتكرر" title="الأسئلة الشائعة" align="start" />
+            <div className="space-y-3">
+              {faqs?.map((f, i) => <Faq key={f.id} q={f.question} a={f.answer} i={i} />)}
             </div>
-          ))}
-          <p className="text-sm text-ink-2">
-            تبحث عن جواب سريع؟{" "}
-            <Link to="/help" className="underline decoration-dashed underline-offset-4 hover:text-thread">
-              الأسئلة الشائعة
-            </Link>
-          </p>
-        </aside>
+          </div>
+        </div>
       </section>
     </>
   );

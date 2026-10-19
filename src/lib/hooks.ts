@@ -1,21 +1,25 @@
 import { useEffect, useState, type DependencyList } from "react";
 
-/** Runs an api.ts call and tracks its loading / error state. */
-export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList) {
-  const [state, setState] = useState<{ data: T | null; loading: boolean; error: string | null }>({
-    data: null,
-    loading: true,
-    error: null,
-  });
+interface AsyncState<T> {
+  data: T | null;
+  loading: boolean;
+  error: Error | null;
+}
+
+/** يشغّل دالة async من api.ts ويرجع البيانات وحالة التحميل */
+export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList): AsyncState<T> {
+  const [state, setState] = useState<AsyncState<T>>({ data: null, loading: true, error: null });
 
   useEffect(() => {
-    let live = true;
+    let alive = true;
     setState((s) => ({ ...s, loading: true, error: null }));
-    fn()
-      .then((data) => live && setState({ data, loading: false, error: null }))
-      .catch((e: unknown) => live && setState({ data: null, loading: false, error: e instanceof Error ? e.message : "حدث خطأ ما" }));
+    fn().then(
+      (data) => alive && setState({ data, loading: false, error: null }),
+      (error: unknown) =>
+        alive && setState({ data: null, loading: false, error: error instanceof Error ? error : new Error(String(error)) }),
+    );
     return () => {
-      live = false;
+      alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
@@ -23,33 +27,23 @@ export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList) {
   return state;
 }
 
-export function useDocumentTitle(title: string) {
+/** عنوان الصفحة في تبويب المتصفح */
+export function useTitle(title: string) {
   useEffect(() => {
-    document.title = title ? `${title} — Tareq Project` : "Tareq Project — ملابس تُرسم باليد";
+    document.title = title ? `${title} | متجر بَنان` : "متجر بَنان — قطع يدوية بتفاصيل تصنع الفرق";
   }, [title]);
 }
 
-export function useLockBody(locked: boolean) {
+export function useMediaQuery(query: string): boolean {
+  const [match, setMatch] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia(query).matches : false,
+  );
   useEffect(() => {
-    if (!locked) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [locked]);
+    const m = window.matchMedia(query);
+    const on = () => setMatch(m.matches);
+    on();
+    m.addEventListener("change", on);
+    return () => m.removeEventListener("change", on);
+  }, [query]);
+  return match;
 }
-
-export function useDebounced<T>(value: T, ms = 200) {
-  const [v, setV] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setV(value), ms);
-    return () => clearTimeout(t);
-  }, [value, ms]);
-  return v;
-}
-
-export const formatDate = (iso: string, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" }) =>
-  new Date(iso).toLocaleDateString("ar-u-nu-latn", opts);
-
-export const pad = (n: number, len = 3) => String(n).padStart(len, "0");

@@ -1,177 +1,238 @@
 @import "tailwindcss";
+@source not "../legacy-tareq";
 
-/* ──────────────────────────────────────────────────────────────
-   TAREQ PROJECT DESIGN TOKENS
-   Every colour and typeface in the store lives here.
-   Change a value once and the whole house follows.
-   ────────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   متجر بَنان — كل الألوان والخطوط هنا
+   غيّري القيمة مرة واحدة، والموقع كله يتبعها.
+   ══════════════════════════════════════════════════════════════ */
 @theme {
-  /* Paper — the base of every page (pattern paper, tissue, card) */
-  --color-paper: #f6f1e7;
-  --color-paper-2: #efe7d8;
-  --color-paper-3: #e5dac6;
-  --color-tissue: #fbf8f2;
+  /* الخلفيات — كريمي دافئ مثل القماش الخام */
+  --color-cream: #fbf7f2;
+  --color-cream-2: #f5ede3;
+  --color-sand: #ebdecd;
+  --color-linen: #fffdfa;
 
-  /* Ink — text and drawn lines */
-  --color-ink: #1e1c19;
-  --color-ink-2: #4b453d;
-  --color-ink-3: #857c6f;
-  --color-line: #d8ccb7;
+  /* البني — لون الشعار، للنصوص والخطوط */
+  --color-cocoa: #4a2a18;
+  --color-cocoa-2: #6e4c38;
+  --color-cocoa-3: #9c8070;
+  --color-line: #e4d5c4;
 
-  /* Accents — the tailor's tools */
-  --color-thread: #c2432e; /* red tacking thread */
-  --color-chalk: #3f6a8a; /* tailor's chalk blue */
-  --color-sage: #8d9a78;
-  --color-butter: #ecd9a2;
-  --color-brass: #b38a4a; /* rail, pins, hangers */
+  /* ألوان مكمّلة هادئة */
+  --color-rose: #c98f86; /* وردي ترابي */
+  --color-rose-soft: #f3e1dc;
+  --color-sage: #93a386; /* أخضر مريمية */
+  --color-sage-soft: #e3e9dc;
+  --color-gold: #c5a46d; /* خيط ذهبي */
+  --color-gold-soft: #f3e8d2;
 
-  /* Type */
-  --font-display: "Amiri", "Times New Roman", serif; /* عناوين — نسخ كلاسيكي */
-  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif; /* نص */
-  --font-mono: "Courier Prime", "IBM Plex Sans Arabic", ui-monospace, monospace; /* أرقام وملصقات */
-  --font-hand: "Aref Ruqaa", "Amiri", serif; /* ملاحظات الخيّاط بخط الرقعة */
+  /* الخطوط */
+  --font-display: "Aref Ruqaa", "Amiri", serif; /* عناوين كبيرة بروح الشعار */
+  --font-serif: "Amiri", "Times New Roman", serif; /* اقتباسات وعناوين فرعية */
+  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif; /* النصوص */
 
-  /* Motion */
-  --ease-tailor: cubic-bezier(0.22, 1, 0.36, 1);
+  /* الحركة */
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
 
-  --animate-marquee: marquee 38s linear infinite;
-  --animate-swing: swing 2.6s ease-in-out infinite;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-swing: swing 3.2s ease-in-out infinite;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-spin-slow: spin 18s linear infinite;
 
-  @keyframes marquee {
-    from {
-      transform: translateX(0);
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(var(--r, 0deg));
     }
-    to {
-      transform: translateX(-50%);
+    50% {
+      transform: translateY(-14px) rotate(calc(var(--r, 0deg) + 6deg));
     }
   }
   @keyframes swing {
     0%,
     100% {
-      transform: rotate(-2.5deg);
+      transform: rotate(-5deg);
     }
     50% {
-      transform: rotate(2.5deg);
+      transform: rotate(5deg);
+    }
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(50%);
     }
   }
 }
 
-/* ──────────────────────────────────────────────────────────────
-   Base
-   ────────────────────────────────────────────────────────────── */
 @layer base {
   html {
-    background: var(--color-paper);
-    color: var(--color-ink);
+    background: var(--color-cream);
+    color: var(--color-cocoa);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
     overflow-x: clip;
     scroll-behavior: smooth;
   }
   body {
-    overflow-x: clip;
     min-height: 100dvh;
-    background: var(--color-paper);
+    overflow-x: clip;
+    background: var(--color-cream);
+  }
+  /* ملمس قماش ناعم فوق الخلفية */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 60;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .45 0 0 0 0 .38 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
   ::selection {
-    background: var(--color-butter);
-    color: var(--color-ink);
-  }
-  /* Arabic letters must join — never space them apart */
-  [dir="rtl"] *,
-  [dir="rtl"] *::before,
-  [dir="rtl"] *::after {
-    letter-spacing: 0 !important;
+    background: var(--color-rose-soft);
+    color: var(--color-cocoa);
   }
   :focus-visible {
-    outline: 2px dashed var(--color-thread);
+    outline: 2px dashed var(--color-rose);
     outline-offset: 3px;
+    border-radius: 6px;
   }
   button {
     cursor: pointer;
   }
-  img,
-  svg {
+  img {
     max-width: 100%;
   }
 }
 
-/* ──────────────────────────────────────────────────────────────
-   House utilities
-   ────────────────────────────────────────────────────────────── */
-@utility wrap {
-  width: 100%;
-  max-width: 1320px;
-  margin-inline: auto;
-  padding-inline: 1rem;
+@layer components {
+  .container-b {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
   @media (min-width: 768px) {
-    padding-inline: 2rem;
+    .container-b {
+      padding-inline: 2rem;
+    }
   }
-}
 
-/* Cutting-mat grid: 1cm squares with a darker line every 5cm */
-@utility bg-mat {
-  background-color: var(--color-tissue);
-  background-image:
-    linear-gradient(to right, color-mix(in oklab, var(--color-chalk) 16%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklab, var(--color-chalk) 16%, transparent) 1px, transparent 1px),
-    linear-gradient(to right, color-mix(in oklab, var(--color-chalk) 7%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklab, var(--color-chalk) 7%, transparent) 1px, transparent 1px);
-  background-size:
-    80px 80px,
-    80px 80px,
-    16px 16px,
-    16px 16px;
-}
-
-/* Paper fibres — a faint printed dot pattern, no gradients of colour */
-@utility bg-dots {
-  background-image: radial-gradient(color-mix(in oklab, var(--color-ink) 9%, transparent) 0.8px, transparent 0.8px);
-  background-size: 14px 14px;
-}
-
-/* Dashed "cut here" rule */
-@utility cut-line {
-  background-image: repeating-linear-gradient(to right, var(--color-ink-3) 0 6px, transparent 6px 11px);
-  background-size: 100% 1px;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-/* Stitched border (running stitch) */
-@utility stitched {
-  outline: 1.5px dashed color-mix(in oklab, var(--color-ink) 35%, transparent);
-  outline-offset: -7px;
-}
-
-/* Ruled notebook lines for the journal & receipts */
-@utility bg-ruled {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0 31px,
-    color-mix(in oklab, var(--color-chalk) 18%, transparent) 31px 32px
-  );
-}
-
-@utility text-balance {
-  text-wrap: balance;
-}
-
-@utility no-scrollbar {
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
+  /* غرزة خياطة متقطعة */
+  .stitch {
+    background-image: linear-gradient(
+      to left,
+      currentColor 0 55%,
+      transparent 55% 100%
+    );
+    background-size: 12px 2px;
+    background-repeat: repeat-x;
+    background-position: center;
+    height: 2px;
   }
-}
 
-/* Small caps label used everywhere: 'No. 034 / 120' */
-@utility label {
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  text-transform: uppercase;
+  /* حدود مخيطة داخل البطاقة */
+  .stitched {
+    position: relative;
+  }
+  .stitched::after {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    border: 1.5px dashed color-mix(in oklab, var(--color-cocoa) 22%, transparent);
+    border-radius: inherit;
+    pointer-events: none;
+    transition: border-color 0.5s var(--ease-soft), inset 0.5s var(--ease-soft);
+  }
+  .stitched:hover::after {
+    border-color: color-mix(in oklab, var(--color-rose) 80%, transparent);
+    inset: 5px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    padding: 0.8rem 1.6rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: transform 0.3s var(--ease-soft), background 0.3s, color 0.3s, box-shadow 0.3s;
+    position: relative;
+    white-space: nowrap;
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn-primary {
+    background: var(--color-cocoa);
+    color: var(--color-cream);
+    box-shadow: 0 10px 24px -14px var(--color-cocoa);
+  }
+  .btn-primary::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: inherit;
+    border: 1px dashed color-mix(in oklab, var(--color-cream) 45%, transparent);
+    pointer-events: none;
+  }
+  .btn-primary:hover {
+    background: var(--color-cocoa-2);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-cocoa);
+    border: 1.5px solid var(--color-cocoa);
+  }
+  .btn-ghost:hover {
+    background: var(--color-cocoa);
+    color: var(--color-cream);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .field {
+    width: 100%;
+    border-radius: 14px;
+    border: 1.5px solid var(--color-line);
+    background: var(--color-linen);
+    padding: 0.75rem 1rem;
+    color: var(--color-cocoa);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field::placeholder {
+    color: var(--color-cocoa-3);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-rose);
+    box-shadow: 0 0 0 4px var(--color-rose-soft);
+  }
+  .label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: var(--color-cocoa-2);
+  }
+
+  .eyebrow {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-rose);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -182,5 +243,130 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ══ طباعة الفواتير ══════════════════════════════════════ */
+.print-area {
+  display: none;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  body::before {
+    display: none !important;
+  }
+  body > *:not(.print-area) {
+    display: none !important;
+  }
+  .print-area {
+    display: block;
+    color: #1f1410;
+    font-family: var(--font-sans);
+    font-size: 12pt;
+  }
+  .invoice {
+    break-after: page;
+    page-break-after: always;
+  }
+  .invoice:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+  .inv-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #4a2a18;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+  .inv-logo {
+    height: 70px;
+    width: auto;
+  }
+  .inv-meta {
+    text-align: left;
+  }
+  .inv-meta h1 {
+    font-size: 18pt;
+    font-weight: 700;
+  }
+  .inv-num {
+    font-size: 15pt;
+    font-weight: 700;
+    direction: ltr;
+  }
+  .inv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .inv-grid > div {
+    border: 1px dashed #b9a493;
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .inv-grid h2 {
+    font-size: 10pt;
+    color: #6e4c38;
+    margin-bottom: 4px;
+  }
+  .inv-table,
+  .inv-sum {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .inv-table th,
+  .inv-table td {
+    border-bottom: 1px solid #e4d5c4;
+    padding: 7px 6px;
+    text-align: right;
+    vertical-align: top;
+  }
+  .inv-table th {
+    background: #f5ede3;
+    font-size: 10pt;
+  }
+  .inv-sub {
+    font-size: 9.5pt;
+    color: #6e4c38;
+  }
+  .inv-bottom {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 16px;
+    margin-top: 14px;
+  }
+  .inv-notes p {
+    margin-bottom: 6px;
+    font-size: 10.5pt;
+  }
+  .inv-sum td {
+    padding: 5px 6px;
+  }
+  .inv-sum td:last-child {
+    text-align: left;
+    direction: ltr;
+  }
+  .inv-total td {
+    border-top: 2px solid #4a2a18;
+    font-weight: 700;
+    font-size: 13pt;
+  }
+  .inv-foot {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 10pt;
+    color: #6e4c38;
+    border-top: 1px dashed #b9a493;
+    padding-top: 10px;
   }
 }

@@ -1,217 +1,276 @@
-import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
-import { Menu, Search, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router";
-import { useLockBody } from "../lib/hooks";
+import { AnimatePresence, motion, useAnimationControls } from "motion/react";
+import { Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router";
+import { useSite } from "../lib/site";
 import { useShop } from "../lib/store";
-import type { Category } from "../types";
-import { PinHead } from "./ui";
+import { Diamond, YarnBall } from "./Craft";
+import { InstagramIcon, WhatsappIcon } from "./Icons";
+import { Logo } from "./Logo";
 
-/** Welcome lines in the top bar — they gently take turns. */
-const welcomes = ["أهلاً وسهلاً بك في Tareq Project", "سعداء بزيارتك — خذ وقتك وتجوّل بين القطع", "كل قطعة هنا صُنعت بحبّ، ونتمنى أن تجد ما يشبهك"];
-
-export const categoryNames: Record<Category, string> = {
-  outerwear: "معاطف وجاكيتات",
-  shirts: "قمصان",
-  knitwear: "تريكو",
-  tees: "تيشيرتات",
-  trousers: "بناطيل",
-  dresses: "فساتين",
-  skirts: "تنانير",
-  accessories: "إكسسوارات",
-};
-
-const startNav = [
-  { to: "/shop?dept=women", label: "ستاتي" },
-  { to: "/shop?dept=men", label: "رجالي" },
-  { to: "/shop?dept=kids", label: "أطفال" },
-  { to: "/chapters", label: "الفصول" },
-];
-const endNav = [
-  { to: "/shop", label: "كل القطع" },
-  { to: "/dressing-table", label: "طاولة التنسيق" },
+export const navLinks = [
+  { to: "/", label: "الرئيسية" },
+  { to: "/shop", label: "المتجر" },
+  { to: "/custom", label: "اطلبي قطعتك" },
+  { to: "/story", label: "قصتنا" },
+  { to: "/contact", label: "تواصلي معنا" },
 ];
 
-/** Active state that also understands ?dept= links. */
-function useIsActive() {
-  const { pathname, search } = useLocation();
-  return (to: string) => {
-    const [path, qs] = to.split("?");
-    if (qs) return pathname === path && search.includes(qs);
-    if (path === "/shop") return pathname === "/shop" && !search.includes("dept=");
-    return pathname === path || pathname.startsWith(path + "/");
-  };
-}
-
-export function Logo({ className = "" }: { className?: string }) {
+function AnnouncementBar() {
+  const { site } = useSite();
+  const announcements = site.announcements.length ? site.announcements : [site.tagline];
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((x) => (x + 1) % announcements.length), 4200);
+    return () => clearInterval(t);
+  }, [announcements.length]);
   return (
-    <Link to="/" className={`group inline-flex flex-col items-center leading-none ${className}`} aria-label="Tareq Project — الرئيسية">
-      <span className="whitespace-nowrap font-display text-[1.55rem] font-bold leading-none md:text-[2.1rem]" dir="ltr">
-        Tareq Project<span className="text-thread">.</span>
-      </span>
-      <span className="mt-1.5 flex items-center gap-1.5 text-[0.62rem] text-ink-3">
-        <span className="h-px w-3 bg-thread transition-all group-hover:w-6" />
-        مشغل خياطة · منذ 2014
-        <span className="h-px w-3 bg-thread transition-all group-hover:w-6" />
-      </span>
-    </Link>
-  );
-}
-
-export function RailIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M12 8 V6.5 a2 2 0 1 1 2 -2" />
-      <path d="M2.5 17 L12 8 L21.5 17 Q22 18.5 20.5 18.5 H3.5 Q2 18.5 2.5 17 Z" />
-    </svg>
-  );
-}
-
-/** شريط القياس تحت الهيدر — يمتلئ بالخيط الأحمر كلما نزلت في الصفحة. */
-function MeasuringTape() {
-  const { scrollYProgress } = useScroll();
-  const x = useSpring(scrollYProgress, { stiffness: 140, damping: 30 });
-  return (
-    <div className="relative h-[9px] overflow-hidden border-t border-[#d9c58f] bg-[#efdcaa]" aria-hidden>
-      <div
-        className="absolute inset-0 opacity-70"
-        style={{
-          backgroundImage: "repeating-linear-gradient(to left, #1e1c19 0 1px, transparent 1px 8px), repeating-linear-gradient(to left, #1e1c19 0 1px, transparent 1px 40px)",
-          backgroundSize: "100% 3px, 100% 6px",
-          backgroundRepeat: "repeat-x",
-        }}
-      />
-      <motion.div className="absolute inset-y-0 right-0 w-full origin-right bg-thread/80 mix-blend-multiply" style={{ scaleX: x }} />
+    <div className="relative overflow-hidden bg-cocoa text-cream">
+      <div className="container-b flex h-9 items-center justify-center text-[0.8rem]">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={i}
+            initial={{ y: 14, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -14, opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex items-center gap-2 truncate"
+          >
+            <Diamond className="size-2 text-rose" />
+            {announcements[i % announcements.length]}
+            <Diamond className="size-2 text-rose" />
+          </motion.p>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
 
-function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
-  useLockBody(open);
-  const links = [...startNav, ...endNav, { to: "/fabrics", label: "مكتبة الأقمشة" }, { to: "/pinned", label: "اللوحة المثبّتة" }];
+function CartButton() {
+  const { count, setDrawerOpen, cartIconRef, bump } = useShop();
+  const controls = useAnimationControls();
+  useEffect(() => {
+    if (bump > 0) void controls.start({ scale: [1, 1.3, 0.9, 1.08, 1], rotate: [0, -10, 8, -4, 0], transition: { duration: 0.6 } });
+  }, [bump, controls]);
+
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-[70] overflow-y-auto bg-paper lg:hidden"
-          initial={{ clipPath: "inset(0 0 100% 0)" }}
-          animate={{ clipPath: "inset(0 0 0% 0)" }}
-          exit={{ clipPath: "inset(0 0 100% 0)" }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <div className="pointer-events-none absolute inset-0 bg-mat opacity-50" />
-          <div className="wrap relative flex min-h-full flex-col pb-10 pt-5">
-            <div className="flex items-center justify-between">
-              <Logo />
-              <button onClick={onClose} className="grid h-11 w-11 place-items-center rounded-full ring-1 ring-ink/20" aria-label="إغلاق القائمة">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <p className="label mt-10 text-ink-3">ظرف الباترون · المحتويات</p>
-            <ul className="mt-4">
-              {links.map((l, i) => (
-                <motion.li key={l.to} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 + i * 0.04 }} className="border-b border-dashed border-ink/20">
-                  <Link to={l.to} onClick={onClose} className="flex items-baseline gap-4 py-3">
-                    <span className="font-mono text-xs text-thread">{String(i + 1).padStart(2, "0")}</span>
-                    <span className="font-display text-[2rem] leading-snug">{l.label}</span>
-                  </Link>
-                </motion.li>
-              ))}
-            </ul>
-            <div className="mt-auto pt-10 text-sm text-ink-2">
-              <p className="font-hand text-2xl text-chalk">كل قطعة تُرفأ مدى الحياة ↓</p>
-              <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
-                <Link onClick={onClose} to="/fit-guide" className="underline decoration-dashed underline-offset-4">دليل المقاسات</Link>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <motion.button
+      ref={cartIconRef}
+      animate={controls}
+      onClick={() => setDrawerOpen(true)}
+      className="relative grid size-11 place-items-center rounded-full transition hover:bg-cream-2"
+      aria-label={`السلة، فيها ${count} قطع`}
+    >
+      <ShoppingBag className="size-[22px]" strokeWidth={1.7} />
+      <AnimatePresence>
+        {count > 0 && (
+          <motion.span
+            key={count}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            className="absolute -top-0.5 -start-0.5 grid min-w-5 place-items-center rounded-full bg-rose px-1 text-[11px] font-bold leading-5 text-white"
+          >
+            {count}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </motion.button>
   );
 }
 
 export function Header() {
-  const { railCount, setRailOpen, setSearchOpen, pinned } = useShop();
-  const [notice, setNotice] = useState(0);
-  const [menu, setMenu] = useState(false);
-  const { pathname, search } = useLocation();
-  const isActive = useIsActive();
+  const { wishlist } = useShop();
+  const { site } = useSite();
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const t = setInterval(() => setNotice((n) => (n + 1) % welcomes.length), 4200);
-    return () => clearInterval(t);
+    const on = () => setScrolled(window.scrollY > 24);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
   }, []);
-  useEffect(() => {
-    setMenu(false);
-  }, [pathname, search]);
 
-  const navCls = (to: string) =>
-    `relative py-2 text-[0.95rem] transition-colors hover:text-thread ${isActive(to) ? "text-ink after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:bg-thread" : "text-ink-2"}`;
+  useEffect(() => {
+    setMenuOpen(false);
+    setSearchOpen(false);
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
+  const submitSearch = (e: FormEvent) => {
+    e.preventDefault();
+    navigate(q.trim() ? `/shop?q=${encodeURIComponent(q.trim())}` : "/shop");
+  };
 
   return (
     <>
-      <div className="bg-ink text-paper">
-        <div className="wrap flex h-9 items-center justify-center overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div key={notice} initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -14, opacity: 0 }} transition={{ duration: 0.35 }}>
-              <p className="flex items-center gap-2 text-[0.82rem]">
-                <span className="text-thread">✦</span> {welcomes[notice]} <span className="text-thread">✦</span>
-              </p>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </div>
+      <AnnouncementBar />
+      <header
+        className={`sticky top-0 z-40 transition-all duration-500 ${
+          scrolled ? "bg-cream/85 shadow-[0_8px_30px_-20px_rgba(74,42,24,.35)] backdrop-blur-md" : "bg-cream"
+        }`}
+      >
+        <div className="container-b flex h-[68px] items-center gap-3 md:h-20">
+          <button
+            onClick={() => setMenuOpen(true)}
+            className="grid size-11 place-items-center rounded-full hover:bg-cream-2 lg:hidden"
+            aria-label="فتح القائمة"
+          >
+            <Menu className="size-6" strokeWidth={1.7} />
+          </button>
 
-      <header className="sticky top-0 z-50 bg-paper/92 backdrop-blur-md">
-        <div className="wrap grid h-[72px] grid-cols-[1fr_auto_1fr] items-center gap-4 md:h-[84px]">
-          <div className="flex items-center gap-2">
-            <button onClick={() => setMenu(true)} className="-ms-2 grid h-11 w-11 place-items-center lg:hidden" aria-label="فتح القائمة">
-              <Menu className="h-5 w-5" />
-            </button>
-            <nav className="hidden items-center gap-6 lg:flex" aria-label="التنقّل الرئيسي">
-              {startNav.map((l) => (
-                <Link key={l.to} to={l.to} className={navCls(l.to)}>
-                  {l.label}
-                </Link>
+          <Logo className={`transition-all duration-500 ${scrolled ? "h-11 md:h-12" : "h-12 md:h-14"}`} />
+
+          <nav className="ms-6 hidden lg:block" aria-label="القائمة الرئيسية">
+            <ul className="flex items-center gap-1">
+              {navLinks.map((l) => (
+                <li key={l.to}>
+                  <NavLink
+                    to={l.to}
+                    end={l.to === "/"}
+                    className={({ isActive }) =>
+                      `group relative px-3.5 py-2 text-[0.95rem] font-medium transition ${isActive ? "text-cocoa" : "text-cocoa-2 hover:text-cocoa"}`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {l.label}
+                        <span
+                          className={`stitch absolute inset-x-3 -bottom-0.5 origin-right text-rose transition-transform duration-500 ${
+                            isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                          }`}
+                        />
+                      </>
+                    )}
+                  </NavLink>
+                </li>
               ))}
-            </nav>
-          </div>
+            </ul>
+          </nav>
 
-          <Logo />
-
-          <div className="flex items-center justify-end gap-1 md:gap-2">
-            <nav className="me-3 hidden items-center gap-6 lg:flex" aria-label="تنقّل ثانوي">
-              {endNav.map((l) => (
-                <Link key={l.to} to={l.to} className={navCls(l.to)}>
-                  {l.label}
-                </Link>
-              ))}
-            </nav>
-            <button onClick={() => setSearchOpen(true)} className="grid h-11 w-11 place-items-center rounded-full transition hover:bg-paper-2" aria-label="بحث">
-              <Search className="h-[19px] w-[19px]" strokeWidth={1.6} />
+          <div className="ms-auto flex items-center gap-0.5">
+            <button
+              onClick={() => setSearchOpen((s) => !s)}
+              className="grid size-11 place-items-center rounded-full hover:bg-cream-2"
+              aria-label="بحث"
+              aria-expanded={searchOpen}
+            >
+              <Search className="size-[21px]" strokeWidth={1.7} />
             </button>
-            <Link to="/pinned" className="relative hidden h-11 w-11 place-items-center rounded-full transition hover:bg-paper-2 sm:grid" aria-label={`اللوحة المثبّتة، ${pinned.length} قطع`}>
-              <PinHead className="h-6 w-6" colour={pinned.length ? "#c2432e" : "#b9b0a2"} />
-              {pinned.length > 0 && <span className="absolute end-1 top-1 font-mono text-[0.6rem] font-bold">{pinned.length}</span>}
+            <Link
+              to="/wishlist"
+              className="relative grid size-11 place-items-center rounded-full hover:bg-cream-2"
+              aria-label={`المفضلة (${wishlist.length})`}
+            >
+              <Heart className="size-[21px]" strokeWidth={1.7} />
+              {wishlist.length > 0 && <span className="absolute top-2 end-2 size-2 rounded-full bg-rose" />}
             </Link>
-            <button onClick={() => setRailOpen(true)} className="relative flex h-11 items-center gap-2 rounded-full pe-3 ps-2.5 transition hover:bg-paper-2" aria-label={`افتح الراف، ${railCount} قطع`}>
-              <RailIcon className="h-6 w-6" />
-              <span className="hidden text-sm md:inline">الراف</span>
-              <motion.span
-                key={railCount}
-                initial={{ scale: 1.6 }}
-                animate={{ scale: 1 }}
-                className={`grid h-5 min-w-5 place-items-center rounded-full px-1 font-mono text-[0.65rem] font-bold ${railCount ? "bg-thread text-tissue" : "bg-paper-3 text-ink-3"}`}
-              >
-                {railCount}
-              </motion.span>
-            </button>
+            <CartButton />
           </div>
         </div>
-        <MeasuringTape />
+
+        <AnimatePresence>
+          {searchOpen && (
+            <motion.form
+              onSubmit={submitSearch}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden border-t border-line"
+              role="search"
+            >
+              <div className="container-b flex items-center gap-3 py-3">
+                <Search className="size-5 shrink-0 text-cocoa-3" />
+                <input
+                  autoFocus
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="شو حابة تلاقي؟ شنطة، حلق، تطريز..."
+                  className="min-w-0 flex-1 bg-transparent py-2 text-base outline-none placeholder:text-cocoa-3"
+                  aria-label="كلمة البحث"
+                />
+                <button className="btn btn-primary !px-5 !py-2">بحث</button>
+              </div>
+            </motion.form>
+          )}
+        </AnimatePresence>
       </header>
-      <MobileMenu open={menu} onClose={() => setMenu(false)} />
+
+      {/* قائمة الموبايل */}
+      <AnimatePresence>
+        {menuOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <motion.div
+              className="absolute inset-0 bg-cocoa/40 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMenuOpen(false)}
+            />
+            <motion.aside
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 260 }}
+              className="absolute inset-y-0 right-0 flex w-[86%] max-w-sm flex-col overflow-hidden bg-cream"
+              aria-label="القائمة"
+            >
+              <div className="flex items-center justify-between p-4">
+                <Logo className="h-12" />
+                <button onClick={() => setMenuOpen(false)} className="grid size-11 place-items-center rounded-full hover:bg-cream-2" aria-label="إغلاق القائمة">
+                  <X className="size-6" />
+                </button>
+              </div>
+              <nav className="flex-1 px-6 pt-4">
+                <ul className="space-y-1">
+                  {navLinks.map((l, i) => (
+                    <motion.li
+                      key={l.to}
+                      initial={{ opacity: 0, x: 30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.08 + i * 0.06 }}
+                    >
+                      <NavLink
+                        to={l.to}
+                        end={l.to === "/"}
+                        className={({ isActive }) =>
+                          `flex items-center justify-between border-b border-dashed border-line py-4 font-display text-2xl ${isActive ? "text-rose" : ""}`
+                        }
+                      >
+                        {l.label}
+                        <Diamond className="size-2.5 text-rose" />
+                      </NavLink>
+                    </motion.li>
+                  ))}
+                </ul>
+              </nav>
+              <div className="relative p-6">
+                <YarnBall className="pointer-events-none absolute -bottom-8 -start-6 size-32 opacity-60" color="#e9c2bb" />
+                <p className="relative mb-3 text-sm text-cocoa-2">{site.tagline} 🫶🏼</p>
+                <div className="relative flex gap-2">
+                  <a href={`https://instagram.com/${site.instagram}`} target="_blank" rel="noreferrer" className="grid size-11 place-items-center rounded-full border border-line bg-linen" aria-label="إنستغرام">
+                    <InstagramIcon className="size-5" />
+                  </a>
+                  <a href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noreferrer" className="grid size-11 place-items-center rounded-full border border-line bg-linen" aria-label="واتساب">
+                    <WhatsappIcon className="size-5" />
+                  </a>
+                </div>
+              </div>
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

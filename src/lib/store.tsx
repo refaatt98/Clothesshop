@@ -1,9 +1,18 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { CartLine, Chapter, Currency, Product } from "../types";
-import { getChapters, getProducts } from "./api";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
+import type { CartItem, ColorOption, Product } from "../types";
 
-/** All prices are stored and shown in Israeli new shekels. */
-export const currencies: Currency[] = ["ILS"];
+const CART_KEY = "banan:cart";
+const WISH_KEY = "banan:wishlist";
 
 function load<T>(key: string, fallback: T): T {
   try {
@@ -17,135 +26,145 @@ function save(key: string, value: unknown) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    /* private mode — the shop still works, it just forgets */
+    /* التخزين غير متاح */
   }
 }
 
-export interface SavedLook {
-  id: string;
-  name: string;
-  slugs: string[];
-  createdAt: string;
+export interface Flight {
+  id: number;
+  from: DOMRect;
+  color: string;
 }
 
-interface Toast {
-  id: number;
-  text: string;
-  sub?: string;
+interface AddOptions {
+  color: ColorOption;
+  size?: string;
+  note?: string;
+  qty?: number;
+  /** العنصر الذي يطير منه المنتج إلى السلة */
+  from?: Element | null;
 }
 
 interface ShopState {
-  /** Full catalogue, loaded once through api.ts */
-  catalog: Product[] | null;
-  chapters: Chapter[] | null;
-  bySlug: (slug: string) => Product | undefined;
-  rail: CartLine[];
-  addToRail: (line: Omit<CartLine, "key" | "qty">, qty?: number) => void;
+  items: CartItem[];
+  count: number;
+  subtotal: number;
+  add: (product: Product, opts: AddOptions) => void;
   setQty: (key: string, qty: number) => void;
-  removeFromRail: (key: string) => void;
-  clearRail: () => void;
-  railCount: number;
-  railOpen: boolean;
-  setRailOpen: (v: boolean) => void;
+  remove: (key: string) => void;
+  clear: () => void;
 
-  pinned: string[];
-  togglePin: (slug: string) => void;
-  isPinned: (slug: string) => boolean;
+  wishlist: string[];
+  toggleWish: (id: string) => void;
+  isWished: (id: string) => boolean;
 
-  looks: SavedLook[];
-  saveLook: (name: string, slugs: string[]) => void;
-  deleteLook: (id: string) => void;
+  drawerOpen: boolean;
+  setDrawerOpen: (open: boolean) => void;
 
-  currency: Currency;
-  setCurrency: (c: Currency) => void;
-  money: (amount: number, digits?: number) => string;
-
-  toasts: Toast[];
-  toast: (text: string, sub?: string) => void;
-
-  searchOpen: boolean;
-  setSearchOpen: (v: boolean) => void;
+  cartIconRef: RefObject<HTMLButtonElement | null>;
+  flights: Flight[];
+  landFlight: (id: number) => void;
+  bump: number;
 }
 
 const ShopContext = createContext<ShopState | null>(null);
 
 export function ShopProvider({ children }: { children: ReactNode }) {
-  const [rail, setRail] = useState<CartLine[]>(() => load("tareq.rail", []));
-  const [pinned, setPinned] = useState<string[]>(() => load("tareq.pinned", []));
-  const [looks, setLooks] = useState<SavedLook[]>(() => load("tareq.looks", []));
-  const [currency, setCurrency] = useState<Currency>("ILS");
-  const [railOpen, setRailOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [toasts, setToasts] = useState<Toast[]>([]);
-  const [catalog, setCatalog] = useState<Product[] | null>(null);
-  const [chapters, setChapters] = useState<Chapter[] | null>(null);
+  // بنشيل أي قطع قديمة من النسخة التجريبية (معرّفها مش uuid)
+  const [items, setItems] = useState<CartItem[]>(() => load<CartItem[]>(CART_KEY, []).filter((i) => /^[0-9a-f-]{36}$/i.test(i.productId)));
+  const [wishlist, setWishlist] = useState<string[]>(() => load<string[]>(WISH_KEY, []).filter((id) => /^[0-9a-f-]{36}$/i.test(id)));
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const [bump, setBump] = useState(0);
+  const cartIconRef = useRef<HTMLButtonElement | null>(null);
+  const flightId = useRef(0);
 
-  useEffect(() => {
-    getProducts().then(setCatalog);
-    getChapters().then(setChapters);
-  }, []);
+  useEffect(() => save(CART_KEY, items), [items]);
+  useEffect(() => save(WISH_KEY, wishlist), [wishlist]);
 
-  useEffect(() => save("tareq.rail", rail), [rail]);
-  useEffect(() => save("tareq.pinned", pinned), [pinned]);
-  useEffect(() => save("tareq.looks", looks), [looks]);
-  useEffect(() => save("tareq.currency", currency), [currency]);
-
-  const toast = useCallback((text: string, sub?: string) => {
-    const id = Date.now() + Math.random();
-    setToasts((t) => [...t, { id, text, sub }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3200);
-  }, []);
-
-  const addToRail = useCallback((line: Omit<CartLine, "key" | "qty">, qty = 1) => {
-    const key = `${line.slug}|${line.colorway}|${line.size}`;
-    setRail((r) => {
-      const found = r.find((l) => l.key === key);
-      if (found) return r.map((l) => (l.key === key ? { ...l, qty: Math.min(9, l.qty + qty) } : l));
-      return [...r, { ...line, key, qty }];
+  const add = useCallback((product: Product, opts: AddOptions) => {
+    const qty = opts.qty ?? 1;
+    const note = opts.note?.trim() || undefined;
+    const key = [product.id, opts.color.name, opts.size ?? "", note ?? ""].join("|");
+    setItems((prev) => {
+      const found = prev.find((i) => i.key === key);
+      if (found) {
+        return prev.map((i) => (i.key === key ? { ...i, qty: Math.min(i.qty + qty, 20) } : i));
+      }
+      return [
+        ...prev,
+        {
+          key,
+          productId: product.id,
+          slug: product.slug,
+          name: product.name,
+          price: product.price,
+          art: product.art,
+          image: product.images[0],
+          color: opts.color,
+          size: opts.size,
+          note,
+          qty,
+        },
+      ];
     });
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (opts.from && !reduce) {
+      const id = ++flightId.current;
+      setFlights((f) => [...f, { id, from: opts.from!.getBoundingClientRect(), color: opts.color.hex }]);
+    } else {
+      setBump((b) => b + 1);
+    }
+  }, []);
+
+  const landFlight = useCallback((id: number) => {
+    setFlights((f) => f.filter((x) => x.id !== id));
+    setBump((b) => b + 1);
   }, []);
 
   const setQty = useCallback((key: string, qty: number) => {
-    setRail((r) => (qty <= 0 ? r.filter((l) => l.key !== key) : r.map((l) => (l.key === key ? { ...l, qty: Math.min(9, qty) } : l))));
+    setItems((prev) =>
+      qty <= 0 ? prev.filter((i) => i.key !== key) : prev.map((i) => (i.key === key ? { ...i, qty: Math.min(qty, 20) } : i)),
+    );
   }, []);
+  const remove = useCallback((key: string) => setItems((prev) => prev.filter((i) => i.key !== key)), []);
+  const clear = useCallback(() => setItems([]), []);
+
+  const toggleWish = useCallback(
+    (id: string) => setWishlist((w) => (w.includes(id) ? w.filter((x) => x !== id) : [...w, id])),
+    [],
+  );
+  const isWished = useCallback((id: string) => wishlist.includes(id), [wishlist]);
 
   const value = useMemo<ShopState>(
     () => ({
-      catalog,
-      chapters,
-      bySlug: (slug) => catalog?.find((p) => p.slug === slug),
-      rail,
-      addToRail,
+      items,
+      count: items.reduce((s, i) => s + i.qty, 0),
+      subtotal: items.reduce((s, i) => s + i.qty * i.price, 0),
+      add,
       setQty,
-      removeFromRail: (key) => setRail((r) => r.filter((l) => l.key !== key)),
-      clearRail: () => setRail([]),
-      railCount: rail.reduce((s, l) => s + l.qty, 0),
-      railOpen,
-      setRailOpen,
-      pinned,
-      togglePin: (slug) => setPinned((p) => (p.includes(slug) ? p.filter((s) => s !== slug) : [...p, slug])),
-      isPinned: (slug) => pinned.includes(slug),
-      looks,
-      saveLook: (name, slugs) =>
-        setLooks((l) => [{ id: String(Date.now()), name, slugs, createdAt: new Date().toISOString() }, ...l].slice(0, 12)),
-      deleteLook: (id) => setLooks((l) => l.filter((x) => x.id !== id)),
-      currency,
-      setCurrency,
-      money: (amount, digits = 0) =>
-        `${new Intl.NumberFormat("en", { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(amount)} ₪`,
-      toasts,
-      toast,
-      searchOpen,
-      setSearchOpen,
+      remove,
+      clear,
+      wishlist,
+      toggleWish,
+      isWished,
+      drawerOpen,
+      setDrawerOpen,
+      cartIconRef,
+      flights,
+      landFlight,
+      bump,
     }),
-    [catalog, chapters, rail, addToRail, setQty, railOpen, pinned, looks, currency, toasts, toast, searchOpen],
+    [items, add, setQty, remove, clear, wishlist, toggleWish, isWished, drawerOpen, flights, landFlight, bump],
   );
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }
 
-export function useShop() {
+// eslint-disable-next-line react-refresh/only-export-components
+export function useShop(): ShopState {
   const ctx = useContext(ShopContext);
-  if (!ctx) throw new Error("useShop must be used inside <ShopProvider>");
+  if (!ctx) throw new Error("useShop must be used inside ShopProvider");
   return ctx;
 }

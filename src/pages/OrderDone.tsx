@@ -1,118 +1,132 @@
 import { motion } from "motion/react";
-import { Printer } from "lucide-react";
-import { useLocation } from "react-router";
-import { RotatingStamp } from "../components/Decor";
-import { Button, EmptyState } from "../components/ui";
-import { formatDate, useDocumentTitle } from "../lib/hooks";
-import { useShop } from "../lib/store";
-import type { Order } from "../types";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router";
+import { Bow, YarnBall } from "../components/Craft";
+import { WhatsappIcon } from "../components/Icons";
+import { YarnLoader } from "../components/Loader";
+import { EmptyState } from "../components/ui";
+import { getOrder, whatsappLink } from "../lib/api";
+import { formatPrice } from "../lib/format";
+import { useAsync, useTitle } from "../lib/hooks";
+import { useSite } from "../lib/site";
+import { orderMessageForStore } from "../lib/whatsapp";
 
-function readOrder(state: unknown): Order | null {
-  if (state && typeof state === "object" && "number" in state) return state as Order;
-  try {
-    const raw = sessionStorage.getItem("tareq.lastOrder");
-    return raw ? (JSON.parse(raw) as Order) : null;
-  } catch {
-    return null;
-  }
-}
+const SENT_KEY = "banan:wa-sent";
 
 export default function OrderDone() {
-  useDocumentTitle("إيصال الطلب");
-  const { state } = useLocation();
-  const { money } = useShop();
-  const order = readOrder(state);
+  useTitle("تم الطلب");
+  const { id = "" } = useParams();
+  const { site } = useSite();
+  const { data: order, loading } = useAsync(() => getOrder(id), [id]);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
-  if (!order) return <EmptyState title="لا طلب حديث." text="يظهر إيصال طلبك هنا مباشرة بعد إتمام الطلب." action={<Button to="/shop">تصفّح المتجر</Button>} />;
+  const link = order ? whatsappLink(site.whatsapp, orderMessageForStore(order, window.location.origin)) : "";
+
+  // بنفتح واتساب تلقائياً مرة وحدة بعد الطلب
+  useEffect(() => {
+    if (!order) return;
+    let sent: string[] = [];
+    try {
+      sent = JSON.parse(sessionStorage.getItem(SENT_KEY) ?? "[]");
+    } catch {
+      /* */
+    }
+    if (sent.includes(order.id)) return;
+    setCountdown(4);
+  }, [order]);
+
+  useEffect(() => {
+    if (countdown == null || !order) return;
+    if (countdown === 0) {
+      try {
+        const sent = JSON.parse(sessionStorage.getItem(SENT_KEY) ?? "[]");
+        sessionStorage.setItem(SENT_KEY, JSON.stringify([...sent, order.id]));
+      } catch {
+        /* */
+      }
+      setCountdown(null);
+      window.location.href = link;
+      return;
+    }
+    const t = setTimeout(() => setCountdown((c) => (c == null ? null : c - 1)), 1000);
+    return () => clearTimeout(t);
+  }, [countdown, order, link]);
+
+  const markSent = () => {
+    setCountdown(null);
+    try {
+      const sent = JSON.parse(sessionStorage.getItem(SENT_KEY) ?? "[]");
+      sessionStorage.setItem(SENT_KEY, JSON.stringify([...sent, order?.id]));
+    } catch {
+      /* */
+    }
+  };
+
+  if (loading) return <YarnLoader />;
+  if (!order)
+    return (
+      <section className="container-b py-16">
+        <EmptyState title="ما لقينا هالطلب" text="يمكن الرابط قديم. إذا عندك سؤال عن طلبك احكينا على واتساب.">
+          <Link to="/" className="btn btn-primary mt-2">رجوع للرئيسية</Link>
+        </EmptyState>
+      </section>
+    );
 
   return (
-    <div className="wrap py-12 md:py-16">
-      <div className="mx-auto max-w-2xl text-center">
-        <p className="label text-thread">استلمنا طلبك</p>
-        <h1 className="mt-3 font-display text-[2.6rem] leading-tight md:text-[3.8rem]">
-          شكراً لك، <em className="text-thread not-italic">{order.details.name.split(" ")[0]}</em>.
-        </h1>
-        <p className="mt-4 text-lg text-ink-2">
-          قطعك الآن تُكوى وتُرقّم وتُطوى بورق الباترون. نسخة من هذا الإيصال في طريقها إلى {order.details.email}.
-        </p>
+    <section className="container-b relative flex flex-col items-center py-14 text-center md:py-20">
+      <div className="relative mb-6 h-40 w-40">
+        <motion.svg viewBox="0 0 120 120" className="absolute inset-0 size-full" aria-hidden>
+          <motion.rect x="18" y="46" width="84" height="62" rx="6" fill="#f3e1dc" stroke="#4a2a18" strokeWidth="2" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }} />
+          <motion.rect x="12" y="34" width="96" height="18" rx="4" fill="#e9c2bb" stroke="#4a2a18" strokeWidth="2" initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5, type: "spring", damping: 12 }} />
+          <motion.path d="M60 34 V108" stroke="#c98f86" strokeWidth="8" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.9, duration: 0.6 }} />
+          <motion.path d="M38 78 l14 14 l30 -30" fill="none" stroke="#4a2a18" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 1.8, duration: 0.6 }} />
+        </motion.svg>
+        <motion.div className="absolute left-1/2 top-2 w-20 -translate-x-1/2" initial={{ scale: 0, rotate: -40 }} animate={{ scale: 1, rotate: 0 }} transition={{ delay: 1.4, type: "spring", damping: 8 }}>
+          <Bow className="w-full" color="#c98f86" />
+        </motion.div>
       </div>
 
-      <motion.div
-        initial={{ y: 60, opacity: 0, rotate: -2 }}
-        animate={{ y: 0, opacity: 1, rotate: -0.6 }}
-        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto mt-12 max-w-xl"
-      >
-        {/* perforated top edge */}
-        <div className="h-3 bg-[radial-gradient(circle_at_6px_0,transparent_5px,var(--color-tissue)_5.5px)] bg-[length:12px_12px]" />
-        <div className="bg-tissue bg-ruled px-6 pb-8 pt-4 shadow-[0_30px_60px_-30px_#1e1c1966] md:px-10">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="font-display text-2xl font-bold">Tareq Project</p>
-              <p className="label text-ink-3">إيصال الطلب</p>
-            </div>
-            <div className="text-left font-mono text-sm">
-              <p className="font-bold">{order.number}</p>
-              <p className="text-ink-3">{formatDate(order.placedAt)}</p>
-            </div>
-          </div>
-          <table className="mt-6 w-full text-sm">
-            <tbody>
-              {order.lines.map((l) => (
-                <tr key={l.key} className="align-top">
-                  <td className="py-1.5 pl-2 font-mono">{l.qty}×</td>
-                  <td className="py-1.5">
-                    {l.name}
-                    <span className="block text-xs text-ink-3">
-                      {l.colorway} · {l.size}
-                    </span>
-                  </td>
-                  <td className="py-1.5 text-left font-mono">{money(l.price * l.qty)}</td>
-                </tr>
-              ))}
-              <tr className="border-t border-dashed border-ink/30">
-                <td />
-                <td className="pt-3">الشحن ({order.details.delivery === "express" ? "سريع" : order.details.delivery === "collect" ? "استلام" : "عادي"})</td>
-                <td className="pt-3 text-left font-mono">{order.shipping ? money(order.shipping) : "مجاني"}</td>
-              </tr>
-              <tr>
-                <td />
-                <td className="py-1 font-bold">الإجمالي</td>
-                <td className="py-1 text-left font-mono font-bold">{money(order.total)}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="mt-6 grid gap-4 border-t border-dashed border-ink/30 pt-5 text-sm sm:grid-cols-2">
-            <div>
-              <p className="label text-ink-3">يُرسل إلى</p>
-              <p className="mt-1">
-                {order.details.name}
-                <br />
-                {order.details.delivery === "collect" ? "استلام من المحلّ" : `${order.details.address}، ${order.details.city}، ${order.details.country}`}
-              </p>
-            </div>
-            <div>
-              <p className="label text-ink-3">الوصول المتوقّع</p>
-              <p className="mt-1">{formatDate(order.eta, { weekday: "long", day: "numeric", month: "long" })}</p>
-            </div>
-          </div>
-          {order.details.giftNote && <p className="mt-6 font-hand text-2xl text-chalk">«{order.details.giftNote}»</p>}
-          <p className="mt-6 font-hand text-2xl text-thread">كُويت بعناية — مشغل بديا</p>
-          <RotatingStamp text="رفو مدى الحياة · رفو مدى الحياة · " className="absolute -right-4 -top-10 h-24 w-24 text-thread/70 md:-right-10 md:top-auto md:bottom-6">
-            <span className="font-display text-xl italic text-thread">✓</span>
-          </RotatingStamp>
+      <motion.h1 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="font-display text-4xl md:text-5xl">
+        شكراً {order.name.split(" ")[0]}، وصلنا طلبك! 🤍
+      </motion.h1>
+      <p className="mt-4 max-w-lg leading-8 text-cocoa-2">
+        رقم الطلب <b className="tabular-nums text-cocoa">{order.number}</b>. ابعتيلنا الطلب على واتساب لنأكد معك التفاصيل، وبعدها بنبلّش نجهّز قطعك بحب.
+      </p>
+
+      <div className="mt-8 flex flex-col items-center gap-3">
+        <a href={link} onClick={markSent} target="_blank" rel="noreferrer" className="btn btn-primary !px-8 !py-4 text-base">
+          <WhatsappIcon className="size-6" /> أرسلي الطلب على واتساب
+        </a>
+        {countdown != null && (
+          <p className="text-sm text-cocoa-3" aria-live="polite">
+            رح نفتحلك واتساب خلال {countdown} ثواني…{" "}
+            <button onClick={() => setCountdown(null)} className="font-semibold text-rose underline underline-offset-4">إلغاء</button>
+          </p>
+        )}
+      </div>
+
+      <div className="mt-8 w-full max-w-md rounded-[2rem] border border-dashed border-line bg-linen p-6 text-start">
+        <ul className="space-y-2 text-sm">
+          {order.items.map((i, n) => (
+            <li key={n} className="flex justify-between gap-3">
+              <span>
+                {i.name} <span className="text-cocoa-3">{i.color?.name ? `(${i.color.name})` : ""} ×{i.qty}</span>
+                {i.note && <span className="block text-xs text-cocoa-3">✍️ {i.note}</span>}
+              </span>
+              <span className="tabular-nums">{formatPrice(i.price * i.qty)}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 space-y-1 border-t border-dashed border-line pt-4 text-sm">
+          <div className="flex justify-between"><span>{order.isPickup ? "الاستلام" : "التوصيل"} · {order.zoneName}</span><span className="tabular-nums">{order.deliveryFee ? formatPrice(order.deliveryFee) : "مجاني"}</span></div>
+          {order.giftWrap && <div className="flex justify-between"><span>تغليف هدية</span><span className="tabular-nums">{formatPrice(order.giftWrapFee)}</span></div>}
+          {order.discount > 0 && <div className="flex justify-between text-sage"><span>خصم {order.promoCode}</span><span className="tabular-nums">− {formatPrice(order.discount)}</span></div>}
+          <div className="flex justify-between pt-2 text-lg font-bold"><span>الإجمالي (عند الاستلام)</span><span className="tabular-nums">{formatPrice(order.total)}</span></div>
         </div>
-      </motion.div>
-
-      <div className="mt-12 flex flex-wrap justify-center gap-3">
-        <Button onClick={() => window.print()} variant="paper">
-          <Printer className="h-4 w-4" /> اطبع الإيصال
-        </Button>
-        <Button to="/journal/how-to-darn-a-jumper" variant="paper">
-          تعلّم الرفو
-        </Button>
-        <Button to="/shop">تابع التصفّح</Button>
       </div>
-    </div>
+
+      <Link to="/shop" className="btn btn-ghost mt-8">كمّلي التسوق</Link>
+      <YarnBall className="pointer-events-none absolute -bottom-6 start-4 hidden size-24 opacity-70 md:block" color="#e3e9dc" />
+    </section>
   );
 }

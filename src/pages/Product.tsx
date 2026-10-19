@@ -1,33 +1,38 @@
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, Check, ChevronDown, Clock, RotateCcw, Ruler as RulerIcon, Truck } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Link, useParams, useSearchParams } from "react-router";
-import { CareSymbol, Ruler } from "../components/Decor";
-import { categoryNames } from "../components/Header";
-import { FabricQualities } from "../components/FabricQualities";
-import { GarmentFlat } from "../components/GarmentFlat";
-import { weightWord } from "../lib/fabric";
+import { Check, ChevronDown, Clock, Gift, Heart, PenLine, Share2, ShoppingBag, Star, Truck } from "lucide-react";
+import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
+import { Link, useParams } from "react-router";
+import { QtyStepper } from "../components/CartLine";
+import { Diamond, StitchDivider } from "../components/Craft";
+import { WhatsappIcon } from "../components/Icons";
+import { YarnLoader } from "../components/Loader";
+import { ProductArt } from "../components/ProductArt";
 import { ProductCard } from "../components/ProductCard";
-import { Swatch } from "../components/Swatch";
-import { Breadcrumbs, Button, EmptyState, HandNote, PinHead, SectionHead, Skeleton } from "../components/ui";
-import { getFabric, getProduct, getProductsBySlugs } from "../lib/api";
-import { fitNotes, suggestSize } from "../lib/fit";
-import { pad, useAsync, useDocumentTitle } from "../lib/hooks";
+import { ProductMedia } from "../components/ProductMedia";
+import { ReviewsMarquee } from "../components/ReviewsMarquee";
+import { Price, SectionHeading, Stars } from "../components/ui";
+import { getHomeReviews, getProductBySlug, getProductReviews, getRelatedProducts, submitReview, whatsappLink } from "../lib/api";
+import { formatPrice } from "../lib/format";
+import { useAsync, useTitle } from "../lib/hooks";
+import { useSite } from "../lib/site";
 import { useShop } from "../lib/store";
-import type { Product as P } from "../types";
+import { NO_COLOR, type Product as TProduct } from "../types";
+import NotFound from "./NotFound";
 
-function Fold({ title, children, open: initial = false }: { title: string; children: ReactNode; open?: boolean }) {
-  const [open, setOpen] = useState(initial);
+function Accordion({ title, children, defaultOpen = false }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-dashed border-ink/20">
-      <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center justify-between py-4 text-left" aria-expanded={open}>
-        <span className="font-display text-lg">{title}</span>
-        <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+    <div className="border-b border-dashed border-line">
+      <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center justify-between py-4 text-start font-semibold" aria-expanded={open}>
+        {title}
+        <motion.span animate={{ rotate: open ? 180 : 0 }}>
+          <ChevronDown className="size-5" />
+        </motion.span>
       </button>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="pb-5 text-[0.95rem] leading-relaxed text-ink-2">{children}</div>
+            <div className="pb-5 leading-8 text-cocoa-2">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -35,335 +40,430 @@ function Fold({ title, children, open: initial = false }: { title: string; child
   );
 }
 
-/** Sizes as notches along a tailor's tape. */
-function SizeTape({ product, value, onChange }: { product: P; value: string; onChange: (s: string) => void }) {
-  return (
-    <div className="relative rounded-md bg-[#efdcaa] px-2 pb-2 pt-5 ring-1 ring-[#d9c58f]">
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-3 opacity-70"
-        style={{ backgroundImage: "repeating-linear-gradient(to left, #1e1c19 0 1px, transparent 1px 6px)" }}
-      />
-      <div className="flex gap-1" role="radiogroup" aria-label="المقاس">
-        {product.sizes.map((s) => {
-          const out = product.soldOutSizes?.includes(s);
-          const low = product.lowSizes?.includes(s);
-          const sel = value === s;
-          return (
-            <button
-              key={s}
-              role="radio"
-              aria-checked={sel}
-              disabled={out}
-              onClick={() => onChange(s)}
-              className={`relative flex-1 rounded py-2.5 font-mono text-[0.8rem] transition ${sel ? "bg-ink text-paper" : out ? "cursor-not-allowed text-ink/30 line-through" : "hover:bg-[#f6e8c2]"}`}
-              aria-label={`${s}${out ? "، نفد" : low ? "، آخر القطع" : ""}`}
-            >
-              {s}
-              {low && !out && <span className="absolute -top-1 end-1 h-1.5 w-1.5 rounded-full bg-thread" />}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+const artViews = [
+  { v: 0 as const, label: "القطعة" },
+  { v: 1 as const, label: "التفاصيل" },
+  { v: 2 as const, label: "مع التغليف" },
+];
 
-function SizeHelper({ product, onPick }: { product: P; onPick: (s: string) => void }) {
-  const isBottom = product.category === "trousers" || product.category === "skirts";
-  const [val, setVal] = useState(isBottom ? 76 : 96);
-  const [pref, setPref] = useState<"neat" | "easy">("easy");
-  const s = suggestSize({ category: product.category, chest: isBottom ? undefined : val, waist: isBottom ? val : undefined, fit: product.fit, preference: pref });
+function Gallery({ product, color, tint }: { product: TProduct; color: string; tint?: string }) {
+  const [view, setView] = useState(0);
+  const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
+  const hasImages = product.images.length > 0;
+  const count = hasImages ? product.images.length : artViews.length;
+
+  useEffect(() => setView(0), [product.id]);
+
+  const onMove = (e: MouseEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    setZoom({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
+  };
+
+  const render = (i: number, eager = false) =>
+    hasImages ? (
+      <ProductMedia image={product.images[i]} art={product.art} color={color} className="size-full" alt={`${product.name} ${i + 1}`} eager={eager} />
+    ) : (
+      <ProductArt kind={product.art} color={color} bg={tint} variant={artViews[i].v} className="size-full" title={product.name} />
+    );
+
   return (
-    <div className="mt-3 rounded-md bg-paper-2 p-4 ring-1 ring-line">
-      <div className="flex items-baseline justify-between">
-        <label htmlFor="body" className="label text-ink-3">
-          محيط {isBottom ? "خصرك" : "صدرك"}
-        </label>
-        <span className="font-mono text-sm">{val} سم</span>
+    <div className="flex flex-col gap-3 md:flex-row-reverse md:items-start">
+      <div
+        className="stitched relative aspect-square flex-1 cursor-zoom-in overflow-hidden rounded-[2rem] bg-cream-2"
+        onMouseMove={onMove}
+        onMouseLeave={() => setZoom(null)}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${view}-${color}`}
+            initial={{ opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            className="size-full"
+          >
+            <div
+              className="size-full transition-transform duration-300 ease-out"
+              style={zoom ? { transform: "scale(1.7)", transformOrigin: `${zoom.x}% ${zoom.y}%` } : undefined}
+            >
+              {render(view, true)}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+        {product.badge && <span className="absolute start-5 top-5 rounded-full bg-cocoa px-3 py-1 text-xs font-semibold text-cream">{product.badge}</span>}
       </div>
-      <input id="body" type="range" min={isBottom ? 60 : 78} max={isBottom ? 100 : 126} value={val} onChange={(e) => setVal(Number(e.target.value))} className="mt-2 w-full accent-thread" />
-      <div className="mt-3 flex gap-2 text-xs">
-        {(["neat", "easy"] as const).map((p) => (
-          <button key={p} onClick={() => setPref(p)} className={`rounded-full px-3 py-1 ring-1 ${pref === p ? "bg-ink text-paper ring-ink" : "ring-line"}`}>
-            {p === "neat" ? "أحبّها مرتّبة" : "أحبّها مريحة"}
-          </button>
-        ))}
-      </div>
-      {s && (
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <p className="text-sm text-ink-2">
-            <span className="font-mono text-xl font-bold text-ink">{s.size}</span> — {s.why}
-          </p>
-          {product.sizes.includes(s.size) && !product.soldOutSizes?.includes(s.size) && (
-            <button onClick={() => onPick(s.size)} className="shrink-0 rounded-full bg-ink px-3 py-1.5 text-xs text-paper">
-              اختر {s.size}
+      {count > 1 && (
+        <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] md:max-h-[34rem] md:flex-col md:overflow-y-auto" role="tablist" aria-label="صور القطعة">
+          {Array.from({ length: count }).map((_, i) => (
+            <button
+              key={i}
+              role="tab"
+              aria-selected={view === i}
+              aria-label={`صورة ${i + 1}`}
+              onClick={() => setView(i)}
+              className={`relative size-20 shrink-0 overflow-hidden rounded-2xl border-2 transition md:size-24 ${view === i ? "border-cocoa" : "border-transparent opacity-70 hover:opacity-100"}`}
+            >
+              {render(i)}
             </button>
-          )}
+          ))}
         </div>
       )}
     </div>
   );
 }
 
-export default function Product() {
-  const { slug = "" } = useParams();
-  const [params] = useSearchParams();
-  const { data: product, loading } = useAsync(() => getProduct(slug), [slug]);
-  const { data: fabric } = useAsync(() => (product ? getFabric(product.fabricId) : Promise.resolve(null)), [product?.fabricId]);
-  const { data: pairs } = useAsync(() => getProductsBySlugs(product?.pairsWith ?? []), [product?.slug]);
-  const { addToRail, setRailOpen, money, togglePin, isPinned, toast, chapters } = useShop();
+/** آراء القطعة + نموذج لإضافة رأي (بينعرض بعد موافقة المتجر) */
+function ProductReviews({ product }: { product: TProduct }) {
+  const { data: reviews } = useAsync(() => getProductReviews(product.id), [product.id]);
+  const { data: homeReviews } = useAsync(() => getHomeReviews().catch(() => []), []);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", city: "", text: "", rating: 5 });
+  const [state, setState] = useState<"idle" | "sending" | "done">("idle");
+  const [err, setErr] = useState("");
 
-  const [cw, setCw] = useState(0);
-  const [size, setSize] = useState("");
-  const [view, setView] = useState<"flat" | "cloth" | "measure">("flat");
-  const [helper, setHelper] = useState(false);
-  const [nudge, setNudge] = useState(false);
+  const list = reviews && reviews.length ? reviews : homeReviews ?? [];
+  const own = !!reviews?.length;
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (form.name.trim().length < 2 || form.text.trim().length < 3) return setErr("اكتبي اسمك ورأيك");
+    setErr("");
+    setState("sending");
+    try {
+      await submitReview({ productId: product.id, ...form });
+      setState("done");
+    } catch (ex) {
+      setState("idle");
+      setErr(ex instanceof Error ? ex.message : "ما وصل الرأي");
+    }
+  };
+
+  return (
+    <section className="mt-24 bg-cream-2/70 py-16 md:py-20">
+      <div className="container-b">
+        <SectionHeading
+          eyebrow="آراء البنات"
+          title={own ? `شو حكوا عن ${product.name}` : "شو حكوا عن بَنان"}
+          align="start"
+          action={
+            <button onClick={() => setOpen((o) => !o)} className="btn btn-ghost self-start md:self-auto">
+              <PenLine className="size-4" /> اكتبي رأيك
+            </button>
+          }
+        />
+        <AnimatePresence>
+          {open && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+              {state === "done" ? (
+                <p className="mb-8 rounded-3xl bg-sage-soft p-6 text-center font-serif text-xl">شكراً على رأيك 🤍 رح يظهر هون بعد ما نراجعه.</p>
+              ) : (
+                <form onSubmit={submit} className="mb-10 grid gap-4 rounded-[2rem] border border-dashed border-line bg-linen p-6 md:grid-cols-2">
+                  <div>
+                    <label htmlFor="rv-name" className="label">اسمك</label>
+                    <input id="rv-name" value={form.name} maxLength={60} onChange={(e) => setForm({ ...form, name: e.target.value })} className="field" />
+                  </div>
+                  <div>
+                    <label htmlFor="rv-city" className="label">مدينتك (اختياري)</label>
+                    <input id="rv-city" value={form.city} maxLength={40} onChange={(e) => setForm({ ...form, city: e.target.value })} className="field" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="label">تقييمك</p>
+                    <div className="flex gap-1" role="radiogroup" aria-label="التقييم">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button key={n} type="button" role="radio" aria-checked={form.rating === n} aria-label={`${n} نجوم`} onClick={() => setForm({ ...form, rating: n })}>
+                          <Star className={`size-7 transition ${n <= form.rating ? "fill-gold text-gold" : "text-sand"}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label htmlFor="rv-text" className="label">رأيك</label>
+                    <textarea id="rv-text" rows={3} maxLength={1000} value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} className="field resize-none" />
+                  </div>
+                  <p className="text-sm text-rose md:col-span-2" role="alert">{err}</p>
+                  <button disabled={state === "sending"} className="btn btn-primary md:col-span-2 md:justify-self-start">
+                    {state === "sending" ? "عم نرسل..." : "إرسال الرأي"}
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      {list.length > 0 ? (
+        <ReviewsMarquee reviews={list} />
+      ) : (
+        <p className="container-b text-cocoa-3">لسا ما في آراء — كوني أول وحدة بتكتب 🤍</p>
+      )}
+    </section>
+  );
+}
+
+/** معاينة حية: النص المكتوب بيتطرّز على بطاقة */
+function PersonalizePreview({ text }: { text: string }) {
+  return (
+    <div className="relative mt-3 flex items-center gap-4 rounded-2xl bg-cream-2 p-4">
+      <svg viewBox="0 0 120 70" className="h-16 w-28 shrink-0" aria-hidden>
+        <rect x="4" y="4" width="112" height="62" rx="10" fill="#fffdfa" stroke="#e4d5c4" />
+        <rect x="10" y="10" width="100" height="50" rx="7" fill="none" stroke="#c98f86" strokeDasharray="3 3" />
+        <AnimatePresence mode="wait">
+          <motion.text
+            key={text}
+            x="60"
+            y="43"
+            textAnchor="middle"
+            fontFamily="Aref Ruqaa, serif"
+            fontSize={text.length > 10 ? 12 : 18}
+            fill="#4a2a18"
+            stroke="#4a2a18"
+            strokeWidth=".4"
+            strokeDasharray="200"
+            initial={{ strokeDashoffset: 200, opacity: 0.3 }}
+            animate={{ strokeDashoffset: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+            {text.slice(0, 18) || "اسمك هون"}
+          </motion.text>
+        </AnimatePresence>
+      </svg>
+      <p className="text-sm leading-6 text-cocoa-2">هيك تقريباً رح ينطرز النص على قطعتك ✨ الشكل النهائي بيكون بخيط يدوي.</p>
+    </div>
+  );
+}
+
+function ProductView({ product }: { product: TProduct }) {
+  const { add, toggleWish, isWished, setDrawerOpen } = useShop();
+  const [color, setColor] = useState(product.colors[0] ?? NO_COLOR);
+  const [size, setSize] = useState<string | undefined>(product.sizes[0]);
+  const [note, setNote] = useState("");
+  const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const out = product.stock !== null && product.stock <= 0;
+  const maxQty = product.stock ?? 20;
+  const wished = isWished(product.id);
+  const { site, categories } = useSite();
+  const category = categories.find((c) => c.id === product.categoryId);
+  const { data: related } = useAsync(() => getRelatedProducts(product), [product.id]);
+  useTitle(product.name);
 
   useEffect(() => {
-    const c = Number(params.get("c") ?? 0);
-    setCw(Number.isFinite(c) ? c : 0);
-    setSize("");
-    setView("flat");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
-  useEffect(() => {
-    if (product && product.sizes.length === 1) setSize(product.sizes[0]);
+    setColor(product.colors[0] ?? NO_COLOR);
+    setSize(product.sizes[0]);
+    setNote("");
+    setQty(1);
   }, [product]);
 
-  useDocumentTitle(product?.name ?? "قطعة");
-  const chapter = useMemo(() => chapters?.find((c) => c.slug === product?.chapter), [product, chapters]);
+  const addToCart = () => {
+    add(product, { color, size, note, qty, from: btnRef.current });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2200);
+  };
 
-  if (loading && !product)
-    return (
-      <div className="wrap grid gap-10 py-10 lg:grid-cols-12">
-        <Skeleton className="aspect-square lg:col-span-7" />
-        <div className="space-y-4 lg:col-span-5">
-          <Skeleton className="h-6 w-40" />
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-40 w-full" />
-        </div>
-      </div>
-    );
-  if (!product)
-    return <EmptyState title="هذه القطعة ليست على الجدار." text="ربما نفد إصدارها، أو انفكّت غرزة الرابط." action={<Button to="/shop">تصفّح المتجر</Button>} />;
-
-  const c = product.colorways[Math.min(cw, product.colorways.length - 1)];
-  const left = product.edition.of - product.edition.made;
-  const pinned = isPinned(product.slug);
-
-  const add = () => {
-    if (!size) {
-      setNudge(true);
-      setTimeout(() => setNudge(false), 900);
-      return;
+  const share = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) await navigator.share({ title: product.name, url });
+      else {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1800);
+      }
+    } catch {
+      /* المستخدم ألغى المشاركة */
     }
-    addToRail({ slug: product.slug, colorway: c.name, size });
-    toast("عُلّقت على الراف", `${product.name} · ${c.name} · ${size}`);
-    setRailOpen(true);
   };
 
   return (
     <>
-      <div className="wrap pt-6">
-        <Breadcrumbs trail={[{ label: "المتجر", to: "/shop" }, { label: categoryNames[product.category], to: `/shop?category=${product.category}` }, { label: product.name }]} />
-      </div>
-
-      <section className="wrap grid gap-10 py-8 lg:grid-cols-12 lg:gap-12">
-        {/* visual */}
-        <div className="lg:col-span-7">
-          <div className="lg:sticky lg:top-28">
-            <div className="relative aspect-square overflow-hidden rounded-[10px] bg-mat ring-1 ring-chalk/20">
-              <span className="label absolute right-4 top-4 z-10 text-chalk/80">
-                {product.id.toUpperCase()} · {c.name}
-              </span>
-              <PinHead className="absolute left-4 top-4 h-7 w-7" />
-              <AnimatePresence mode="wait">
-                {view === "flat" && (
-                  <motion.div key={`flat-${c.name}`} className="absolute inset-[10%]" initial={{ opacity: 0, scale: 0.96, rotate: -2 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
-                    <GarmentFlat kind={product.garment} {...c} className="h-full w-full" title={`${product.name} — ${c.name}`} />
-                  </motion.div>
-                )}
-                {view === "cloth" && (
-                  <motion.div key={`cloth-${c.name}`} className="absolute inset-[8%] grid place-items-center" initial={{ opacity: 0, scale: 1.1 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-                    <Swatch hex={c.hex} accent={c.accent} pattern={c.pattern} width={200} height={200} scale={4.5} className="w-[86%]" label={`قماش ${c.name} عن قرب`} />
-                    <HandNote className="absolute bottom-0 left-2">{fabric ? `${fabric.name}، ${weightWord(fabric.gsm)}` : ""}</HandNote>
-                  </motion.div>
-                )}
-                {view === "measure" && (
-                  <motion.div key="measure" className="absolute inset-[8%] grid grid-cols-[1.2fr_1fr] items-center gap-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    <GarmentFlat kind={product.garment} {...c} className="w-full opacity-80" shadow={false} />
-                    <dl className="space-y-3">
-                      {product.measurements.map((m) => (
-                        <div key={m.label} className="border-b border-dashed border-chalk/40 pb-2">
-                          <dt className="label text-chalk">{m.label}</dt>
-                          <dd className="font-display text-3xl">
-                            {m.cm}
-                            <span className="ms-1 text-sm text-ink-3">سم</span>
-                          </dd>
-                        </div>
-                      ))}
-                      <p className="font-hand text-lg leading-tight text-chalk">ممدودة، مقاس M / 30</p>
-                    </dl>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <Ruler cm={50} className="absolute inset-x-0 bottom-0 h-6 w-full" />
-            </div>
-            <div className="mt-3 grid grid-cols-3 gap-2" role="tablist" aria-label="طريقة العرض">
-              {(
-                [
-                  ["flat", "الرسمة"],
-                  ["cloth", "القماش"],
-                  ["measure", "القياسات"],
-                ] as const
-              ).map(([v, l]) => (
-                <button key={v} role="tab" aria-selected={view === v} onClick={() => setView(v)} className={`rounded-md py-2.5 text-sm ring-1 transition ${view === v ? "bg-ink text-paper ring-ink" : "bg-tissue ring-line hover:ring-ink/30"}`}>
-                  {l}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* buy box */}
-        <div className="lg:col-span-5">
-          {chapter && (
-            <Link to={`/chapters/${chapter.slug}`} className="label inline-flex items-center gap-2 text-ink-3 hover:text-thread">
-              <span className="font-display text-base text-thread">الفصل {chapter.numeral}</span> {chapter.title} · {chapter.season}
-            </Link>
+      <div className="container-b pt-6 md:pt-10">
+        <nav aria-label="مسار الصفحة" className="mb-6 flex flex-wrap items-center gap-2 text-sm text-cocoa-3">
+          <Link to="/" className="hover:text-cocoa">الرئيسية</Link>
+          <Diamond className="size-1.5" />
+          <Link to="/shop" className="hover:text-cocoa">المتجر</Link>
+          {category && (
+            <>
+              <Diamond className="size-1.5" />
+              <Link to={`/shop?category=${category.slug}`} className="hover:text-cocoa">{category.name}</Link>
+            </>
           )}
-          <h1 className="mt-3 font-display text-[2.6rem] leading-[1.2] md:text-[3.4rem]">{product.name}</h1>
-          <p className="mt-2 font-hand text-[1.7rem] leading-tight text-chalk">{product.line}</p>
+          <Diamond className="size-1.5" />
+          <span className="text-cocoa">{product.name}</span>
+        </nav>
 
-          <div className="mt-6 flex flex-wrap items-end justify-between gap-4 border-y border-dashed border-ink/20 py-4">
-            <p className="font-mono text-[1.7rem] font-bold">{money(product.price)}</p>
-            <div className="text-left">
-              <p className="label text-ink-3">
-                الإصدار · رقم {pad(product.edition.made)} من {product.edition.of}
-              </p>
-              <div className="mt-1.5 me-0 ms-auto flex h-1.5 w-44 overflow-hidden rounded-full bg-ink/10">
-                <div className="h-full bg-thread" style={{ width: `${(product.edition.made / product.edition.of) * 100}%` }} />
-              </div>
-              <p className="mt-1 text-xs text-ink-2">بقي {left} في هذا الإصدار</p>
-            </div>
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <Gallery product={product} color={color.hex} tint={category?.tint} />
           </div>
 
-          <div className="mt-6">
-            <p className="label text-ink-3">
-              اللون — <span className="text-ink">{c.name}</span>
-            </p>
-            <div className="mt-3 flex gap-3">
-              {product.colorways.map((col, i) => (
-                <button key={col.name} onClick={() => setCw(i)} aria-label={col.name} aria-pressed={i === cw} className={`rounded-md p-1 ring-1 transition ${i === cw ? "ring-2 ring-ink" : "ring-line hover:ring-ink/40"}`}>
-                  <Swatch hex={col.hex} accent={col.accent} pattern={col.pattern} width={56} height={56} className="w-14" label={col.name} />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <div className="flex items-baseline justify-between">
-              <p className="label text-ink-3">
-                المقاس {size && <span className="text-ink">— {size}</span>}
-              </p>
-              {product.sizes.length > 1 && !product.departments.includes("kids") && (
-                <button onClick={() => setHelper((h) => !h)} className="flex items-center gap-1 text-sm underline decoration-dashed underline-offset-4 hover:text-thread">
-                  <RulerIcon className="h-4 w-4" /> {helper ? "أخفِ مساعد المقاس" : "أيّ مقاس؟"}
-                </button>
-              )}
-            </div>
-            <motion.div className="mt-3" animate={nudge ? { x: [0, -8, 8, -5, 5, 0] } : {}} transition={{ duration: 0.5 }}>
-              <SizeTape product={product} value={size} onChange={setSize} />
-            </motion.div>
-            {nudge && <p className="mt-2 text-sm text-thread">اختر مقاساً أولاً — أو اسأل مساعد المقاس.</p>}
-            <p className="mt-2 text-xs text-ink-3">
-              {product.departments.includes("kids") ? "مقاسات الأطفال بالسنوات، وكل قطعة مقصوصة لتكبر معهم موسماً إضافياً." : fitNotes[product.fit]} {product.lowSizes?.length ? "النقطة الحمراء = آخر القطع." : ""}
-            </p>
-            <AnimatePresence>{helper && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden"><SizeHelper product={product} onPick={(s) => { setSize(s); setHelper(false); }} /></motion.div>}</AnimatePresence>
-          </div>
-
-          <div className="mt-7 flex gap-3">
-            <Button onClick={add} className="flex-1 py-4">
-              علّقها على الراف — {money(product.price)}
-            </Button>
-            <button
-              onClick={() => {
-                togglePin(product.slug);
-                toast(pinned ? "أُزيل التثبيت" : "ثُبّتت على لوحتك", product.name);
-              }}
-              className={`grid h-14 w-14 shrink-0 place-items-center rounded-full ring-1 transition ${pinned ? "bg-paper-2 ring-thread" : "ring-ink/20 hover:ring-ink/50"}`}
-              aria-label={pinned ? "إزالة التثبيت" : "ثبّتها لوقت لاحق"}
-              aria-pressed={pinned}
-            >
-              <PinHead className={`h-7 w-7 ${pinned ? "" : "opacity-40 grayscale"}`} />
-            </button>
-          </div>
-
-          <ul className="mt-6 grid gap-3 text-sm text-ink-2 sm:grid-cols-3">
-            <li className="flex gap-2"><Clock className="h-4 w-4 shrink-0 text-thread" /> {product.makingHours} ساعة صنع، بيد {product.cutter.split(" ")[0]}</li>
-            <li className="flex gap-2"><Truck className="h-4 w-4 shrink-0 text-thread" /> تُكوى وتُرسل خلال 2–4 أيام</li>
-            <li className="flex gap-2"><RotateCcw className="h-4 w-4 shrink-0 text-thread" /> إرجاع خلال 30 يوماً، ورفو مدى الحياة</li>
-          </ul>
-
-          <div className="mt-8 border-t border-dashed border-ink/20">
-            <Fold title="عن القطعة" open>
-              <p>{product.description}</p>
-            </Fold>
-            <Fold title="التفاصيل">
-              <ul className="space-y-2">
-                {product.details.map((d) => (
-                  <li key={d} className="flex gap-2"><Check className="mt-1 h-4 w-4 shrink-0 text-sage" /> {d}</li>
-                ))}
-              </ul>
-            </Fold>
-            <Fold title="القماش والوزن">
-              <p>{product.composition}</p>
-              <p className="mt-1 font-mono text-sm">{product.weight}</p>
-              {fabric && (
-                <div className="mt-4 space-y-2 rounded-md bg-paper-2 p-4">
-                  <p className="font-display text-lg text-ink">{fabric.name} — {fabric.origin}</p>
-                  <FabricQualities fabric={fabric} />
-                  <Link to={`/fabrics#${fabric.id}`} className="mt-2 inline-block text-sm underline decoration-dashed underline-offset-4 hover:text-thread">اقرأ عن هذا القماش ←</Link>
+          <div>
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <p className="eyebrow">{category?.name}</p>
+              <h1 className="mt-2 font-display text-4xl leading-tight md:text-5xl">{product.name}</h1>
+              {product.reviewsCount > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-cocoa-3">
+                  <Stars value={product.rating} />
+                  <span>{product.rating} · {product.reviewsCount} تقييم</span>
                 </div>
               )}
-            </Fold>
-            <Fold title="العناية">
-              <div className="mb-3 flex gap-3 text-ink">
-                <CareSymbol kind={product.care.join(" ").includes("يدوي") ? "hand" : "wash"} />
-                <CareSymbol kind="noBleach" />
-                <CareSymbol kind={product.care.join(" ").includes("مسطّح") ? "flat" : "dry"} />
-                <CareSymbol kind="iron" />
+              <Price value={product.price} compareAt={product.compareAtPrice ?? undefined} className="mt-5 text-2xl" />
+              <p className="mt-4 text-lg leading-8 text-cocoa-2">{product.shortDescription}</p>
+            </motion.div>
+
+            <StitchDivider className="my-7" />
+
+            {/* اللون */}
+            {product.colors.length > 0 && (
+            <fieldset>
+              <legend className="label">اللون: <span className="font-normal text-cocoa">{color.name}</span></legend>
+              <div className="flex flex-wrap gap-3">
+                {product.colors.map((c) => (
+                  <button
+                    key={c.name}
+                    onClick={() => setColor(c)}
+                    aria-label={c.name}
+                    aria-pressed={c.name === color.name}
+                    className={`relative size-11 rounded-full transition ${c.name === color.name ? "ring-2 ring-cocoa ring-offset-2 ring-offset-cream" : "ring-1 ring-line hover:scale-110"}`}
+                    style={{ background: c.hex }}
+                  >
+                    {c.name === color.name && (
+                      <motion.span layoutId="color-check" className="absolute inset-0 grid place-items-center">
+                        <Check className="size-4 text-cocoa mix-blend-multiply" />
+                      </motion.span>
+                    )}
+                  </button>
+                ))}
               </div>
-              <ul className="space-y-1">{product.care.map((x) => <li key={x}>— {x}</li>)}</ul>
-              <Link to="/care" className="mt-3 inline-block text-sm underline decoration-dashed underline-offset-4 hover:text-thread">دليل العناية الكامل ←</Link>
-            </Fold>
-            <Fold title={`ملاحظة من ${product.cutter.split(" ")[0]}، القاطع`}>
-              <p className="font-hand text-[1.5rem] leading-relaxed text-chalk">«{product.cutterNote}»</p>
-              <p className="mt-2 text-sm">— {product.cutter}</p>
-            </Fold>
+            </fieldset>
+            )}
+
+            {product.sizes.length > 0 && (
+              <fieldset className="mt-6">
+                <legend className="label">الحجم</legend>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSize(s)}
+                      aria-pressed={size === s}
+                      className={`rounded-full border px-5 py-2 text-sm transition ${size === s ? "border-cocoa bg-cocoa text-cream" : "border-line bg-linen hover:border-cocoa-3"}`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+
+            {product.personalizable && (
+              <div className="mt-6">
+                <label htmlFor="note" className="label">التخصيص (اختياري)</label>
+                <input
+                  id="note"
+                  value={note}
+                  maxLength={30}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="مثلاً: اسم، حرف، أو تاريخ"
+                  className="field"
+                />
+                <PersonalizePreview text={note} />
+              </div>
+            )}
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              {!out && <QtyStepper value={qty} onChange={(v) => setQty(Math.max(1, Math.min(v, maxQty)))} max={maxQty} />}
+              <button
+                ref={btnRef}
+                onClick={addToCart}
+                disabled={out}
+                className="btn btn-primary min-w-0 flex-1 !py-3.5"
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span key={String(added)} initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -12, opacity: 0 }} className="flex items-center gap-2">
+                    {out ? "نفدت الكمية" : added ? (<><Check className="size-5" /> انضافت للسلة</>) : (<><ShoppingBag className="size-5" /> أضيفي للسلة · {formatPrice(product.price * qty)}</>)}
+                  </motion.span>
+                </AnimatePresence>
+              </button>
+              <button
+                onClick={() => toggleWish(product.id)}
+                className={`grid size-12 place-items-center rounded-full border transition ${wished ? "border-rose bg-rose-soft" : "border-line bg-linen hover:border-rose"}`}
+                aria-label={wished ? "إزالة من المفضلة" : "إضافة للمفضلة"}
+                aria-pressed={wished}
+              >
+                <motion.span key={String(wished)} initial={{ scale: 0.4 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 12 }}>
+                  <Heart className={`size-5 ${wished ? "fill-rose text-rose" : ""}`} />
+                </motion.span>
+              </button>
+            </div>
+
+            <AnimatePresence>
+              {added && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                  <button onClick={() => setDrawerOpen(true)} className="mt-3 text-sm font-semibold text-rose underline underline-offset-4">عرض السلة ←</button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+              <a
+                href={whatsappLink(site.whatsapp, `مرحبا بَنان 🤍 بدي أسأل عن "${product.name}"${color.name ? ` (${color.name})` : ""}`)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-cocoa-2 hover:text-cocoa"
+              >
+                <WhatsappIcon className="size-4" /> اسألينا عن القطعة
+              </a>
+              <button onClick={share} className="inline-flex items-center gap-1.5 text-cocoa-2 hover:text-cocoa">
+                <Share2 className="size-4" /> {copied ? "انتسخ الرابط ✓" : "شاركي القطعة"}
+              </button>
+            </div>
+
+            <ul className="mt-7 grid gap-3 rounded-3xl border border-dashed border-line bg-linen p-5 text-sm sm:grid-cols-3">
+              <li className="flex items-center gap-2"><Clock className="size-5 shrink-0 text-rose" /> {product.makingTime || "صُنع باليد بحب"}</li>
+              <li className="flex items-center gap-2"><Truck className="size-5 shrink-0 text-rose" /> {site.freeDeliveryOver != null ? <>مجاني فوق {formatPrice(site.freeDeliveryOver)}</> : "توصيل لكل فلسطين"}</li>
+              <li className="flex items-center gap-2"><Gift className="size-5 shrink-0 text-rose" /> تغليف هدية بـ {formatPrice(site.giftWrapPrice)}</li>
+            </ul>
+            {!out && product.stock !== null && product.stock <= 5 && (
+              <p className="mt-3 text-sm font-semibold text-rose">باقي {product.stock === 1 ? "قطعة وحدة بس" : `${product.stock} قطع بس`} — كل قطعة معمولة بإيدينا 🤍</p>
+            )}
+
+            <div className="mt-6">
+              <Accordion title="عن القطعة" defaultOpen><div className="whitespace-pre-line">{product.description}</div></Accordion>
+              {product.materials.length > 0 && (
+                <Accordion title="المواد">
+                  <ul className="list-inside list-disc space-y-1">
+                    {product.materials.map((m) => <li key={m}>{m}</li>)}
+                  </ul>
+                </Accordion>
+              )}
+              {product.care && <Accordion title="العناية بالقطعة">{product.care}</Accordion>}
+              <Accordion title="التوصيل والإرجاع">
+                توصيل لكل فلسطين خلال 2 – 5 أيام عمل، والدفع عند الاستلام. القطع الجاهزة بتنرجع خلال 3 أيام إذا كانت بحالتها الأصلية؛ القطع المخصّصة ما بتنرجع.
+              </Accordion>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {pairs && pairs.length > 0 && (
-        <section className="wrap py-16">
-          <SectionHead
-            no="ت"
-            kicker="تُلبس مع"
-            title={<>قطع <em className="text-thread not-italic">تتّفق</em> معها</>}
-            aside={
-              <Button to={`/dressing-table?with=${product.slug}`} variant="paper">
-                افردها معاً على الطاولة <ArrowLeft className="h-4 w-4" />
-              </Button>
-            }
-          />
-          <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3">
-            {pairs.map((p, i) => (
-              <ProductCard key={p.slug} product={p} index={i} />
-            ))}
+      <ProductReviews product={product} />
+
+      {related && related.length > 0 && (
+        <section className="container-b mt-24">
+          <SectionHeading eyebrow="ممكن تحبّي كمان" title="قطع من نفس العيلة" />
+          <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:gap-x-6 lg:grid-cols-4">
+            {related.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
           </div>
         </section>
       )}
     </>
   );
+}
+
+export default function Product() {
+  const { slug = "" } = useParams();
+  const { data: product, loading } = useAsync(() => getProductBySlug(slug), [slug]);
+  if (loading && !product) return <YarnLoader />;
+  if (!product) return <NotFound />;
+  return <ProductView product={product} />;
 }

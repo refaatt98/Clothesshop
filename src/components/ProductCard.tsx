@@ -1,98 +1,125 @@
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { Heart, Plus } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
+import { useSite } from "../lib/site";
 import { useShop } from "../lib/store";
-import { pad } from "../lib/hooks";
-import type { Product } from "../types";
-import { GarmentFlat, Hanger } from "./GarmentFlat";
-import { PinHead } from "./ui";
-import { categoryNames } from "./Header";
+import { NO_COLOR, type Product } from "../types";
+import { HangTag } from "./HangTag";
+import { ProductMedia } from "./ProductMedia";
+import { Price, Stars } from "./ui";
 
-export function ProductCard({ product, index, hanger = true }: { product: Product; index?: number; hanger?: boolean }) {
-  const [cw, setCw] = useState(0);
-  const { money, togglePin, isPinned, toast } = useShop();
-  const c = product.colorways[cw];
-  const pinned = isPinned(product.slug);
-  const left = product.edition.of - product.edition.made;
+const badgeTone: Record<NonNullable<Product["badge"]>, string> = {
+  "جديد": "bg-sage text-white",
+  "الأكثر طلباً": "bg-rose text-white",
+  "قطعة واحدة": "bg-cocoa text-cream",
+  "إصدار محدود": "bg-gold text-white",
+};
+
+export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
+  const { add, toggleWish, isWished } = useShop();
+  const [color, setColor] = useState(product.colors[0] ?? NO_COLOR);
+  const [added, setAdded] = useState(false);
+  const wished = isWished(product.id);
+  const out = product.stock !== null && product.stock <= 0;
+  const { categories } = useSite();
+  const tint = categories.find((c) => c.id === product.categoryId)?.tint;
+  const needsChoice = product.personalizable || (product.sizes?.length ?? 0) > 0;
+
+  const quickAdd = (el: HTMLElement) => {
+    add(product, { color, size: product.sizes?.[0], from: el });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1600);
+  };
 
   return (
-    <article className="group relative">
-      <Link
-        to={`/piece/${product.slug}${cw ? `?c=${cw}` : ""}`}
-        className="relative block aspect-[4/5] overflow-hidden rounded-[6px] bg-tissue ring-1 ring-line transition-[box-shadow] duration-500 hover:ring-ink/30"
-        aria-label={`${product.name}، ${money(product.price)}`}
-      >
-        <div className="absolute inset-0 bg-dots opacity-40" />
-        {/* رقم القطعة في الهامش، كما على ورق الباترون */}
-        <span className="label absolute start-3 top-3 text-ink-3">{index !== undefined ? `قطعة ${pad(index + 1, 2)}` : categoryNames[product.category]}</span>
-        {product.isNew && (
-          <span className="absolute start-3 top-9 rotate-[-4deg] rounded-sm border border-thread px-1.5 py-0.5 text-[0.68rem] font-medium text-thread">
-            جديد هذا الموسم
-          </span>
-        )}
+    <motion.article
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.6, delay: (index % 4) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      className="group relative flex flex-col"
+    >
+      <div className="stitched relative aspect-[4/5] overflow-hidden rounded-[1.75rem] bg-cream-2">
+        <Link to={`/product/${product.slug}`} className="block size-full" aria-label={product.name}>
+          <motion.div className="size-full" whileHover={{ scale: 1.06 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
+            <ProductMedia image={product.images[0]} art={product.art} color={color.hex} bg={tint} className="size-full" alt={product.name} />
+          </motion.div>
+        </Link>
 
-        <motion.div
-          className="absolute inset-x-[12%] bottom-[10%] top-[6%] flex origin-top flex-col items-center"
-          whileHover={{ rotate: [0, 2.2, -1.6, 0.8, 0] }}
-          transition={{ duration: 1.4, ease: "easeOut" }}
+        <HangTag className="absolute -top-1 end-5 h-[4.5rem] w-12 transition-transform duration-500 group-hover:translate-y-1" />
+
+        {product.badge && (
+          <span className={`absolute start-4 top-4 rounded-full px-3 py-1 text-xs font-semibold ${badgeTone[product.badge]}`}>{product.badge}</span>
+        )}
+        {out && <span className="absolute inset-x-4 bottom-4 rounded-full bg-cream/90 py-2 text-center text-sm font-semibold backdrop-blur">نفدت الكمية — بنرجّعها قريباً</span>}
+
+        <button
+          onClick={() => toggleWish(product.id)}
+          className="absolute start-4 bottom-4 grid size-10 place-items-center rounded-full bg-cream/90 backdrop-blur transition hover:scale-110"
+          aria-label={wished ? "إزالة من المفضلة" : "إضافة للمفضلة"}
+          aria-pressed={wished}
+          hidden={out}
         >
-          {hanger && product.garment !== "tote" && product.garment !== "scarf" && <Hanger className="relative z-10 -mb-[9%] w-[44%] shrink-0" />}
-          <GarmentFlat
-            kind={product.garment}
-            hex={c.hex}
-            accent={c.accent}
-            pattern={c.pattern}
-            className="h-full w-full transition-transform duration-700 ease-tailor group-hover:scale-[1.03]"
-            title={`${product.name} — ${c.name}`}
-          />
-        </motion.div>
+          <motion.span key={String(wished)} initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 12 }}>
+            <Heart className={`size-[18px] ${wished ? "fill-rose text-rose" : ""}`} />
+          </motion.span>
+        </button>
 
-        {/* بطاقة السعر المعلّقة */}
-        <div className="absolute bottom-3 end-3 rotate-[-4deg] rounded-[3px] bg-[#f3e9d2] px-2.5 py-1.5 font-mono text-[0.82rem] font-bold text-ink shadow-[0_6px_14px_-8px_#1e1c1966] ring-1 ring-[#d8c49c] transition-transform duration-500 group-hover:rotate-[2deg]">
-          {money(product.price)}
-        </div>
-        {left <= 45 && (
-          <span className="absolute bottom-3 start-3 rounded-full bg-paper/90 px-2 py-1 text-[0.68rem] text-ink-2 ring-1 ring-line">
-            بقي {left} من {product.edition.of}
-          </span>
+        {!out && (
+          needsChoice ? (
+            <Link
+              to={`/product/${product.slug}`}
+              className="absolute end-4 bottom-4 flex h-10 items-center gap-1.5 rounded-full bg-cocoa px-4 text-sm font-semibold text-cream transition md:translate-y-14 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 md:group-focus-within:translate-y-0 md:group-focus-within:opacity-100"
+            >
+              {product.personalizable ? "خصّصيها" : "اختاري"}
+            </Link>
+          ) : (
+            <button
+              onClick={(e) => quickAdd(e.currentTarget)}
+              className="absolute end-4 bottom-4 flex h-10 items-center gap-1.5 overflow-hidden rounded-full bg-cocoa px-4 text-sm font-semibold text-cream transition md:translate-y-14 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 md:focus:translate-y-0 md:focus:opacity-100"
+              aria-label={`إضافة ${product.name} للسلة`}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span key={String(added)} initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -16, opacity: 0 }} className="flex items-center gap-1.5">
+                  {added ? "انضافت 🤍" : (<><Plus className="size-4" /> للسلة</>)}
+                </motion.span>
+              </AnimatePresence>
+            </button>
+          )
         )}
-      </Link>
-
-      <button
-        onClick={() => {
-          togglePin(product.slug);
-          toast(pinned ? "أُزيل التثبيت" : "ثُبّتت على لوحتك", product.name);
-        }}
-        className="absolute end-2 top-2 grid h-10 w-10 place-items-center rounded-full bg-paper/80 ring-1 ring-line backdrop-blur transition hover:scale-110"
-        aria-label={pinned ? `إزالة تثبيت ${product.name}` : `تثبيت ${product.name}`}
-        aria-pressed={pinned}
-      >
-        <PinHead className={`h-6 w-6 transition ${pinned ? "" : "opacity-40 grayscale"}`} />
-      </button>
-
-      <div className="mt-3 min-w-0">
-        <h3 className="truncate font-display text-[1.3rem] leading-snug">
-          <Link to={`/piece/${product.slug}`} className="hover:underline hover:decoration-thread hover:decoration-dashed hover:underline-offset-4">
-            {product.name}
-          </Link>
-        </h3>
-        <p className="line-clamp-1 text-[0.85rem] text-ink-3">{product.line}</p>
       </div>
-      <div className="mt-2 flex items-center gap-1.5" role="radiogroup" aria-label="اللون">
-        {product.colorways.map((col, i) => (
-          <button
-            key={col.name}
-            role="radio"
-            aria-checked={i === cw}
-            aria-label={col.name}
-            title={col.name}
-            onClick={() => setCw(i)}
-            className={`h-5 w-5 rounded-full ring-1 ring-ink/20 ring-offset-2 ring-offset-paper transition ${i === cw ? "ring-2 ring-ink" : "hover:ring-ink/50"}`}
-            style={{ background: col.hex }}
-          />
-        ))}
-        <span className="ms-2 truncate text-xs text-ink-3">{c.name}</span>
+
+      <div className="flex flex-1 flex-col px-1 pt-4">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-2">
+          <h3 className="font-semibold leading-6">
+            <Link to={`/product/${product.slug}`} className="hover:text-rose">{product.name}</Link>
+          </h3>
+          <Price value={product.price} compareAt={product.compareAtPrice ?? undefined} className="shrink-0" />
+        </div>
+        <p className="mt-1 line-clamp-1 text-sm text-cocoa-3">{product.shortDescription}</p>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <div className={`flex items-center gap-1.5 ${product.colors.length ? "" : "invisible"}`} role="radiogroup" aria-label="اللون">
+            {product.colors.slice(0, 5).map((c) => (
+              <button
+                key={c.name}
+                role="radio"
+                aria-checked={c.name === color.name}
+                aria-label={c.name}
+                title={c.name}
+                onClick={() => setColor(c)}
+                className={`size-5 rounded-full border-2 transition ${c.name === color.name ? "scale-110 border-cocoa" : "border-cream shadow-[0_0_0_1px_var(--color-line)]"}`}
+                style={{ background: c.hex }}
+              />
+            ))}
+          </div>
+          {product.reviewsCount > 0 && (
+            <span className="hidden items-center gap-1 text-xs text-cocoa-3 sm:flex">
+              <Stars value={product.rating} size={12} /> ({product.reviewsCount})
+            </span>
+          )}
+        </div>
       </div>
-    </article>
+    </motion.article>
   );
 }

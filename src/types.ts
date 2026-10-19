@@ -1,219 +1,302 @@
-// ─── Garments are drawn, not photographed ──────────────────────
-export type GarmentKind =
-  | "coat"
-  | "jacket"
-  | "shirt"
-  | "camp-shirt"
-  | "tee"
-  | "knit"
-  | "trousers"
-  | "dress"
-  | "skirt"
-  | "scarf"
-  | "tote";
+// ═══════════════════════════════════════════════════════════
+// أنواع البيانات — نفس شكل جداول Supabase (بأسماء camelCase)
+// ═══════════════════════════════════════════════════════════
 
-export type FabricPattern = "solid" | "stripe" | "check" | "herringbone" | "rib" | "linen" | "denim";
+/** شكل الرسمة اللي بتمثّل القطعة إذا ما في صور */
+export type ArtKind =
+  | "bag"
+  | "pouch"
+  | "earrings"
+  | "necklace"
+  | "bracelet"
+  | "scrunchie"
+  | "hoop"
+  | "bookmark"
+  | "coaster"
+  | "keychain"
+  | "giftbox"
+  | "basket";
 
-export interface Colorway {
+export const ART_KINDS: { id: ArtKind; label: string }[] = [
+  { id: "bag", label: "شنطة" },
+  { id: "pouch", label: "محفظة" },
+  { id: "earrings", label: "حلق" },
+  { id: "necklace", label: "عقد" },
+  { id: "bracelet", label: "إسوارة" },
+  { id: "scrunchie", label: "سكرنشي" },
+  { id: "hoop", label: "إطار تطريز" },
+  { id: "bookmark", label: "فاصل كتاب" },
+  { id: "coaster", label: "قاعدة كوب" },
+  { id: "keychain", label: "تعليقة" },
+  { id: "giftbox", label: "علبة هدية" },
+  { id: "basket", label: "سلة" },
+];
+
+export interface Category {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  imageUrl: string | null;
+  art: ArtKind;
+  tint: string;
+  sort: number;
+  active: boolean;
+}
+
+export interface ColorOption {
   name: string;
   hex: string;
-  /** Secondary yarn colour used by stripes, checks, buttons */
-  accent?: string;
-  pattern: FabricPattern;
 }
 
-export type Category =
-  | "outerwear"
-  | "shirts"
-  | "knitwear"
-  | "tees"
-  | "trousers"
-  | "dresses"
-  | "skirts"
-  | "accessories";
+/** لون فاضي للمنتجات اللي ما إلها ألوان */
+export const NO_COLOR: ColorOption = { name: "", hex: "#efe2cf" };
 
-/** القسم: ستاتي، رجالي، أطفال. القطعة قد تكون في أكثر من قسم. */
-export type Department = "women" | "men" | "kids";
-
-export type Fit = "close" | "true" | "relaxed" | "generous";
-
-export interface PassportStage {
-  stage: string; // e.g. "الألياف", "الغزل"
-  place: string;
-  maker: string;
-  note: string;
-}
+export const BADGES = ["جديد", "الأكثر طلباً", "قطعة واحدة", "إصدار محدود"] as const;
+export type Badge = (typeof BADGES)[number];
 
 export interface Product {
   id: string;
   slug: string;
   name: string;
-  /** One-line poetic subtitle shown under the name */
-  line: string;
-  category: Category;
-  departments: Department[];
-  garment: GarmentKind;
-  chapter: string; // chapter slug
-  fabricId: string;
-  price: number; // ILS (₪)
-  colorways: Colorway[];
-  sizes: string[];
-  lowSizes?: string[]; // last few
-  soldOutSizes?: string[];
-  fit: Fit;
-  composition: string;
-  weight: string;
-  makingHours: number;
-  edition: { made: number; of: number };
-  cutter: string;
+  categoryId: string | null;
+  price: number;
+  compareAtPrice: number | null;
+  shortDescription: string;
   description: string;
-  details: string[];
-  care: string[];
-  cutterNote: string;
-  passport: PassportStage[];
-  measurements: { label: string; cm: number }[];
-  pairsWith: string[]; // product slugs
-  isNew?: boolean;
-  addedAt: string; // ISO date
+  materials: string[];
+  care: string;
+  makingTime: string;
+  art: ArtKind;
+  images: string[];
+  colors: ColorOption[];
+  sizes: string[];
+  personalizable: boolean;
+  stock: number | null; // null = بدون حد
+  badge: Badge | null;
+  featured: boolean;
+  active: boolean;
+  rating: number;
+  reviewsCount: number;
+  sort: number;
+  createdAt: string;
 }
 
-export interface Chapter {
-  slug: string;
-  numeral: string;
-  title: string;
-  season: string;
-  intro: string;
-  story: string[];
-  palette: { name: string; hex: string }[];
-  moods: string[];
-  note: string;
-  status: "current" | "archive" | "upcoming";
-}
-
-export interface Fabric {
+export interface Review {
   id: string;
+  productId: string | null;
+  productName?: string | null;
+  productSlug?: string | null;
   name: string;
-  mill: string;
-  origin: string;
-  fibre: string;
-  gsm: number;
-  hand: string;
-  soft: number; // 1-5 — how soft it feels on skin
-  warmth: number; // 1-5
-  breath: number; // 1-5
-  drape: number; // 1-5
-  age: number; // 1-5 — how beautifully it ages
-  hex: string;
-  accent?: string;
-  pattern: FabricPattern;
-  story: string;
-}
-
-export type JournalBlock =
-  | { type: "p"; text: string }
-  | { type: "h"; text: string }
-  | { type: "quote"; text: string; by?: string }
-  | { type: "note"; text: string };
-
-export interface JournalPost {
-  slug: string;
-  title: string;
-  kicker: string;
-  date: string;
-  readMins: number;
-  author: string;
-  excerpt: string;
-  cover: { garment: GarmentKind; hex: string; accent?: string; pattern: FabricPattern; tint: string };
-  body: JournalBlock[];
-}
-
-export interface WearerNote {
-  productSlug: string;
-  name: string;
-  city: string;
-  worn: string; // e.g. "3 winters"
-  size: string;
-  height: string;
+  city: string | null;
   text: string;
-  fitVerdict: "أصغر من المعتاد" | "مطابق للمقاس" | "أكبر من المعتاد";
+  rating: number;
+  imageUrl: string | null;
+  approved: boolean;
+  showOnHome: boolean;
+  createdAt: string;
 }
 
-export interface Store {
+export interface GalleryItem {
   id: string;
-  city: string;
-  country: string;
-  address: string;
-  hours: { days: string; time: string }[];
-  phone: string;
-  email: string;
-  note: string;
-  services: string[];
+  type: "image" | "video";
+  url: string;
+  posterUrl: string | null;
+  caption: string | null;
+  sort: number;
+  active: boolean;
 }
 
 export interface Faq {
   id: string;
-  group: "الطلبات" | "المقاسات" | "الرفو" | "الشحن" | "عن الدار";
-  q: string;
-  a: string;
+  question: string;
+  answer: string;
+  sort: number;
+  active: boolean;
 }
 
-export interface Maker {
+export interface DeliveryZone {
+  id: string;
   name: string;
-  role: string;
-  years: number;
-  city: string;
-  quote: string;
+  fee: number;
+  eta: string;
+  isPickup: boolean;
+  active: boolean;
+  sort: number;
 }
 
-export interface LegalDoc {
-  slug: string;
+export interface SiteInfo {
+  name: string;
+  tagline: string;
+  intro: string;
+  whatsapp: string; // بالصيغة الدولية بدون +
+  instagram: string;
+  email: string;
+  phone: string;
+  hours: string;
+  giftWrapPrice: number;
+  freeDeliveryOver: number | null;
+  announcements: string[];
+}
+
+export interface ProcessStep {
+  id: string;
   title: string;
-  updated: string;
-  sections: { heading: string; body: string }[];
+  text: string;
+  icon: "sketch" | "thread" | "hands" | "gift";
 }
 
-// ─── Shop state ────────────────────────────────────────────────
-export interface CartLine {
-  key: string; // slug|colour|size
+export interface StoryMilestone {
+  year: string;
+  title: string;
+  text: string;
+}
+
+// ─── السلة والطلبات ───────────────────────────────────────
+
+export interface CartItem {
+  key: string; // productId + اللون + المقاس + التخصيص
+  productId: string;
   slug: string;
-  colorway: string;
-  size: string;
+  name: string;
+  price: number;
+  art: ArtKind;
+  image?: string;
+  color: ColorOption;
+  size?: string;
+  note?: string;
   qty: number;
 }
 
-export interface ProductQuery {
-  category?: Category | "all";
-  dept?: Department;
-  chapter?: string;
-  colourFamily?: string;
-  size?: string;
-  maxPrice?: number;
-  sort?: "featured" | "new" | "price-asc" | "price-desc" | "slowest";
+export interface ProductFilter {
+  category?: string;
   q?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sort?: "featured" | "new" | "price-asc" | "price-desc";
+  inStockOnly?: boolean;
 }
 
-export interface CheckoutDetails {
+export interface OrderInput {
   name: string;
-  email: string;
   phone: string;
-  address: string;
+  zoneId: string;
   city: string;
-  country: string;
-  postcode: string;
-  delivery: "standard" | "express" | "collect";
-  giftNote?: string;
-  tissueWrap: boolean;
+  address: string;
+  notes?: string;
+  giftWrap: boolean;
+  giftMessage?: string;
+  promoCode?: string;
+  items: CartItem[];
+}
+
+/** حالة طلب — بتتعدّل من لوحة الإدارة ← حالات الطلب */
+export interface StatusDef {
+  key: string;
+  label: string;
+  color: string;
+  sort: number;
+  active: boolean;
+  isSystem: boolean; // جديد / استلام / ملغى — مستعملين بالنظام وما بينحذفوا
+  customerMessage: string; // رسالة واتساب للزبونة، فيها {name} {number} {total}
+}
+export type OrderStatus = string;
+
+export interface OrderItem {
+  id?: string;
+  productId?: string | null;
+  name: string;
+  price: number;
+  qty: number;
+  color: ColorOption | null;
+  size: string | null;
+  note: string | null;
+  image: string | null;
+  art: ArtKind | null;
 }
 
 export interface Order {
+  id: string;
   number: string;
-  placedAt: string;
-  lines: (CartLine & { name: string; price: number })[];
+  status: OrderStatus;
+  name: string;
+  phone: string;
+  zoneName: string;
+  isPickup: boolean;
+  city: string;
+  address: string;
+  notes: string | null;
+  giftWrap: boolean;
+  giftMessage: string | null;
   subtotal: number;
-  shipping: number;
+  deliveryFee: number;
+  giftWrapFee: number;
+  discount: number;
+  promoCode: string | null;
   total: number;
-  details: CheckoutDetails;
-  eta: string;
+  createdAt: string;
+  items: OrderItem[];
+  adminNote?: string | null;
+  updatedAt?: string;
+  paymentStatus?: PaymentStatus;
+  zoneId?: string | null;
 }
 
-export type Currency = "ILS";
+export type PaymentStatus = "unpaid" | "paid" | "refunded";
+export const PAYMENT_STATUSES: { id: PaymentStatus; label: string }[] = [
+  { id: "unpaid", label: "غير مدفوع" },
+  { id: "paid", label: "مدفوع" },
+  { id: "refunded", label: "مُرجع" },
+];
+
+export interface PromoCode {
+  id: string;
+  code: string;
+  type: "percent" | "fixed" | "free_delivery";
+  value: number;
+  minOrder: number;
+  maxUses: number | null;
+  usedCount: number;
+  startsAt: string | null;
+  expiresAt: string | null;
+  active: boolean;
+  note: string | null;
+  createdAt: string;
+}
+
+export interface PromoResult {
+  valid: boolean;
+  discount: number;
+  freeDelivery: boolean;
+  message: string;
+  code: string | null;
+}
+
+export interface CustomRequestInput {
+  pieceType: string;
+  colors: string[];
+  budget: string;
+  deadline?: string;
+  details: string;
+  name: string;
+  phone: string;
+}
+
+export interface CustomRequest extends CustomRequestInput {
+  id: string;
+  ref: string;
+  status: "new" | "in_progress" | "done" | "cancelled";
+  createdAt: string;
+}
+
+export interface ContactInput {
+  name: string;
+  phone: string;
+  message: string;
+}
+
+export interface Message extends ContactInput {
+  id: string;
+  read: boolean;
+  createdAt: string;
+}
