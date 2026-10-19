@@ -113,9 +113,11 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
               />
             ))}
           </div>
-          <span className="hidden items-center gap-1 text-xs text-cocoa-3 sm:flex">
-            <Stars value={product.rating} size={12} /> ({product.reviewsCount})
-          </span>
+          {product.reviewsCount > 0 && (
+            <span className="hidden items-center gap-1 text-xs text-cocoa-3 sm:flex">
+              <Stars value={product.rating} size={12} /> ({product.reviewsCount})
+            </span>
+          )}
         </div>
       </div>
     </motion.article>

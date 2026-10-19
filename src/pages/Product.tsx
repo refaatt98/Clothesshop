@@ -301,10 +301,12 @@ function ProductView({ product }: { product: TProduct }) {
             <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <p className="eyebrow">{category?.name}</p>
               <h1 className="mt-2 font-display text-4xl leading-tight md:text-5xl">{product.name}</h1>
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-cocoa-3">
-                <Stars value={product.rating} />
-                <span>{product.rating} · {product.reviewsCount} تقييم</span>
-              </div>
+              {product.reviewsCount > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-cocoa-3">
+                  <Stars value={product.rating} />
+                  <span>{product.rating} · {product.reviewsCount} تقييم</span>
+                </div>
+              )}
               <Price value={product.price} compareAt={product.compareAtPrice ?? undefined} className="mt-5 text-2xl" />
               <p className="mt-4 text-lg leading-8 text-cocoa-2">{product.shortDescription}</p>
             </motion.div>
@@ -418,7 +420,7 @@ function ProductView({ product }: { product: TProduct }) {
             </div>
 
             <ul className="mt-7 grid gap-3 rounded-3xl border border-dashed border-line bg-linen p-5 text-sm sm:grid-cols-3">
-              <li className="flex items-center gap-2"><Clock className="size-5 shrink-0 text-rose" /> {product.makingTime}</li>
+              <li className="flex items-center gap-2"><Clock className="size-5 shrink-0 text-rose" /> {product.makingTime || "صُنع باليد بحب"}</li>
               <li className="flex items-center gap-2"><Truck className="size-5 shrink-0 text-rose" /> {site.freeDeliveryOver != null ? <>مجاني فوق {formatPrice(site.freeDeliveryOver)}</> : "توصيل لكل فلسطين"}</li>
               <li className="flex items-center gap-2"><Gift className="size-5 shrink-0 text-rose" /> تغليف هدية بـ {formatPrice(site.giftWrapPrice)}</li>
             </ul>
@@ -427,13 +429,15 @@ function ProductView({ product }: { product: TProduct }) {
             )}
 
             <div className="mt-6">
-              <Accordion title="عن القطعة" defaultOpen>{product.description}</Accordion>
-              <Accordion title="المواد">
-                <ul className="list-inside list-disc space-y-1">
-                  {product.materials.map((m) => <li key={m}>{m}</li>)}
-                </ul>
-              </Accordion>
-              <Accordion title="العناية بالقطعة">{product.care}</Accordion>
+              <Accordion title="عن القطعة" defaultOpen><div className="whitespace-pre-line">{product.description}</div></Accordion>
+              {product.materials.length > 0 && (
+                <Accordion title="المواد">
+                  <ul className="list-inside list-disc space-y-1">
+                    {product.materials.map((m) => <li key={m}>{m}</li>)}
+                  </ul>
+                </Accordion>
+              )}
+              {product.care && <Accordion title="العناية بالقطعة">{product.care}</Accordion>}
               <Accordion title="التوصيل والإرجاع">
                 توصيل لكل فلسطين خلال 2 – 5 أيام عمل، والدفع عند الاستلام. القطع الجاهزة بتنرجع خلال 3 أيام إذا كانت بحالتها الأصلية؛ القطع المخصّصة ما بتنرجع.
               </Accordion>

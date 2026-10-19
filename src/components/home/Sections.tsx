@@ -264,7 +264,7 @@ export function GallerySection({ products }: { products: Product[] }) {
         {tiles.map((p, i) => (
           <Reveal key={p.id} delay={i * 0.06} className={`${spans[i]} group relative overflow-hidden rounded-3xl`}>
             <Link to={`/product/${p.slug}`} className="block size-full" aria-label={p.name}>
-              <ProductMedia image={p.images[0]} art={p.art} color={p.colors[Math.min(1, p.colors.length - 1)].hex} variant={p.images[0] ? 0 : i % 3 === 1 ? 1 : i % 3 === 2 ? 2 : 0} className="size-full transition-transform duration-700 group-hover:scale-110" alt={p.name} />
+              <ProductMedia image={p.images[0]} art={p.art} color={p.colors[Math.min(1, p.colors.length - 1)]?.hex ?? "#efe2cf"} variant={p.images[0] ? 0 : i % 3 === 1 ? 1 : i % 3 === 2 ? 2 : 0} className="size-full transition-transform duration-700 group-hover:scale-110" alt={p.name} />
               <span className="absolute inset-0 flex items-end bg-gradient-to-t from-cocoa/60 via-transparent p-4 text-cream opacity-0 transition-opacity duration-500 group-hover:opacity-100">
                 <span className="font-display text-lg">{p.name}</span>
               </span>
