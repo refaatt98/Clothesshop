@@ -73,9 +73,14 @@ export default function AdminProducts() {
                     <input
                       type="number"
                       min={0}
-                      defaultValue={p.stock}
-                      onBlur={(e) => Number(e.target.value) !== p.stock && patch(p, { stock: Math.max(0, Number(e.target.value) || 0) })}
-                      className={`w-16 rounded-lg border px-2 py-1 text-center text-sm ${p.stock <= 2 ? "border-rose bg-rose-soft" : "border-line bg-cream"}`}
+                      defaultValue={p.stock ?? ""}
+                      placeholder="∞"
+                      title="فاضي = بدون حد"
+                      onBlur={(e) => {
+                        const v = e.target.value === "" ? null : Math.max(0, Number(e.target.value) || 0);
+                        if (v !== p.stock) void patch(p, { stock: v });
+                      }}
+                      className={`w-16 rounded-lg border px-2 py-1 text-center text-sm ${p.stock !== null && p.stock <= 2 ? "border-rose bg-rose-soft" : "border-line bg-cream"}`}
                     />
                   </label>
                   <button onClick={() => patch(p, { featured: !p.featured })} title="مختار للرئيسية" aria-label="مختار للرئيسية" aria-pressed={p.featured}>

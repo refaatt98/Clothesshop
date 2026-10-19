@@ -229,11 +229,11 @@ export default function Checkout() {
             {items.map((i) => (
               <li key={i.key} className="flex items-center gap-3">
                 <div className="relative size-14 shrink-0 overflow-hidden rounded-xl">
-                  <ProductMedia image={i.image} art={i.art} color={i.color.hex} className="size-full" alt={i.name} />
+                  <ProductMedia image={i.image} art={i.art} color={i.color?.hex ?? "#efe2cf"} className="size-full" alt={i.name} />
                 </div>
                 <div className="min-w-0 flex-1 text-sm">
                   <p className="truncate font-semibold">{i.name}</p>
-                  <p className="text-cocoa-3">{i.color.name}{i.size ? ` · ${i.size}` : ""} · ×{i.qty}</p>
+                  <p className="text-cocoa-3">{[i.color?.name, i.size, `×${i.qty}`].filter(Boolean).join(" · ")}</p>
                 </div>
                 <span className="text-sm font-semibold tabular-nums">{formatPrice(i.price * i.qty)}</span>
               </li>

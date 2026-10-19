@@ -110,7 +110,7 @@ export default function OrderDone() {
           {order.items.map((i, n) => (
             <li key={n} className="flex justify-between gap-3">
               <span>
-                {i.name} <span className="text-cocoa-3">{i.color ? `(${i.color.name})` : ""} ×{i.qty}</span>
+                {i.name} <span className="text-cocoa-3">{i.color?.name ? `(${i.color.name})` : ""} ×{i.qty}</span>
                 {i.note && <span className="block text-xs text-cocoa-3">✍️ {i.note}</span>}
               </span>
               <span className="tabular-nums">{formatPrice(i.price * i.qty)}</span>

@@ -7,11 +7,13 @@ import { adminListOrders, adminUpdateOrder, customerWhatsapp, whatsappLink } fro
 import { formatPrice } from "../../lib/format";
 import { useTitle } from "../../lib/hooks";
 import { statusMessageForCustomer } from "../../lib/whatsapp";
-import { ORDER_STATUSES, type Order, type OrderStatus } from "../../types";
+import type { Order, OrderStatus } from "../../types";
+import { useStatuses } from "../../components/admin/statuses";
 
 export default function AdminOrders() {
   useTitle("الطلبات");
   const toast = useToast();
+  const { statuses } = useStatuses();
   const [params, setParams] = useSearchParams();
   const status = params.get("status") ?? "";
   const [q, setQ] = useState("");
@@ -71,11 +73,11 @@ export default function AdminOrders() {
       </div>
       <div className="-mx-4 mb-5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
         <button onClick={() => setParams({})} className={`shrink-0 rounded-full px-4 py-2 text-sm ${!status ? "bg-cocoa text-cream" : "bg-linen hover:bg-cream-2"}`}>الكل</button>
-        {ORDER_STATUSES.map((s) => (
+        {statuses.filter((s) => s.active).map((s) => (
           <button
-            key={s.id}
-            onClick={() => setParams({ status: s.id })}
-            className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm ${status === s.id ? "bg-cocoa text-cream" : "bg-linen hover:bg-cream-2"}`}
+            key={s.key}
+            onClick={() => setParams({ status: s.key })}
+            className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm ${status === s.key ? "bg-cocoa text-cream" : "bg-linen hover:bg-cream-2"}`}
           >
             <span className="size-2 rounded-full" style={{ background: s.color }} /> {s.label}
           </button>
@@ -104,7 +106,7 @@ export default function AdminOrders() {
               <div className="flex flex-col items-end gap-2">
                 <b className="text-lg tabular-nums">{formatPrice(o.total)}</b>
                 <div className="flex gap-1.5">
-                  <a href={whatsappLink(customerWhatsapp(o.phone), statusMessageForCustomer(o))} target="_blank" rel="noreferrer" className="grid size-9 place-items-center rounded-full bg-sage-soft hover:bg-sage hover:text-white" aria-label="واتساب الزبونة">
+                  <a href={whatsappLink(customerWhatsapp(o.phone), statusMessageForCustomer(o, statuses))} target="_blank" rel="noreferrer" className="grid size-9 place-items-center rounded-full bg-sage-soft hover:bg-sage hover:text-white" aria-label="واتساب الزبونة">
                     <WhatsappIcon className="size-4" />
                   </a>
                   <a href={`tel:${o.phone}`} className="grid size-9 place-items-center rounded-full bg-cream-2 hover:bg-sand" aria-label="اتصال">

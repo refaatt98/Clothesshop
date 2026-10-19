@@ -31,7 +31,7 @@ export function CartLine({ item, onNavigate }: { item: CartItem; onNavigate?: ()
       className="flex gap-4 border-b border-dashed border-line py-4"
     >
       <Link to={`/product/${item.slug}`} onClick={onNavigate} className="block size-24 shrink-0 overflow-hidden rounded-2xl">
-        <ProductMedia image={item.image} art={item.art} color={item.color.hex} className="size-full" alt={item.name} />
+        <ProductMedia image={item.image} art={item.art} color={item.color?.hex ?? "#efe2cf"} className="size-full" alt={item.name} />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-2">
@@ -43,10 +43,12 @@ export function CartLine({ item, onNavigate }: { item: CartItem; onNavigate?: ()
           </button>
         </div>
         <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-cocoa-3">
-          <span className="inline-flex items-center gap-1">
-            <span className="size-3 rounded-full border border-line" style={{ background: item.color.hex }} />
-            {item.color.name}
-          </span>
+          {item.color?.name && (
+            <span className="inline-flex items-center gap-1">
+              <span className="size-3 rounded-full border border-line" style={{ background: item.color.hex }} />
+              {item.color.name}
+            </span>
+          )}
           {item.size && <span>· {item.size}</span>}
         </p>
         {item.note && <p className="mt-1 truncate text-xs text-cocoa-2">✎ {item.note}</p>}

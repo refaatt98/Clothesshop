@@ -16,7 +16,7 @@ import { formatPrice } from "../lib/format";
 import { useAsync, useTitle } from "../lib/hooks";
 import { useSite } from "../lib/site";
 import { useShop } from "../lib/store";
-import type { Product as TProduct } from "../types";
+import { NO_COLOR, type Product as TProduct } from "../types";
 import NotFound from "./NotFound";
 
 function Accordion({ title, children, defaultOpen = false }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
@@ -233,14 +233,15 @@ function PersonalizePreview({ text }: { text: string }) {
 
 function ProductView({ product }: { product: TProduct }) {
   const { add, toggleWish, isWished, setDrawerOpen } = useShop();
-  const [color, setColor] = useState(product.colors[0]);
+  const [color, setColor] = useState(product.colors[0] ?? NO_COLOR);
   const [size, setSize] = useState<string | undefined>(product.sizes[0]);
   const [note, setNote] = useState("");
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [copied, setCopied] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
-  const out = product.stock <= 0;
+  const out = product.stock !== null && product.stock <= 0;
+  const maxQty = product.stock ?? 20;
   const wished = isWished(product.id);
   const { site, categories } = useSite();
   const category = categories.find((c) => c.id === product.categoryId);
@@ -248,7 +249,7 @@ function ProductView({ product }: { product: TProduct }) {
   useTitle(product.name);
 
   useEffect(() => {
-    setColor(product.colors[0]);
+    setColor(product.colors[0] ?? NO_COLOR);
     setSize(product.sizes[0]);
     setNote("");
     setQty(1);
@@ -311,6 +312,7 @@ function ProductView({ product }: { product: TProduct }) {
             <StitchDivider className="my-7" />
 
             {/* اللون */}
+            {product.colors.length > 0 && (
             <fieldset>
               <legend className="label">اللون: <span className="font-normal text-cocoa">{color.name}</span></legend>
               <div className="flex flex-wrap gap-3">
@@ -332,6 +334,7 @@ function ProductView({ product }: { product: TProduct }) {
                 ))}
               </div>
             </fieldset>
+            )}
 
             {product.sizes.length > 0 && (
               <fieldset className="mt-6">
@@ -367,7 +370,7 @@ function ProductView({ product }: { product: TProduct }) {
             )}
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              {!out && <QtyStepper value={qty} onChange={(v) => setQty(Math.max(1, Math.min(v, product.stock)))} max={product.stock} />}
+              {!out && <QtyStepper value={qty} onChange={(v) => setQty(Math.max(1, Math.min(v, maxQty)))} max={maxQty} />}
               <button
                 ref={btnRef}
                 onClick={addToCart}
@@ -402,7 +405,7 @@ function ProductView({ product }: { product: TProduct }) {
 
             <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm">
               <a
-                href={whatsappLink(site.whatsapp, `مرحبا بَنان 🤍 بدي أسأل عن "${product.name}" (${color.name})`)}
+                href={whatsappLink(site.whatsapp, `مرحبا بَنان 🤍 بدي أسأل عن "${product.name}"${color.name ? ` (${color.name})` : ""}`)}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 text-cocoa-2 hover:text-cocoa"
@@ -419,7 +422,7 @@ function ProductView({ product }: { product: TProduct }) {
               <li className="flex items-center gap-2"><Truck className="size-5 shrink-0 text-rose" /> {site.freeDeliveryOver != null ? <>مجاني فوق {formatPrice(site.freeDeliveryOver)}</> : "توصيل لكل فلسطين"}</li>
               <li className="flex items-center gap-2"><Gift className="size-5 shrink-0 text-rose" /> تغليف هدية بـ {formatPrice(site.giftWrapPrice)}</li>
             </ul>
-            {!out && product.stock <= 5 && (
+            {!out && product.stock !== null && product.stock <= 5 && (
               <p className="mt-3 text-sm font-semibold text-rose">باقي {product.stock === 1 ? "قطعة وحدة بس" : `${product.stock} قطع بس`} — كل قطعة معمولة بإيدينا 🤍</p>
             )}
 

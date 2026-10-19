@@ -49,6 +49,9 @@ export interface ColorOption {
   hex: string;
 }
 
+/** لون فاضي للمنتجات اللي ما إلها ألوان */
+export const NO_COLOR: ColorOption = { name: "", hex: "#efe2cf" };
+
 export const BADGES = ["جديد", "الأكثر طلباً", "قطعة واحدة", "إصدار محدود"] as const;
 export type Badge = (typeof BADGES)[number];
 
@@ -69,7 +72,7 @@ export interface Product {
   colors: ColorOption[];
   sizes: string[];
   personalizable: boolean;
-  stock: number;
+  stock: number | null; // null = بدون حد
   badge: Badge | null;
   featured: boolean;
   active: boolean;
@@ -187,18 +190,17 @@ export interface OrderInput {
   items: CartItem[];
 }
 
-export const ORDER_STATUSES = [
-  { id: "new", label: "جديد", color: "#22c55e" },
-  { id: "pending", label: "في انتظار التأكيد", color: "#f97316" },
-  { id: "confirmed_whatsapp", label: "تم التأكيد على الواتساب", color: "#16a34a" },
-  { id: "preparing", label: "قيد التجهيز", color: "#10b981" },
-  { id: "out_for_delivery", label: "في التوصيل", color: "#0ea5e9" },
-  { id: "delivered", label: "تم التسليم", color: "#ec4899" },
-  { id: "failed_attempt", label: "محاولة تسليم غير مكتملة", color: "#a855f7" },
-  { id: "pickup", label: "الإستلام من البيت", color: "#eab308" },
-  { id: "cancelled", label: "ملغى", color: "#ef4444" },
-] as const;
-export type OrderStatus = (typeof ORDER_STATUSES)[number]["id"];
+/** حالة طلب — بتتعدّل من لوحة الإدارة ← حالات الطلب */
+export interface StatusDef {
+  key: string;
+  label: string;
+  color: string;
+  sort: number;
+  active: boolean;
+  isSystem: boolean; // جديد / استلام / ملغى — مستعملين بالنظام وما بينحذفوا
+  customerMessage: string; // رسالة واتساب للزبونة، فيها {name} {number} {total}
+}
+export type OrderStatus = string;
 
 export interface OrderItem {
   id?: string;

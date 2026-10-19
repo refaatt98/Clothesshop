@@ -2,7 +2,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { ArrowDown, ArrowUp, Check, ChevronDown, ImagePlus, LoaderCircle, Trash2, Video, X } from "lucide-react";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { uploadMedia } from "../../lib/api";
-import { ORDER_STATUSES, type OrderStatus } from "../../types";
+import type { OrderStatus, StatusDef } from "../../types";
+import { useStatuses } from "./statuses";
 
 // ─── إشعارات صغيرة ────────────────────────────────────────
 interface Toast {
@@ -151,12 +152,13 @@ export function DeleteButton({ onConfirm, label = "حذف", small = false }: { o
 }
 
 // ─── حالة الطلب (قائمة ملونة) ──────────────────────────────
-export function statusInfo(s: string) {
-  return ORDER_STATUSES.find((x) => x.id === s) ?? { id: s, label: s, color: "#9c8070" };
+export function statusInfo(list: StatusDef[], s: string) {
+  return list.find((x) => x.key === s) ?? { key: s, label: s, color: "#9c8070" };
 }
 
 export function StatusBadge({ status }: { status: string }) {
-  const s = statusInfo(status);
+  const { statuses } = useStatuses();
+  const s = statusInfo(statuses, status);
   return (
     <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: `${s.color}1f`, color: s.color }}>
       <span className="size-2 rounded-full" style={{ background: s.color }} />
@@ -174,7 +176,9 @@ export function StatusSelect({ value, onChange, disabled }: { value: OrderStatus
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
   }, [open]);
-  const cur = statusInfo(value);
+  const { statuses } = useStatuses();
+  const cur = statusInfo(statuses, value);
+  const options = statuses.filter((s) => s.active || s.key === value);
   return (
     <div ref={ref} className="relative">
       <button
@@ -198,26 +202,26 @@ export function StatusSelect({ value, onChange, disabled }: { value: OrderStatus
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="absolute inset-x-0 z-40 mt-2 min-w-56 overflow-hidden rounded-2xl border border-line bg-linen py-1.5 shadow-2xl"
+            className="absolute inset-x-0 z-40 mt-2 max-h-80 min-w-56 overflow-y-auto rounded-2xl border border-line bg-linen py-1.5 shadow-2xl"
             role="listbox"
           >
-            {ORDER_STATUSES.map((s) => (
-              <li key={s.id}>
+            {options.map((s) => (
+              <li key={s.key}>
                 <button
                   type="button"
                   role="option"
-                  aria-selected={s.id === value}
+                  aria-selected={s.key === value}
                   onClick={() => {
                     setOpen(false);
-                    if (s.id !== value) onChange(s.id);
+                    if (s.key !== value) onChange(s.key);
                   }}
-                  className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-start text-sm transition hover:bg-cream-2 ${s.id === value ? "font-bold" : ""}`}
+                  className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-start text-sm transition hover:bg-cream-2 ${s.key === value ? "font-bold" : ""}`}
                 >
                   <span className="flex items-center gap-2.5">
                     <span className="size-2.5 rounded-full" style={{ background: s.color }} />
                     {s.label}
                   </span>
-                  {s.id === value && <Check className="size-4" />}
+                  {s.key === value && <Check className="size-4" />}
                 </button>
               </li>
             ))}

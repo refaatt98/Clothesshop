@@ -5,10 +5,11 @@ import { AdminPageHeader, Card, StatusBadge, fmtDate } from "../../components/ad
 import { adminCountSubscribers, adminListOrders, adminStats } from "../../lib/api";
 import { formatPrice } from "../../lib/format";
 import { useAsync, useTitle } from "../../lib/hooks";
-import { ORDER_STATUSES } from "../../types";
+import { useStatuses } from "../../components/admin/statuses";
 
 export default function AdminDashboard() {
   useTitle("لوحة التحكم");
+  const { statuses } = useStatuses();
   const [tick, setTick] = useState(0);
   useEffect(() => {
     const on = () => setTick((t) => t + 1);
@@ -90,13 +91,13 @@ export default function AdminDashboard() {
         <Card>
           <h2 className="mb-4 font-semibold">الطلبات حسب الحالة (30 يوم)</h2>
           <ul className="space-y-2">
-            {ORDER_STATUSES.map((s) => {
-              const n = stats?.orders.filter((o) => o.status === s.id).length ?? 0;
+            {statuses.map((s) => {
+              const n = stats?.orders.filter((o) => o.status === s.key).length ?? 0;
               if (!n) return null;
               return (
-                <li key={s.id}>
-                  <Link to={`/admin/orders?status=${s.id}`} className="flex items-center justify-between rounded-xl px-2 py-1.5 text-sm hover:bg-cream-2">
-                    <StatusBadge status={s.id} />
+                <li key={s.key}>
+                  <Link to={`/admin/orders?status=${s.key}`} className="flex items-center justify-between rounded-xl px-2 py-1.5 text-sm hover:bg-cream-2">
+                    <StatusBadge status={s.key} />
                     <b className="tabular-nums">{n}</b>
                   </Link>
                 </li>

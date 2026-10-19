@@ -6,6 +6,7 @@ import {
   HelpCircle,
   Images,
   LayoutDashboard,
+  ListChecks,
   LoaderCircle,
   LogOut,
   Mail,
@@ -22,6 +23,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from "react-router";
 import { adminCountNewOrders, adminSignOut, isAdmin } from "../../lib/api";
 import { supabase } from "../../lib/supabase";
+import { StatusesProvider } from "./statuses";
 import { ToastProvider, useToast } from "./ui";
 
 const nav = [
@@ -29,6 +31,7 @@ const nav = [
   { to: "/admin/orders", label: "الطلبات", icon: ReceiptText, badge: "orders" as const },
   { to: "/admin/products", label: "المنتجات", icon: Package },
   { to: "/admin/categories", label: "الأقسام", icon: FolderTree },
+  { to: "/admin/statuses", label: "حالات الطلب", icon: ListChecks },
   { to: "/admin/delivery", label: "التوصيل", icon: Truck },
   { to: "/admin/promos", label: "أكواد الخصم", icon: Tag },
   { to: "/admin/gallery", label: "معرض الأعمال", icon: Images },
@@ -223,7 +226,9 @@ export function AdminShell() {
   if (state === "no") return <Navigate to="/admin/login" replace />;
   return (
     <ToastProvider>
-      <ShellInner />
+      <StatusesProvider>
+        <ShellInner />
+      </StatusesProvider>
     </ToastProvider>
   );
 }

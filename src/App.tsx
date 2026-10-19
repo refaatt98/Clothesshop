@@ -32,6 +32,7 @@ const AdminFaqs = lazy(() => import("./pages/admin/Faqs"));
 const AdminCustomRequests = lazy(() => import("./pages/admin/CustomRequests"));
 const AdminMessages = lazy(() => import("./pages/admin/Messages"));
 const AdminSettings = lazy(() => import("./pages/admin/Settings"));
+const AdminStatuses = lazy(() => import("./pages/admin/Statuses"));
 
 const adminFallback = <div className="grid min-h-dvh place-items-center bg-cream text-cocoa-3">...</div>;
 
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="products" element={<AdminProducts />} />
         <Route path="products/:id" element={<AdminProductEdit />} />
         <Route path="categories" element={<AdminCategories />} />
+        <Route path="statuses" element={<AdminStatuses />} />
         <Route path="delivery" element={<AdminDelivery />} />
         <Route path="promos" element={<AdminPromos />} />
         <Route path="gallery" element={<AdminGallery />} />

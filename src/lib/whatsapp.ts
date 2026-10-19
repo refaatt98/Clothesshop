@@ -1,8 +1,7 @@
 // رسائل واتساب جاهزة ومرتّبة
-import { ORDER_STATUSES, type Order, type OrderStatus } from "../types";
+import type { Order, OrderStatus, StatusDef } from "../types";
 import { formatPrice } from "./format";
 
-const statusLabel = (s: OrderStatus) => ORDER_STATUSES.find((x) => x.id === s)?.label ?? s;
 
 /** الرسالة اللي بتبعتها الزبونة للمتجر بعد الطلب */
 export function orderMessageForStore(o: Order, siteUrl: string): string {
@@ -33,20 +32,14 @@ export function orderMessageForStore(o: Order, siteUrl: string): string {
   return lines.join("\n");
 }
 
-/** رسائل جاهزة من المتجر للزبونة حسب حالة الطلب */
-export function statusMessageForCustomer(o: Order, status: OrderStatus = o.status): string {
+/** رسالة من المتجر للزبونة حسب حالة الطلب — النص بيتعدّل من لوحة الإدارة ← حالات الطلب */
+export function statusMessageForCustomer(o: Order, statuses: StatusDef[], status: OrderStatus = o.status): string {
+  const def = statuses.find((s) => s.key === status);
   const first = o.name.split(" ")[0];
-  const head = `مرحبا ${first} 🤍\nمعك متجر بَنان بخصوص طلبك *${o.number}*`;
-  const map: Partial<Record<OrderStatus, string>> = {
-    new: `${head}\nوصلنا طلبك، شكراً إلك! رح نأكده معك هلأ.`,
-    pending: `${head}\nبس بدنا نأكد معك التفاصيل قبل ما نبلّش: الإجمالي ${formatPrice(o.total)}${o.isPickup ? "" : ` والتوصيل لـ ${o.city}`}. كله تمام؟`,
-    confirmed_whatsapp: `${head}\nتم تأكيد طلبك ✅ رح نبلّش نجهّزه بحب.`,
-    preparing: `${head}\nطلبك قيد التجهيز هلأ 🧶 بنبعتلك أول ما يطلع.`,
-    out_for_delivery: `${head}\nطلبك طلع مع التوصيل 🚚 جهّزي ${formatPrice(o.total)} للمندوب.`,
-    delivered: `${head}\nإن شاء الله وصلك الطلب وعجبك 🫶🏼 بنحب نسمع رأيك!`,
-    failed_attempt: `${head}\nالمندوب حاول يوصلك وما قدر 😔 احكيلنا أي وقت بناسبك.`,
-    pickup: `${head}\nطلبك جاهز للاستلام من البيت 🏡 احكيلنا أي وقت بناسبك.`,
-    cancelled: `${head}\nتم إلغاء الطلب. إذا في أي سؤال إحنا هون.`,
-  };
-  return map[status] ?? `${head}\nحالة الطلب: ${statusLabel(status)}`;
+  const template = def?.customerMessage?.trim() || `مرحبا {name} 🤍\nمعك متجر بَنان بخصوص طلبك *{number}*\nحالة الطلب: ${def?.label ?? status}`;
+  return template
+    .replaceAll("{name}", first)
+    .replaceAll("{number}", o.number)
+    .replaceAll("{total}", formatPrice(o.total))
+    .replaceAll("{city}", o.city || o.zoneName);
 }

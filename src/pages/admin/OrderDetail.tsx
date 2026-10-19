@@ -9,10 +9,12 @@ import { formatPrice } from "../../lib/format";
 import { useTitle } from "../../lib/hooks";
 import { orderMessageForStore, statusMessageForCustomer } from "../../lib/whatsapp";
 import type { Order, OrderStatus } from "../../types";
+import { useStatuses } from "../../components/admin/statuses";
 
 export default function AdminOrderDetail() {
   const { id = "" } = useParams();
   const toast = useToast();
+  const { statuses } = useStatuses();
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [events, setEvents] = useState<{ status: OrderStatus; createdAt: string }[]>([]);
@@ -124,7 +126,7 @@ export default function AdminOrderDetail() {
             <h2 className="mb-3 font-semibold">الحالة</h2>
             <StatusSelect value={order.status} onChange={setStatus} />
             <a
-              href={whatsappLink(customerWhatsapp(order.phone), statusMessageForCustomer(order))}
+              href={whatsappLink(customerWhatsapp(order.phone), statusMessageForCustomer(order, statuses))}
               target="_blank"
               rel="noreferrer"
               className="btn mt-3 w-full bg-sage text-white hover:bg-sage/90 print:hidden"

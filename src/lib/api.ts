@@ -21,6 +21,7 @@ import type {
   PromoResult,
   Review,
   SiteInfo,
+  StatusDef,
   StoryMilestone,
 } from "../types";
 import { supabase } from "./supabase";
@@ -35,6 +36,8 @@ function check<T>(res: { data: T; error: { message: string } | null }): NonNulla
 function translateError(msg: string): string {
   if (/duplicate key.*slug/i.test(msg)) return "الرابط (slug) مستعمل قبل، اختاري واحد تاني";
   if (/duplicate key.*code/i.test(msg)) return "الكود موجود قبل";
+  if (/duplicate key.*order_statuses/i.test(msg)) return "في حالة بنفس الرمز";
+  if (/orders_status_fkey/i.test(msg)) return "الحالة مستعملة بطلبات";
   if (/row-level security|permission denied/i.test(msg)) return "ما عندك صلاحية لهالعملية";
   if (/Failed to fetch|NetworkError/i.test(msg)) return "مشكلة بالاتصال، جرّبي كمان مرة";
   return msg;
@@ -85,7 +88,7 @@ export const mapProduct = (r: Row): Product => ({
   makingTime: r.making_time ?? "",
   art: r.art,
   images: r.images ?? [],
-  colors: Array.isArray(r.colors) && r.colors.length ? r.colors : [{ name: "افتراضي", hex: "#efe2cf" }],
+  colors: Array.isArray(r.colors) ? r.colors.filter((c: Row) => c && c.name) : [],
   sizes: r.sizes ?? [],
   personalizable: r.personalizable,
   stock: r.stock,
@@ -243,7 +246,7 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Product[]
   }
   if (minPrice != null) query = query.gte("price", minPrice);
   if (maxPrice != null) query = query.lte("price", maxPrice);
-  if (inStockOnly) query = query.gt("stock", 0);
+  if (inStockOnly) query = query.or("stock.is.null,stock.gt.0");
   switch (sort) {
     case "new":
       query = query.order("created_at", { ascending: false });
@@ -354,7 +357,7 @@ export async function createOrder(input: OrderInput): Promise<Order> {
     gift_wrap: input.giftWrap,
     gift_message: input.giftMessage,
     promo_code: input.promoCode,
-    items: input.items.map((i) => ({ product_id: i.productId, qty: i.qty, color: i.color, size: i.size, note: i.note })),
+    items: input.items.map((i) => ({ product_id: i.productId, qty: i.qty, color: i.color?.name ? i.color : null, size: i.size, note: i.note })),
   };
   const data = check(await supabase.rpc("place_order", { payload })) as Row;
   return mapOrder(data);
@@ -739,4 +742,32 @@ export async function adminDeleteMessage(id: string) {
 export async function adminCountSubscribers(): Promise<number> {
   const { count } = await supabase.from("subscribers").select("id", { count: "exact", head: true });
   return count ?? 0;
+}
+
+// ─── حالات الطلب ──────────────────────────────────────────
+
+const mapStatus = (r: Row): StatusDef => ({
+  key: r.key,
+  label: r.label,
+  color: r.color,
+  sort: r.sort,
+  active: r.active,
+  isSystem: r.is_system,
+  customerMessage: r.customer_message ?? "",
+});
+
+export async function adminListStatuses(): Promise<StatusDef[]> {
+  return check(await supabase.from("order_statuses").select("*").order("sort")).map(mapStatus);
+}
+
+export async function adminSaveStatus(st: Partial<StatusDef> & { key: string }, isNew: boolean) {
+  const row: Row = { key: st.key, label: st.label, color: st.color, sort: st.sort, active: st.active, customer_message: st.customerMessage };
+  Object.keys(row).forEach((k) => row[k] === undefined && delete row[k]);
+  check(isNew ? await supabase.from("order_statuses").insert(row) : await supabase.from("order_statuses").update(row).eq("key", st.key));
+}
+
+export async function adminDeleteStatus(key: string) {
+  const { count } = await supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", key);
+  if (count) throw new Error(`في ${count} طلب على هالحالة — غيّري حالتهم أول، أو خبّي الحالة بدل ما تحذفيها`);
+  check(await supabase.from("order_statuses").delete().eq("key", key));
 }

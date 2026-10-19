@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { useSite } from "../lib/site";
 import { useShop } from "../lib/store";
-import type { Product } from "../types";
+import { NO_COLOR, type Product } from "../types";
 import { HangTag } from "./HangTag";
 import { ProductMedia } from "./ProductMedia";
 import { Price, Stars } from "./ui";
@@ -18,10 +18,10 @@ const badgeTone: Record<NonNullable<Product["badge"]>, string> = {
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
   const { add, toggleWish, isWished } = useShop();
-  const [color, setColor] = useState(product.colors[0]);
+  const [color, setColor] = useState(product.colors[0] ?? NO_COLOR);
   const [added, setAdded] = useState(false);
   const wished = isWished(product.id);
-  const out = product.stock <= 0;
+  const out = product.stock !== null && product.stock <= 0;
   const { categories } = useSite();
   const tint = categories.find((c) => c.id === product.categoryId)?.tint;
   const needsChoice = product.personalizable || (product.sizes?.length ?? 0) > 0;
@@ -99,7 +99,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         </div>
         <p className="mt-1 line-clamp-1 text-sm text-cocoa-3">{product.shortDescription}</p>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5" role="radiogroup" aria-label="اللون">
+          <div className={`flex items-center gap-1.5 ${product.colors.length ? "" : "invisible"}`} role="radiogroup" aria-label="اللون">
             {product.colors.slice(0, 5).map((c) => (
               <button
                 key={c.name}

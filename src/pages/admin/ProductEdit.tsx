@@ -20,10 +20,10 @@ const empty: Partial<Product> = {
   makingTime: "جاهزة للشحن خلال يومين",
   art: "bag",
   images: [],
-  colors: [{ name: "كريمي", hex: "#efe2cf" }],
+  colors: [],
   sizes: [],
   personalizable: false,
-  stock: 1,
+  stock: null,
   badge: null,
   featured: false,
   active: true,
@@ -55,14 +55,14 @@ export default function AdminProductEdit() {
   const save = async () => {
     if (!p.name?.trim()) return toast("اكتبي اسم المنتج", "err");
     if (!(Number(p.price) >= 0)) return toast("السعر غلط", "err");
-    if (!p.colors?.length) return toast("ضيفي لون واحد على الأقل", "err");
     setSaving(true);
     try {
       const saved = await adminSaveProduct({
         ...p,
         price: Number(p.price),
         compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
-        stock: Math.max(0, Number(p.stock) || 0),
+        stock: p.stock == null ? null : Math.max(0, Number(p.stock) || 0),
+        colors: (p.colors ?? []).filter((c) => c.name.trim()),
         sort: Number(p.sort) || 0,
         slug: p.slug?.trim() ? slugify(p.slug) : slugify(p.name ?? ""),
       });
@@ -125,6 +125,7 @@ export default function AdminProductEdit() {
 
           <Card className="space-y-4">
             <h2 className="font-semibold">الألوان والمقاسات</h2>
+            <p className="-mt-2 text-xs text-cocoa-3">اختياري — إذا ما ضفتي ألوان، ما بيطلع اختيار لون للزبونة.</p>
             <div className="space-y-2">
               {(p.colors ?? []).map((c, i) => (
                 <div key={i} className="flex items-center gap-2">
@@ -168,8 +169,8 @@ export default function AdminProductEdit() {
               <Field label="السعر قبل الخصم">
                 <input type="number" min={0} step="0.5" value={p.compareAtPrice ?? ""} onChange={(e) => set("compareAtPrice", e.target.value ? Number(e.target.value) : null)} className="field" placeholder="اختياري" />
               </Field>
-              <Field label="الكمية بالمخزون">
-                <input type="number" min={0} value={p.stock ?? 0} onChange={(e) => set("stock", Number(e.target.value))} className="field" />
+              <Field label="الكمية بالمخزون" hint="فاضي = بدون حد">
+                <input type="number" min={0} value={p.stock ?? ""} placeholder="∞ بدون حد" onChange={(e) => set("stock", e.target.value === "" ? null : Number(e.target.value))} className="field" />
               </Field>
               <Field label="الترتيب">
                 <input type="number" value={p.sort ?? 0} onChange={(e) => set("sort", Number(e.target.value))} className="field" />
