@@ -1,80 +1,65 @@
-/**
- * THE ONLY DOOR TO DATA.
- * Every page reads and writes through these functions. Today they read the
- * mock files in src/data; when Supabase is connected, only this file changes —
- * keep the signatures and swap the bodies for supabase.from(...) calls.
- */
-import { chapters } from "../data/chapters";
-import { fabrics } from "../data/fabrics";
-import { faqs, houseTimeline, legalDocs, makers, stores, wearerNotes } from "../data/house";
-import { journal } from "../data/journal";
+// ═══════════════════════════════════════════════════════════
+// طبقة البيانات — كل جلب أو إرسال بيمرّ من هون.
+// لما نربط Supabase، بنغيّر هالملف بس وباقي الموقع ما بيتغيّر.
+// ═══════════════════════════════════════════════════════════
+import { categories } from "../data/categories";
 import { products } from "../data/products";
+import { faqs, processSteps, regions, reviews, site, story } from "../data/site";
 import type {
-  CartLine,
-  Chapter,
-  CheckoutDetails,
-  Fabric,
+  Category,
+  ContactInput,
+  CustomRequestInput,
   Faq,
-  JournalPost,
-  LegalDoc,
-  Maker,
   Order,
+  OrderInput,
+  ProcessStep,
   Product,
-  ProductQuery,
-  Store,
-  WearerNote,
+  ProductFilter,
+  Region,
+  Review,
+  SiteInfo,
+  StoryMilestone,
 } from "../types";
-import { familyOf } from "./colour";
 
-/** Simulated network latency so loading states are real during development. */
-const wait = <T,>(value: T, ms = 220): Promise<T> =>
+/** تأخير بسيط يحاكي الشبكة */
+const delay = <T,>(value: T, ms = 250): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(structuredClone(value)), ms));
 
-export const FREE_SHIPPING_FROM = 500; // ₪
+// ─── المتجر ───────────────────────────────────────────────
 
-const categoryWords: Record<string, string> = {
-  outerwear: "معطف معاطف جاكيت جاكيتات",
-  shirts: "قميص قمصان",
-  knitwear: "تريكو كنزة صوف",
-  tees: "تيشيرت تيشيرتات",
-  trousers: "بنطال بناطيل",
-  dresses: "فستان فساتين",
-  skirts: "تنورة تنانير",
-  accessories: "إكسسوارات حقيبة وشاح",
-};
+export async function getSiteInfo(): Promise<SiteInfo> {
+  return delay(site, 0);
+}
 
-const deptWords: Record<string, string> = { women: "ستاتي نسائي نساء", men: "رجالي رجال", kids: "أطفال اطفال ولادي بناتي" };
+export async function getCategories(): Promise<Category[]> {
+  return delay(categories);
+}
 
-/** Arabic-friendly matching: drop harakat/shadda, unify alef & ya/ta-marbuta forms. */
-const normalise = (s: string) =>
-  s
-    .toLowerCase()
-    .replace(/[\u064B-\u0652\u0640]/g, "")
-    .replace(/[أإآ]/g, "ا")
-    .replace(/ى/g, "ي")
-    .replace(/ة/g, "ه");
+export async function getCategory(slug: string): Promise<Category | null> {
+  return delay(categories.find((c) => c.slug === slug) ?? null);
+}
 
-// ─── Products ──────────────────────────────────────────────────
-export async function getProducts(query: ProductQuery = {}): Promise<Product[]> {
+export async function getProducts(filter: ProductFilter = {}): Promise<Product[]> {
   let list = [...products];
-  const { category, dept, chapter, colourFamily, size, maxPrice, sort = "featured", q } = query;
+  const { category, q, minPrice, maxPrice, sort = "featured", inStockOnly } = filter;
 
-  if (category && category !== "all") list = list.filter((p) => p.category === category);
-  if (dept) list = list.filter((p) => p.departments.includes(dept));
-  if (chapter) list = list.filter((p) => p.chapter === chapter);
-  if (colourFamily) list = list.filter((p) => p.colorways.some((c) => familyOf(c.hex) === colourFamily));
-  if (size) list = list.filter((p) => p.sizes.includes(size) && !p.soldOutSizes?.includes(size));
-  if (maxPrice) list = list.filter((p) => p.price <= maxPrice);
-  if (q) {
-    const needle = normalise(q.trim());
-    list = list.filter((p) =>
-      normalise([p.name, p.line, p.category, categoryWords[p.category], ...p.departments.map((d) => deptWords[d]), p.composition, p.description, ...p.colorways.map((c) => c.name)].join(" ")).includes(needle),
+  if (category) list = list.filter((p) => p.categorySlug === category);
+  if (q?.trim()) {
+    const term = q.trim().toLowerCase();
+    list = list.filter(
+      (p) =>
+        p.name.toLowerCase().includes(term) ||
+        p.shortDescription.toLowerCase().includes(term) ||
+        p.materials.some((m) => m.toLowerCase().includes(term)),
     );
   }
+  if (minPrice != null) list = list.filter((p) => p.price >= minPrice);
+  if (maxPrice != null) list = list.filter((p) => p.price <= maxPrice);
+  if (inStockOnly) list = list.filter((p) => p.stock > 0);
 
   switch (sort) {
     case "new":
-      list.sort((a, b) => b.addedAt.localeCompare(a.addedAt));
+      list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       break;
     case "price-asc":
       list.sort((a, b) => a.price - b.price);
@@ -82,136 +67,119 @@ export async function getProducts(query: ProductQuery = {}): Promise<Product[]> 
     case "price-desc":
       list.sort((a, b) => b.price - a.price);
       break;
-    case "slowest":
-      list.sort((a, b) => b.makingHours - a.makingHours);
-      break;
+    default:
+      list.sort((a, b) => Number(b.featured) - Number(a.featured) || b.reviewsCount - a.reviewsCount);
   }
-  return wait(list);
+  return delay(list);
 }
 
-export async function getProduct(slug: string): Promise<Product | null> {
-  return wait(products.find((p) => p.slug === slug) ?? null);
+export async function getFeaturedProducts(limit = 8): Promise<Product[]> {
+  return delay(products.filter((p) => p.featured).slice(0, limit));
 }
 
-export async function getProductsBySlugs(slugs: string[]): Promise<Product[]> {
-  return wait(slugs.map((s) => products.find((p) => p.slug === s)).filter(Boolean) as Product[], 120);
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  return delay(products.find((p) => p.slug === slug) ?? null);
 }
 
-export async function getNewArrivals(limit = 6): Promise<Product[]> {
-  return getProducts({ sort: "new" }).then((l) => l.slice(0, limit));
+export async function getProductsByIds(ids: string[]): Promise<Product[]> {
+  return delay(products.filter((p) => ids.includes(p.id)));
 }
 
-export async function searchProducts(q: string): Promise<Product[]> {
-  if (!q.trim()) return wait([], 60);
-  return getProducts({ q }).then((l) => l.slice(0, 6));
+export async function getRelatedProducts(product: Product, limit = 4): Promise<Product[]> {
+  const same = products.filter((p) => p.categorySlug === product.categorySlug && p.id !== product.id);
+  const others = products.filter((p) => p.categorySlug !== product.categorySlug && p.featured);
+  return delay([...same, ...others].slice(0, limit));
 }
 
-export async function getWearerNotes(slug: string): Promise<WearerNote[]> {
-  return wait(wearerNotes.filter((n) => n.productSlug === slug));
+export async function getPriceRange(): Promise<{ min: number; max: number }> {
+  const prices = products.map((p) => p.price);
+  return delay({ min: Math.min(...prices), max: Math.max(...prices) }, 0);
 }
 
-// ─── Chapters & fabrics ────────────────────────────────────────
-export async function getChapters(): Promise<Chapter[]> {
-  return wait(chapters);
+// ─── المحتوى ──────────────────────────────────────────────
+
+export async function getReviews(): Promise<Review[]> {
+  return delay(reviews);
 }
 
-export async function getChapter(slug: string): Promise<Chapter | null> {
-  return wait(chapters.find((c) => c.slug === slug) ?? null);
+export async function getProcessSteps(): Promise<ProcessStep[]> {
+  return delay(processSteps);
 }
 
-export async function getFabrics(): Promise<Fabric[]> {
-  return wait(fabrics);
+export async function getStory(): Promise<StoryMilestone[]> {
+  return delay(story);
 }
 
-export async function getFabric(id: string): Promise<Fabric | null> {
-  return wait(fabrics.find((f) => f.id === id) ?? null);
-}
-
-// ─── Journal ───────────────────────────────────────────────────
-export async function getJournal(): Promise<JournalPost[]> {
-  return wait([...journal].sort((a, b) => b.date.localeCompare(a.date)));
-}
-
-export async function getJournalPost(slug: string): Promise<JournalPost | null> {
-  return wait(journal.find((j) => j.slug === slug) ?? null);
-}
-
-// ─── House ─────────────────────────────────────────────────────
-export async function getStores(): Promise<Store[]> {
-  return wait(stores);
-}
 export async function getFaqs(): Promise<Faq[]> {
-  return wait(faqs);
-}
-export async function getMakers(): Promise<Maker[]> {
-  return wait(makers);
-}
-export async function getHouseTimeline() {
-  return wait(houseTimeline);
-}
-export async function getLegalDoc(slug: string): Promise<LegalDoc | null> {
-  return wait(legalDocs.find((d) => d.slug === slug) ?? null);
+  return delay(faqs);
 }
 
-// ─── Writes (forms) ────────────────────────────────────────────
-const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
-
-export async function subscribeToLetters(email: string): Promise<{ ok: true }> {
-  if (!isEmail(email)) throw new Error("يبدو أن البريد الإلكتروني غير صحيح.");
-  return wait({ ok: true as const }, 600);
+export async function getRegions(): Promise<Region[]> {
+  return delay(regions, 0);
 }
 
-export async function sendContactMessage(input: {
-  name: string;
-  email: string;
-  topic: string;
-  message: string;
-}): Promise<{ ticket: string }> {
-  if (!isEmail(input.email)) throw new Error("تأكّد من بريدك الإلكتروني من فضلك.");
-  if (input.message.trim().length < 10) throw new Error("أخبرنا أكثر قليلاً — جملة واحدة على الأقل.");
-  return wait({ ticket: "C-" + Math.floor(1000 + Math.random() * 9000) }, 700);
+// ─── الطلبات والنماذج ─────────────────────────────────────
+
+const ORDERS_KEY = "banan:orders";
+
+function readOrders(): Order[] {
+  try {
+    return JSON.parse(localStorage.getItem(ORDERS_KEY) ?? "[]") as Order[];
+  } catch {
+    return [];
+  }
 }
 
-export async function requestMend(input: {
-  name: string;
-  email: string;
-  piece: string;
-  problem: string;
-}): Promise<{ reference: string; labelSentTo: string }> {
-  if (!isEmail(input.email)) throw new Error("تأكّد من بريدك الإلكتروني من فضلك.");
-  return wait({ reference: "M-" + Math.floor(10000 + Math.random() * 89999), labelSentTo: input.email }, 800);
+export function calcDelivery(subtotal: number, regionId: string): number {
+  if (subtotal >= site.freeDeliveryOver) return 0;
+  return regions.find((r) => r.id === regionId)?.fee ?? 0;
 }
 
-export async function bookFitting(input: {
-  storeId: string;
-  date: string;
-  time: string;
-  name: string;
-  email: string;
-}): Promise<{ confirmation: string }> {
-  if (!isEmail(input.email)) throw new Error("تأكّد من بريدك الإلكتروني من فضلك.");
-  return wait({ confirmation: "F-" + input.storeId.slice(0, 3).toUpperCase() + Math.floor(100 + Math.random() * 899) }, 700);
-}
-
-export async function placeOrder(lines: CartLine[], details: CheckoutDetails): Promise<Order> {
-  if (!lines.length) throw new Error("الراف فارغ.");
-  const priced = lines.map((l) => {
-    const p = products.find((x) => x.slug === l.slug)!;
-    return { ...l, name: p.name, price: p.price };
-  });
-  const subtotal = priced.reduce((s, l) => s + l.price * l.qty, 0);
-  const shipping =
-    details.delivery === "collect" ? 0 : details.delivery === "express" ? 40 : subtotal >= FREE_SHIPPING_FROM ? 0 : 20;
-  const eta = new Date(Date.now() + (details.delivery === "express" ? 3 : 7) * 86400000);
+export async function createOrder(input: OrderInput): Promise<Order> {
+  const subtotal = input.items.reduce((s, i) => s + i.price * i.qty, 0);
+  const delivery = calcDelivery(subtotal, input.regionId);
+  const giftWrapFee = input.giftWrap ? site.giftWrapPrice : 0;
+  const id = crypto.randomUUID?.() ?? String(Date.now());
   const order: Order = {
-    number: "OU-" + String(Math.floor(100000 + Math.random() * 899999)),
-    placedAt: new Date().toISOString(),
-    lines: priced,
+    ...input,
+    id,
+    number: `BN-${Date.now().toString().slice(-6)}`,
     subtotal,
-    shipping,
-    total: subtotal + shipping,
-    details,
-    eta: eta.toISOString(),
+    delivery,
+    giftWrapFee,
+    total: subtotal + delivery + giftWrapFee,
+    createdAt: new Date().toISOString(),
+    payment: "cod",
   };
-  return wait(order, 1100);
+  try {
+    localStorage.setItem(ORDERS_KEY, JSON.stringify([order, ...readOrders()].slice(0, 20)));
+  } catch {
+    /* التخزين غير متاح — لا مشكلة */
+  }
+  return delay(order, 700);
+}
+
+export async function getOrder(id: string): Promise<Order | null> {
+  return delay(readOrders().find((o) => o.id === id) ?? null, 100);
+}
+
+export async function submitCustomRequest(input: CustomRequestInput): Promise<{ ok: true; ref: string }> {
+  void input;
+  return delay({ ok: true as const, ref: `CU-${Date.now().toString().slice(-5)}` }, 700);
+}
+
+export async function submitContact(input: ContactInput): Promise<{ ok: true }> {
+  void input;
+  return delay({ ok: true as const }, 600);
+}
+
+export async function subscribeNewsletter(email: string): Promise<{ ok: boolean }> {
+  return delay({ ok: /\S+@\S+\.\S+/.test(email) }, 500);
+}
+
+// ─── مساعدات ──────────────────────────────────────────────
+
+/** رابط واتساب برسالة جاهزة */
+export function whatsappLink(message: string): string {
+  return `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(message)}`;
 }

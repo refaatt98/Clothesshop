@@ -1,37 +1,38 @@
+import { motion } from "motion/react";
 import { Link } from "react-router";
-import { GarmentFlat } from "../components/GarmentFlat";
-import { Button, HandNote } from "../components/ui";
-import { useDocumentTitle } from "../lib/hooks";
+import { useTitle } from "../lib/hooks";
 
+/** كبة صوف انفكّت خيوطها */
 export default function NotFound() {
-  useDocumentTitle("قطعة باترون مفقودة");
+  useTitle("الصفحة مش موجودة");
   return (
-    <section className="wrap grid items-center gap-10 py-16 md:grid-cols-2 md:py-24">
-      <div className="relative mx-auto aspect-square w-full max-w-md rounded-md bg-mat ring-1 ring-line">
-        <div className="absolute inset-[14%] rounded border-2 border-dashed border-thread/60" />
-        <GarmentFlat kind="shirt" hex="#f1eee7" accent="#c2432e" pattern="stripe" className="absolute inset-[18%] opacity-30 grayscale" />
-        <HandNote className="absolute bottom-6 left-6">هذه القطعة مفقودة ↑</HandNote>
-        <span className="label absolute right-4 top-4 text-chalk">قطعة 404 · ليست على الجدار</span>
-      </div>
-      <div>
-        <p className="label text-thread">خطأ 404</p>
-        <h1 className="mt-3 font-display text-[3rem] leading-tight md:text-[4.2rem]">
-          سقطت قطعة باترون <em className="text-thread not-italic">عن الجدار.</em>
-        </h1>
-        <p className="mt-5 max-w-md text-lg text-ink-2">الصفحة التي تبحث عنها ليست هنا. ربما كانت فصلاً نفد، أو رابطاً انفكّت غرزته.</p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Button to="/">العودة إلى طاولة القصّ</Button>
-          <Button to="/shop" variant="paper">
-            تصفّح المتجر
-          </Button>
-        </div>
-        <p className="mt-8 text-sm text-ink-3">
-          ما زلت تائهاً؟{" "}
-          <Link to="/contact" className="underline decoration-dashed underline-offset-4 hover:text-thread">
-            راسلنا
-          </Link>{" "}
-          — سيردّ عليك إنسان.
-        </p>
+    <section className="container-b flex flex-col items-center py-20 text-center md:py-28">
+      <svg viewBox="0 0 420 200" className="w-full max-w-lg" aria-hidden>
+        <motion.path
+          d="M10 150 C60 60 110 190 160 120 S250 40 280 120 S330 170 330 120"
+          fill="none"
+          stroke="#c98f86"
+          strokeWidth="3"
+          strokeLinecap="round"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 2, ease: "easeInOut" }}
+        />
+        <motion.g initial={{ x: -260, rotate: -720 }} animate={{ x: 0, rotate: 0 }} transition={{ duration: 2, ease: "easeOut" }} style={{ transformOrigin: "370px 120px" }}>
+          <circle cx="370" cy="120" r="40" fill="#c98f86" />
+          <g fill="none" stroke="#fff" strokeOpacity=".5" strokeWidth="2.5">
+            <path d="M338 104 C356 96 384 98 404 116" />
+            <path d="M334 124 C354 112 386 116 406 134" />
+            <path d="M360 82 C346 104 350 136 366 158" />
+          </g>
+        </motion.g>
+        <text x="170" y="70" textAnchor="middle" fontSize="64" fontFamily="Aref Ruqaa, serif" fill="#4a2a18">404</text>
+      </svg>
+      <h1 className="mt-6 font-display text-4xl">يا خسارة، الخيط انفكّ!</h1>
+      <p className="mt-3 max-w-md leading-8 text-cocoa-2">الصفحة اللي بتدوري عليها مش موجودة، أو يمكن انتقلت لمكان تاني.</p>
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <Link to="/" className="btn btn-primary">رجوع للرئيسية</Link>
+        <Link to="/shop" className="btn btn-ghost">تصفّحي المتجر</Link>
       </div>
     </section>
   );

@@ -1,74 +1,64 @@
-import { AnimatePresence, motion } from "motion/react";
+import { motion, useScroll, useSpring, useTransform } from "motion/react";
 import { Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
-import { useShop } from "../lib/store";
+import { CartDrawer } from "./CartDrawer";
+import { Needle } from "./Craft";
+import { FlyLayer } from "./FlyLayer";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
-import { RailDrawer } from "./RailDrawer";
-import { SearchOverlay } from "./SearchOverlay";
+import { YarnLoader } from "./Loader";
 
-function ScrollManager() {
+/** خيط بيتخيّط أعلى الشاشة مع السكرول، وإبرة بتقوده */
+function ScrollThread() {
+  const { scrollYProgress } = useScroll();
+  const p = useSpring(scrollYProgress, { stiffness: 120, damping: 24, mass: 0.3 });
+  const right = useTransform(p, (v) => `calc(${v * 100}% - 18px)`);
+  const opacity = useTransform(p, [0, 0.02], [0, 1]);
+  return (
+    <motion.div className="pointer-events-none fixed inset-x-0 top-0 z-[55] h-3 overflow-hidden" style={{ opacity }} aria-hidden>
+      <motion.div className="stitch absolute right-0 top-1 w-full origin-right text-rose" style={{ scaleX: p }} />
+      <motion.div className="absolute top-0" style={{ right }}>
+        <Needle className="h-2.5 w-10 -scale-x-100" color="#4a2a18" />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function ScrollToTop() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
     if (hash) {
-      const t = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: "smooth", block: "start" }), 350);
-      return () => clearTimeout(t);
+      const el = document.getElementById(hash.slice(1));
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: "smooth" }), 300);
+        return;
+      }
     }
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [pathname, hash]);
   return null;
 }
 
-function Toasts() {
-  const { toasts } = useShop();
-  return (
-    <div className="pointer-events-none fixed top-3 left-1/2 z-[99] md:top-auto md:bottom-4 flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 flex-col gap-2" aria-live="polite">
-      <AnimatePresence>
-        {toasts.map((t) => (
-          <motion.div
-            key={t.id}
-            initial={{ opacity: 0, y: 20, rotate: -2 }}
-            animate={{ opacity: 1, y: 0, rotate: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="flex items-center gap-3 rounded-md bg-ink px-4 py-3 text-paper shadow-xl"
-          >
-            <span className="text-thread">✂</span>
-            <div className="min-w-0">
-              <p className="text-sm font-medium">{t.text}</p>
-              {t.sub && <p className="truncate font-mono text-xs text-paper/60">{t.sub}</p>}
-            </div>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
-  );
-}
-
 export function Layout() {
-  const { pathname } = useLocation();
+  const location = useLocation();
   return (
-    <div className="flex min-h-dvh flex-col">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-ink focus:px-4 focus:py-2 focus:text-paper">
-        انتقل إلى المحتوى
+    <>
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:right-2 focus:z-[80] focus:rounded-full focus:bg-cocoa focus:px-4 focus:py-2 focus:text-cream">
+        تخطّي إلى المحتوى
       </a>
-      <ScrollManager />
+      <ScrollToTop />
+      <ScrollThread />
       <Header />
-      <motion.main
-        id="main"
-        key={pathname}
-        className="flex-1"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <Suspense fallback={<div className="wrap py-32 text-center font-hand text-3xl text-chalk">نفرد الباترون…</div>}>
-          <Outlet />
+      <main id="main" className="min-h-[60vh]">
+        <Suspense fallback={<YarnLoader />}>
+          <motion.div key={location.pathname} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}>
+            <Outlet />
+          </motion.div>
         </Suspense>
-      </motion.main>
+      </main>
       <Footer />
-      <RailDrawer />
-      <SearchOverlay />
-      <Toasts />
-    </div>
+      <CartDrawer />
+      <FlyLayer />
+    </>
   );
 }
