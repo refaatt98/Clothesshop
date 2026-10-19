@@ -2,7 +2,7 @@ import { motion, useMotionValue, useSpring, useTransform, type MotionValue } fro
 import { ArrowLeft, Sparkles } from "lucide-react";
 import type { PointerEvent, ReactNode } from "react";
 import { Link } from "react-router";
-import { site } from "../../data/site";
+import { useSite } from "../../lib/site";
 import { Bow, Leaf, Needle, Scissors, SewButton, Spool, YarnBall } from "../Craft";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -166,6 +166,7 @@ function EmbroideryHoop() {
 }
 
 export function Hero() {
+  const { site } = useSite();
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
   const sx = useSpring(mx, { stiffness: 60, damping: 18 });

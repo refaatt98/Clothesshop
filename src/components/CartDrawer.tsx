@@ -2,14 +2,16 @@ import { AnimatePresence, motion } from "motion/react";
 import { ShoppingBag, X } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router";
-import { site } from "../data/site";
+import { useSite } from "../lib/site";
 import { formatPrice, piecesLabel } from "../lib/format";
 import { useShop } from "../lib/store";
 import { CartLine } from "./CartLine";
 import { YarnBall } from "./Craft";
 
 export function FreeDeliveryMeter({ subtotal }: { subtotal: number }) {
+  const { site } = useSite();
   const goal = site.freeDeliveryOver;
+  if (goal == null || goal <= 0) return null;
   const pct = Math.min(subtotal / goal, 1);
   const left = goal - subtotal;
   return (

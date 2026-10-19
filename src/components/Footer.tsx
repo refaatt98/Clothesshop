@@ -2,9 +2,8 @@ import { motion } from "motion/react";
 import { Check, Clock, Mail, MapPin, Send } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
-import { categories } from "../data/categories";
-import { site } from "../data/site";
 import { subscribeNewsletter } from "../lib/api";
+import { useSite } from "../lib/site";
 import { Diamond, SewButton, Spool } from "./Craft";
 import { InstagramIcon, WhatsappIcon } from "./Icons";
 import { Logo } from "./Logo";
@@ -58,6 +57,7 @@ function Newsletter() {
 }
 
 export function Footer() {
+  const { site, categories } = useSite();
   return (
     <footer className="relative mt-24 bg-cocoa text-cream">
       {/* حافة مموّجة مخيطة */}
@@ -126,7 +126,7 @@ export function Footer() {
         <div className="min-w-0 md:col-span-4">
           <Newsletter />
           <ul className="mt-4 space-y-2 text-sm text-cream/70">
-            <li className="flex items-center gap-2"><MapPin className="size-4" /> نوصّل لكل {site.city}</li>
+            <li className="flex items-center gap-2"><MapPin className="size-4" /> نوصّل لكل فلسطين</li>
             <li className="flex items-center gap-2"><Clock className="size-4" /> {site.hours}</li>
           </ul>
         </div>

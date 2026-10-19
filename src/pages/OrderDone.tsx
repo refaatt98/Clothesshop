@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
-import { regions } from "../data/site";
 import { Bow, YarnBall } from "../components/Craft";
 import { WhatsappIcon } from "../components/Icons";
 import { YarnLoader } from "../components/Loader";
@@ -8,29 +8,59 @@ import { EmptyState } from "../components/ui";
 import { getOrder, whatsappLink } from "../lib/api";
 import { formatPrice } from "../lib/format";
 import { useAsync, useTitle } from "../lib/hooks";
-import type { Order } from "../types";
+import { useSite } from "../lib/site";
+import { orderMessageForStore } from "../lib/whatsapp";
 
-function orderMessage(o: Order): string {
-  const region = regions.find((r) => r.id === o.regionId)?.name ?? "";
-  const lines = [
-    `مرحبا بَنان 🤍 هاد طلبي رقم ${o.number}`,
-    "",
-    ...o.items.map((i) => `• ${i.name} (${i.color.name}${i.size ? `، ${i.size}` : ""}) ×${i.qty}${i.note ? ` — تخصيص: ${i.note}` : ""}`),
-    "",
-    `الإجمالي: ${formatPrice(o.total)} (شامل التوصيل${o.giftWrap ? " والتغليف" : ""})`,
-    `الاسم: ${o.name}`,
-    `الجوال: ${o.phone}`,
-    `العنوان: ${region} — ${o.city}، ${o.address}`,
-  ];
-  if (o.giftWrap && o.giftMessage) lines.push(`رسالة الكرت: ${o.giftMessage}`);
-  if (o.notes) lines.push(`ملاحظات: ${o.notes}`);
-  return lines.join("\n");
-}
+const SENT_KEY = "banan:wa-sent";
 
 export default function OrderDone() {
   useTitle("تم الطلب");
   const { id = "" } = useParams();
+  const { site } = useSite();
   const { data: order, loading } = useAsync(() => getOrder(id), [id]);
+  const [countdown, setCountdown] = useState<number | null>(null);
+
+  const link = order ? whatsappLink(site.whatsapp, orderMessageForStore(order, window.location.origin)) : "";
+
+  // بنفتح واتساب تلقائياً مرة وحدة بعد الطلب
+  useEffect(() => {
+    if (!order) return;
+    let sent: string[] = [];
+    try {
+      sent = JSON.parse(sessionStorage.getItem(SENT_KEY) ?? "[]");
+    } catch {
+      /* */
+    }
+    if (sent.includes(order.id)) return;
+    setCountdown(4);
+  }, [order]);
+
+  useEffect(() => {
+    if (countdown == null || !order) return;
+    if (countdown === 0) {
+      try {
+        const sent = JSON.parse(sessionStorage.getItem(SENT_KEY) ?? "[]");
+        sessionStorage.setItem(SENT_KEY, JSON.stringify([...sent, order.id]));
+      } catch {
+        /* */
+      }
+      setCountdown(null);
+      window.location.href = link;
+      return;
+    }
+    const t = setTimeout(() => setCountdown((c) => (c == null ? null : c - 1)), 1000);
+    return () => clearTimeout(t);
+  }, [countdown, order, link]);
+
+  const markSent = () => {
+    setCountdown(null);
+    try {
+      const sent = JSON.parse(sessionStorage.getItem(SENT_KEY) ?? "[]");
+      sessionStorage.setItem(SENT_KEY, JSON.stringify([...sent, order?.id]));
+    } catch {
+      /* */
+    }
+  };
 
   if (loading) return <YarnLoader />;
   if (!order)
@@ -44,7 +74,6 @@ export default function OrderDone() {
 
   return (
     <section className="container-b relative flex flex-col items-center py-14 text-center md:py-20">
-      {/* علبة بتنربط بفيونكة */}
       <div className="relative mb-6 h-40 w-40">
         <motion.svg viewBox="0 0 120 120" className="absolute inset-0 size-full" aria-hidden>
           <motion.rect x="18" y="46" width="84" height="62" rx="6" fill="#f3e1dc" stroke="#4a2a18" strokeWidth="2" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }} />
@@ -61,33 +90,42 @@ export default function OrderDone() {
         شكراً {order.name.split(" ")[0]}، وصلنا طلبك! 🤍
       </motion.h1>
       <p className="mt-4 max-w-lg leading-8 text-cocoa-2">
-        رقم الطلب <b className="tabular-nums text-cocoa">{order.number}</b>. رح نتواصل معك على واتساب لنأكد التفاصيل، وبعدها بنبلّش نجهّز قطعك بحب.
+        رقم الطلب <b className="tabular-nums text-cocoa">{order.number}</b>. ابعتيلنا الطلب على واتساب لنأكد معك التفاصيل، وبعدها بنبلّش نجهّز قطعك بحب.
       </p>
+
+      <div className="mt-8 flex flex-col items-center gap-3">
+        <a href={link} onClick={markSent} target="_blank" rel="noreferrer" className="btn btn-primary !px-8 !py-4 text-base">
+          <WhatsappIcon className="size-6" /> أرسلي الطلب على واتساب
+        </a>
+        {countdown != null && (
+          <p className="text-sm text-cocoa-3" aria-live="polite">
+            رح نفتحلك واتساب خلال {countdown} ثواني…{" "}
+            <button onClick={() => setCountdown(null)} className="font-semibold text-rose underline underline-offset-4">إلغاء</button>
+          </p>
+        )}
+      </div>
 
       <div className="mt-8 w-full max-w-md rounded-[2rem] border border-dashed border-line bg-linen p-6 text-start">
         <ul className="space-y-2 text-sm">
-          {order.items.map((i) => (
-            <li key={i.key} className="flex justify-between gap-3">
-              <span>{i.name} <span className="text-cocoa-3">({i.color.name}) ×{i.qty}</span></span>
+          {order.items.map((i, n) => (
+            <li key={n} className="flex justify-between gap-3">
+              <span>
+                {i.name} <span className="text-cocoa-3">{i.color ? `(${i.color.name})` : ""} ×{i.qty}</span>
+                {i.note && <span className="block text-xs text-cocoa-3">✍️ {i.note}</span>}
+              </span>
               <span className="tabular-nums">{formatPrice(i.price * i.qty)}</span>
             </li>
           ))}
         </ul>
         <div className="mt-4 space-y-1 border-t border-dashed border-line pt-4 text-sm">
-          <div className="flex justify-between"><span>التوصيل</span><span className="tabular-nums">{order.delivery ? formatPrice(order.delivery) : "مجاني"}</span></div>
+          <div className="flex justify-between"><span>{order.isPickup ? "الاستلام" : "التوصيل"} · {order.zoneName}</span><span className="tabular-nums">{order.deliveryFee ? formatPrice(order.deliveryFee) : "مجاني"}</span></div>
           {order.giftWrap && <div className="flex justify-between"><span>تغليف هدية</span><span className="tabular-nums">{formatPrice(order.giftWrapFee)}</span></div>}
+          {order.discount > 0 && <div className="flex justify-between text-sage"><span>خصم {order.promoCode}</span><span className="tabular-nums">− {formatPrice(order.discount)}</span></div>}
           <div className="flex justify-between pt-2 text-lg font-bold"><span>الإجمالي (عند الاستلام)</span><span className="tabular-nums">{formatPrice(order.total)}</span></div>
         </div>
       </div>
 
-      <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <a href={whatsappLink(orderMessage(order))} target="_blank" rel="noreferrer" className="btn btn-primary">
-          <WhatsappIcon className="size-5" /> أرسلي الطلب على واتساب
-        </a>
-        <Link to="/shop" className="btn btn-ghost">كمّلي التسوق</Link>
-      </div>
-      <p className="mt-3 text-xs text-cocoa-3">إرسال الطلب على واتساب بيسرّع التأكيد</p>
-
+      <Link to="/shop" className="btn btn-ghost mt-8">كمّلي التسوق</Link>
       <YarnBall className="pointer-events-none absolute -bottom-6 start-4 hidden size-24 opacity-70 md:block" color="#e3e9dc" />
     </section>
   );

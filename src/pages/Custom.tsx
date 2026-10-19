@@ -8,6 +8,7 @@ import { ProductArt } from "../components/ProductArt";
 import { PageHero } from "../components/ui";
 import { submitCustomRequest, whatsappLink } from "../lib/api";
 import { useTitle } from "../lib/hooks";
+import { useSite } from "../lib/site";
 import type { ArtKind } from "../types";
 
 const pieceTypes: { id: string; label: string; art: ArtKind }[] = [
@@ -38,6 +39,7 @@ const steps = ["نوع القطعة", "الألوان", "التفاصيل", "م�
 
 export default function Custom() {
   useTitle("اطلبي قطعتك");
+  const { site } = useSite();
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [data, setData] = useState({ pieceType: "", colors: [] as string[], budget: "", deadline: "", details: "", name: "", phone: "" });
@@ -67,9 +69,14 @@ export default function Custom() {
     setError("");
     if (delta > 0 && step === steps.length - 1) {
       setSending(true);
-      const res = await submitCustomRequest(data);
-      setSending(false);
-      setDone(res.ref);
+      try {
+        const res = await submitCustomRequest(data);
+        setDone(res.ref);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "ما وصل الطلب، جرّبي كمان مرة");
+      } finally {
+        setSending(false);
+      }
       return;
     }
     setDir(delta);
@@ -94,7 +101,7 @@ export default function Custom() {
           رقم الطلب <b className="text-cocoa">{done}</b>. رح نحكي معك على واتساب خلال 24 ساعة لنحكي بالتفاصيل والسعر، ونبعتلك رسمة أولية قبل ما نبلّش.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <a href={whatsappLink(msg)} target="_blank" rel="noreferrer" className="btn btn-primary"><WhatsappIcon className="size-5" /> كمّلي على واتساب</a>
+          <a href={whatsappLink(site.whatsapp, msg)} target="_blank" rel="noreferrer" className="btn btn-primary"><WhatsappIcon className="size-5" /> كمّلي على واتساب</a>
           <Link to="/shop" className="btn btn-ghost">تصفّحي المتجر</Link>
         </div>
       </section>

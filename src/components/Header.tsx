@@ -2,8 +2,7 @@ import { AnimatePresence, motion, useAnimationControls } from "motion/react";
 import { Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router";
-import { site } from "../data/site";
-import { formatPrice } from "../lib/format";
+import { useSite } from "../lib/site";
 import { useShop } from "../lib/store";
 import { Diamond, YarnBall } from "./Craft";
 import { InstagramIcon, WhatsappIcon } from "./Icons";
@@ -17,18 +16,14 @@ export const navLinks = [
   { to: "/contact", label: "تواصلي معنا" },
 ];
 
-const announcements = [
-  `توصيل مجاني للطلبات فوق ${formatPrice(site.freeDeliveryOver)}`,
-  "الدفع عند الاستلام لكل فلسطين",
-  `تغليف هدية بخط اليد بـ ${formatPrice(site.giftWrapPrice)} فقط`,
-];
-
 function AnnouncementBar() {
+  const { site } = useSite();
+  const announcements = site.announcements.length ? site.announcements : [site.tagline];
   const [i, setI] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setI((x) => (x + 1) % announcements.length), 4200);
     return () => clearInterval(t);
-  }, []);
+  }, [announcements.length]);
   return (
     <div className="relative overflow-hidden bg-cocoa text-cream">
       <div className="container-b flex h-9 items-center justify-center text-[0.8rem]">
@@ -42,7 +37,7 @@ function AnnouncementBar() {
             className="flex items-center gap-2 truncate"
           >
             <Diamond className="size-2 text-rose" />
-            {announcements[i]}
+            {announcements[i % announcements.length]}
             <Diamond className="size-2 text-rose" />
           </motion.p>
         </AnimatePresence>
@@ -86,6 +81,7 @@ function CartButton() {
 
 export function Header() {
   const { wishlist } = useShop();
+  const { site } = useSite();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);

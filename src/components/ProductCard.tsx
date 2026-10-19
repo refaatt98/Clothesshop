@@ -2,11 +2,11 @@ import { AnimatePresence, motion } from "motion/react";
 import { Heart, Plus } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
-import { categories } from "../data/categories";
+import { useSite } from "../lib/site";
 import { useShop } from "../lib/store";
 import type { Product } from "../types";
 import { HangTag } from "./HangTag";
-import { ProductArt } from "./ProductArt";
+import { ProductMedia } from "./ProductMedia";
 import { Price, Stars } from "./ui";
 
 const badgeTone: Record<NonNullable<Product["badge"]>, string> = {
@@ -22,7 +22,8 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
   const [added, setAdded] = useState(false);
   const wished = isWished(product.id);
   const out = product.stock <= 0;
-  const tint = categories.find((c) => c.slug === product.categorySlug)?.tint;
+  const { categories } = useSite();
+  const tint = categories.find((c) => c.id === product.categoryId)?.tint;
   const needsChoice = product.personalizable || (product.sizes?.length ?? 0) > 0;
 
   const quickAdd = (el: HTMLElement) => {
@@ -42,7 +43,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       <div className="stitched relative aspect-[4/5] overflow-hidden rounded-[1.75rem] bg-cream-2">
         <Link to={`/product/${product.slug}`} className="block size-full" aria-label={product.name}>
           <motion.div className="size-full" whileHover={{ scale: 1.06 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
-            <ProductArt kind={product.art} color={color.hex} bg={tint} className="size-full" title={product.name} />
+            <ProductMedia image={product.images[0]} art={product.art} color={color.hex} bg={tint} className="size-full" alt={product.name} />
           </motion.div>
         </Link>
 
@@ -94,7 +95,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           <h3 className="font-semibold leading-6">
             <Link to={`/product/${product.slug}`} className="hover:text-rose">{product.name}</Link>
           </h3>
-          <Price value={product.price} compareAt={product.compareAtPrice} className="shrink-0" />
+          <Price value={product.price} compareAt={product.compareAtPrice ?? undefined} className="shrink-0" />
         </div>
         <p className="mt-1 line-clamp-1 text-sm text-cocoa-3">{product.shortDescription}</p>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">

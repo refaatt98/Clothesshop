@@ -4,21 +4,30 @@ import {
   CustomCta,
   FeaturedSection,
   GallerySection,
+  WorksSection,
   Marquee,
   ProcessSection,
   ReviewsSection,
   ValuesStrip,
 } from "../components/home/Sections";
-import { getCategories, getFeaturedProducts, getProcessSteps, getProducts, getReviews } from "../lib/api";
+import { getCategories, getFeaturedProducts, getGallery, getHomeReviews, getProcessSteps, getProducts } from "../lib/api";
 import { useAsync, useTitle } from "../lib/hooks";
 
 export default function Home() {
   useTitle("");
   const { data } = useAsync(
-    () => Promise.all([getCategories(), getFeaturedProducts(8), getProcessSteps(), getReviews(), getProducts({ sort: "new" })]),
+    () =>
+      Promise.all([
+        getCategories().catch(() => []),
+        getFeaturedProducts(8).catch(() => []),
+        getProcessSteps(),
+        getHomeReviews().catch(() => []),
+        getProducts({ sort: "new" }).catch(() => []),
+        getGallery().catch(() => []),
+      ]),
     [],
   );
-  const [categories, featured, steps, reviews, latest] = data ?? [[], [], [], [], []];
+  const [categories, featured, steps, reviews, latest, gallery] = data ?? [[], [], [], [], [], []];
 
   return (
     <>
@@ -29,8 +38,9 @@ export default function Home() {
       <ProcessSection steps={steps} />
       <ValuesStrip />
       <CustomCta />
+      <WorksSection items={gallery} />
       <ReviewsSection reviews={reviews} />
-      <GallerySection products={latest} />
+      {gallery.length === 0 && <GallerySection products={latest} />}
     </>
   );
 }

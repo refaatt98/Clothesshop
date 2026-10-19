@@ -1,12 +1,12 @@
 import { motion, useScroll, useSpring } from "motion/react";
 import { useRef } from "react";
 import { Link } from "react-router";
-import { site } from "../data/site";
 import { Bow, Diamond, Leaf, SewButton, Spool, YarnBall } from "../components/Craft";
 import { ProductArt } from "../components/ProductArt";
 import { PageHero, Reveal, SectionHeading } from "../components/ui";
 import { getStory } from "../lib/api";
 import { useAsync, useTitle } from "../lib/hooks";
+import { useSite } from "../lib/site";
 
 const numbers = [
   { value: "+500", label: "قطعة وصلت لأصحابها" },
@@ -17,6 +17,7 @@ const numbers = [
 
 export default function Story() {
   useTitle("قصتنا");
+  const { site } = useSite();
   const { data: story } = useAsync(getStory, []);
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 70%", "end 60%"] });

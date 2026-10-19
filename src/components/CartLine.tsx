@@ -4,7 +4,7 @@ import { Link } from "react-router";
 import { formatPrice } from "../lib/format";
 import { useShop } from "../lib/store";
 import type { CartItem } from "../types";
-import { ProductArt } from "./ProductArt";
+import { ProductMedia } from "./ProductMedia";
 
 export function QtyStepper({ value, onChange, max = 20 }: { value: number; onChange: (v: number) => void; max?: number }) {
   return (
@@ -31,7 +31,7 @@ export function CartLine({ item, onNavigate }: { item: CartItem; onNavigate?: ()
       className="flex gap-4 border-b border-dashed border-line py-4"
     >
       <Link to={`/product/${item.slug}`} onClick={onNavigate} className="block size-24 shrink-0 overflow-hidden rounded-2xl">
-        <ProductArt kind={item.art} color={item.color.hex} className="size-full" title={item.name} />
+        <ProductMedia image={item.image} art={item.art} color={item.color.hex} className="size-full" alt={item.name} />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-2">

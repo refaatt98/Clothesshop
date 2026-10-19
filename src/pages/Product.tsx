@@ -1,19 +1,20 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Check, ChevronDown, Clock, Gift, Heart, Share2, ShoppingBag, Truck } from "lucide-react";
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { Check, ChevronDown, Clock, Gift, Heart, PenLine, Share2, ShoppingBag, Star, Truck } from "lucide-react";
+import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
 import { Link, useParams } from "react-router";
-import { categories } from "../data/categories";
-import { site } from "../data/site";
 import { QtyStepper } from "../components/CartLine";
 import { Diamond, StitchDivider } from "../components/Craft";
 import { WhatsappIcon } from "../components/Icons";
 import { YarnLoader } from "../components/Loader";
 import { ProductArt } from "../components/ProductArt";
 import { ProductCard } from "../components/ProductCard";
+import { ProductMedia } from "../components/ProductMedia";
+import { ReviewsMarquee } from "../components/ReviewsMarquee";
 import { Price, SectionHeading, Stars } from "../components/ui";
-import { getProductBySlug, getRelatedProducts, whatsappLink } from "../lib/api";
+import { getHomeReviews, getProductBySlug, getProductReviews, getRelatedProducts, submitReview, whatsappLink } from "../lib/api";
 import { formatPrice } from "../lib/format";
 import { useAsync, useTitle } from "../lib/hooks";
+import { useSite } from "../lib/site";
 import { useShop } from "../lib/store";
 import type { Product as TProduct } from "../types";
 import NotFound from "./NotFound";
@@ -39,21 +40,31 @@ function Accordion({ title, children, defaultOpen = false }: { title: string; ch
   );
 }
 
-const views = [
+const artViews = [
   { v: 0 as const, label: "القطعة" },
   { v: 1 as const, label: "التفاصيل" },
   { v: 2 as const, label: "مع التغليف" },
 ];
 
-function Gallery({ product, color }: { product: TProduct; color: string }) {
-  const [view, setView] = useState<0 | 1 | 2>(0);
+function Gallery({ product, color, tint }: { product: TProduct; color: string; tint?: string }) {
+  const [view, setView] = useState(0);
   const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
-  const tint = categories.find((c) => c.slug === product.categorySlug)?.tint;
+  const hasImages = product.images.length > 0;
+  const count = hasImages ? product.images.length : artViews.length;
+
+  useEffect(() => setView(0), [product.id]);
 
   const onMove = (e: MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     setZoom({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
   };
+
+  const render = (i: number, eager = false) =>
+    hasImages ? (
+      <ProductMedia image={product.images[i]} art={product.art} color={color} className="size-full" alt={`${product.name} ${i + 1}`} eager={eager} />
+    ) : (
+      <ProductArt kind={product.art} color={color} bg={tint} variant={artViews[i].v} className="size-full" title={product.name} />
+    );
 
   return (
     <div className="flex flex-col gap-3 md:flex-row-reverse md:items-start">
@@ -75,27 +86,116 @@ function Gallery({ product, color }: { product: TProduct; color: string }) {
               className="size-full transition-transform duration-300 ease-out"
               style={zoom ? { transform: "scale(1.7)", transformOrigin: `${zoom.x}% ${zoom.y}%` } : undefined}
             >
-              <ProductArt kind={product.art} color={color} bg={tint} variant={view} className="size-full" title={product.name} />
+              {render(view, true)}
             </div>
           </motion.div>
         </AnimatePresence>
         {product.badge && <span className="absolute start-5 top-5 rounded-full bg-cocoa px-3 py-1 text-xs font-semibold text-cream">{product.badge}</span>}
       </div>
-      <div className="flex gap-3 md:flex-col" role="tablist" aria-label="صور القطعة">
-        {views.map((v) => (
-          <button
-            key={v.v}
-            role="tab"
-            aria-selected={view === v.v}
-            aria-label={v.label}
-            onClick={() => setView(v.v)}
-            className={`relative size-20 overflow-hidden rounded-2xl border-2 transition md:size-24 ${view === v.v ? "border-cocoa" : "border-transparent opacity-70 hover:opacity-100"}`}
-          >
-            <ProductArt kind={product.art} color={color} bg={tint} variant={v.v} className="size-full" />
-          </button>
-        ))}
-      </div>
+      {count > 1 && (
+        <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] md:max-h-[34rem] md:flex-col md:overflow-y-auto" role="tablist" aria-label="صور القطعة">
+          {Array.from({ length: count }).map((_, i) => (
+            <button
+              key={i}
+              role="tab"
+              aria-selected={view === i}
+              aria-label={`صورة ${i + 1}`}
+              onClick={() => setView(i)}
+              className={`relative size-20 shrink-0 overflow-hidden rounded-2xl border-2 transition md:size-24 ${view === i ? "border-cocoa" : "border-transparent opacity-70 hover:opacity-100"}`}
+            >
+              {render(i)}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+/** آراء القطعة + نموذج لإضافة رأي (بينعرض بعد موافقة المتجر) */
+function ProductReviews({ product }: { product: TProduct }) {
+  const { data: reviews } = useAsync(() => getProductReviews(product.id), [product.id]);
+  const { data: homeReviews } = useAsync(() => getHomeReviews().catch(() => []), []);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", city: "", text: "", rating: 5 });
+  const [state, setState] = useState<"idle" | "sending" | "done">("idle");
+  const [err, setErr] = useState("");
+
+  const list = reviews && reviews.length ? reviews : homeReviews ?? [];
+  const own = !!reviews?.length;
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (form.name.trim().length < 2 || form.text.trim().length < 3) return setErr("اكتبي اسمك ورأيك");
+    setErr("");
+    setState("sending");
+    try {
+      await submitReview({ productId: product.id, ...form });
+      setState("done");
+    } catch (ex) {
+      setState("idle");
+      setErr(ex instanceof Error ? ex.message : "ما وصل الرأي");
+    }
+  };
+
+  return (
+    <section className="mt-24 bg-cream-2/70 py-16 md:py-20">
+      <div className="container-b">
+        <SectionHeading
+          eyebrow="آراء البنات"
+          title={own ? `شو حكوا عن ${product.name}` : "شو حكوا عن بَنان"}
+          align="start"
+          action={
+            <button onClick={() => setOpen((o) => !o)} className="btn btn-ghost self-start md:self-auto">
+              <PenLine className="size-4" /> اكتبي رأيك
+            </button>
+          }
+        />
+        <AnimatePresence>
+          {open && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+              {state === "done" ? (
+                <p className="mb-8 rounded-3xl bg-sage-soft p-6 text-center font-serif text-xl">شكراً على رأيك 🤍 رح يظهر هون بعد ما نراجعه.</p>
+              ) : (
+                <form onSubmit={submit} className="mb-10 grid gap-4 rounded-[2rem] border border-dashed border-line bg-linen p-6 md:grid-cols-2">
+                  <div>
+                    <label htmlFor="rv-name" className="label">اسمك</label>
+                    <input id="rv-name" value={form.name} maxLength={60} onChange={(e) => setForm({ ...form, name: e.target.value })} className="field" />
+                  </div>
+                  <div>
+                    <label htmlFor="rv-city" className="label">مدينتك (اختياري)</label>
+                    <input id="rv-city" value={form.city} maxLength={40} onChange={(e) => setForm({ ...form, city: e.target.value })} className="field" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="label">تقييمك</p>
+                    <div className="flex gap-1" role="radiogroup" aria-label="التقييم">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button key={n} type="button" role="radio" aria-checked={form.rating === n} aria-label={`${n} نجوم`} onClick={() => setForm({ ...form, rating: n })}>
+                          <Star className={`size-7 transition ${n <= form.rating ? "fill-gold text-gold" : "text-sand"}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label htmlFor="rv-text" className="label">رأيك</label>
+                    <textarea id="rv-text" rows={3} maxLength={1000} value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} className="field resize-none" />
+                  </div>
+                  <p className="text-sm text-rose md:col-span-2" role="alert">{err}</p>
+                  <button disabled={state === "sending"} className="btn btn-primary md:col-span-2 md:justify-self-start">
+                    {state === "sending" ? "عم نرسل..." : "إرسال الرأي"}
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      {list.length > 0 ? (
+        <ReviewsMarquee reviews={list} />
+      ) : (
+        <p className="container-b text-cocoa-3">لسا ما في آراء — كوني أول وحدة بتكتب 🤍</p>
+      )}
+    </section>
   );
 }
 
@@ -134,7 +234,7 @@ function PersonalizePreview({ text }: { text: string }) {
 function ProductView({ product }: { product: TProduct }) {
   const { add, toggleWish, isWished, setDrawerOpen } = useShop();
   const [color, setColor] = useState(product.colors[0]);
-  const [size, setSize] = useState(product.sizes?.[0]);
+  const [size, setSize] = useState<string | undefined>(product.sizes[0]);
   const [note, setNote] = useState("");
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
@@ -142,13 +242,14 @@ function ProductView({ product }: { product: TProduct }) {
   const btnRef = useRef<HTMLButtonElement>(null);
   const out = product.stock <= 0;
   const wished = isWished(product.id);
-  const category = categories.find((c) => c.slug === product.categorySlug);
+  const { site, categories } = useSite();
+  const category = categories.find((c) => c.id === product.categoryId);
   const { data: related } = useAsync(() => getRelatedProducts(product), [product.id]);
   useTitle(product.name);
 
   useEffect(() => {
     setColor(product.colors[0]);
-    setSize(product.sizes?.[0]);
+    setSize(product.sizes[0]);
     setNote("");
     setQty(1);
   }, [product]);
@@ -192,7 +293,7 @@ function ProductView({ product }: { product: TProduct }) {
 
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <Gallery product={product} color={color.hex} />
+            <Gallery product={product} color={color.hex} tint={category?.tint} />
           </div>
 
           <div>
@@ -203,7 +304,7 @@ function ProductView({ product }: { product: TProduct }) {
                 <Stars value={product.rating} />
                 <span>{product.rating} · {product.reviewsCount} تقييم</span>
               </div>
-              <Price value={product.price} compareAt={product.compareAtPrice} className="mt-5 text-2xl" />
+              <Price value={product.price} compareAt={product.compareAtPrice ?? undefined} className="mt-5 text-2xl" />
               <p className="mt-4 text-lg leading-8 text-cocoa-2">{product.shortDescription}</p>
             </motion.div>
 
@@ -232,7 +333,7 @@ function ProductView({ product }: { product: TProduct }) {
               </div>
             </fieldset>
 
-            {product.sizes && (
+            {product.sizes.length > 0 && (
               <fieldset className="mt-6">
                 <legend className="label">الحجم</legend>
                 <div className="flex flex-wrap gap-2">
@@ -301,7 +402,7 @@ function ProductView({ product }: { product: TProduct }) {
 
             <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm">
               <a
-                href={whatsappLink(`مرحبا بَنان 🤍 بدي أسأل عن "${product.name}" (${color.name})`)}
+                href={whatsappLink(site.whatsapp, `مرحبا بَنان 🤍 بدي أسأل عن "${product.name}" (${color.name})`)}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 text-cocoa-2 hover:text-cocoa"
@@ -315,7 +416,7 @@ function ProductView({ product }: { product: TProduct }) {
 
             <ul className="mt-7 grid gap-3 rounded-3xl border border-dashed border-line bg-linen p-5 text-sm sm:grid-cols-3">
               <li className="flex items-center gap-2"><Clock className="size-5 shrink-0 text-rose" /> {product.makingTime}</li>
-              <li className="flex items-center gap-2"><Truck className="size-5 shrink-0 text-rose" /> مجاني فوق {formatPrice(site.freeDeliveryOver)}</li>
+              <li className="flex items-center gap-2"><Truck className="size-5 shrink-0 text-rose" /> {site.freeDeliveryOver != null ? <>مجاني فوق {formatPrice(site.freeDeliveryOver)}</> : "توصيل لكل فلسطين"}</li>
               <li className="flex items-center gap-2"><Gift className="size-5 shrink-0 text-rose" /> تغليف هدية بـ {formatPrice(site.giftWrapPrice)}</li>
             </ul>
             {!out && product.stock <= 5 && (
@@ -337,6 +438,8 @@ function ProductView({ product }: { product: TProduct }) {
           </div>
         </div>
       </div>
+
+      <ProductReviews product={product} />
 
       {related && related.length > 0 && (
         <section className="container-b mt-24">

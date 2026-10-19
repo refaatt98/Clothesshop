@@ -70,8 +70,9 @@ interface ShopState {
 const ShopContext = createContext<ShopState | null>(null);
 
 export function ShopProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => load(CART_KEY, []));
-  const [wishlist, setWishlist] = useState<string[]>(() => load(WISH_KEY, []));
+  // بنشيل أي قطع قديمة من النسخة التجريبية (معرّفها مش uuid)
+  const [items, setItems] = useState<CartItem[]>(() => load<CartItem[]>(CART_KEY, []).filter((i) => /^[0-9a-f-]{36}$/i.test(i.productId)));
+  const [wishlist, setWishlist] = useState<string[]>(() => load<string[]>(WISH_KEY, []).filter((id) => /^[0-9a-f-]{36}$/i.test(id)));
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [flights, setFlights] = useState<Flight[]>([]);
   const [bump, setBump] = useState(0);
@@ -99,6 +100,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           name: product.name,
           price: product.price,
           art: product.art,
+          image: product.images[0],
           color: opts.color,
           size: opts.size,
           note,

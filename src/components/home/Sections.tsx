@@ -1,12 +1,15 @@
 import { motion, useScroll, useSpring, useTransform } from "motion/react";
-import { ArrowLeft, Gift, Hand, HandHeart, Leaf as LeafIcon, PenLine, Quote, Scissors as ScissorsIcon, Sparkles } from "lucide-react";
+import { ArrowLeft, Gift, Hand, HandHeart, Leaf as LeafIcon, PenLine, Scissors as ScissorsIcon, Sparkles } from "lucide-react";
 import { useRef } from "react";
 import { Link } from "react-router";
-import type { Category, ProcessStep, Product, Review } from "../../types";
+import type { Category, GalleryItem, ProcessStep, Product, Review } from "../../types";
 import { Diamond, Needle, SewButton, Spool, YarnBall } from "../Craft";
 import { ProductArt } from "../ProductArt";
+import { ProductMedia } from "../ProductMedia";
 import { ProductCard } from "../ProductCard";
-import { Reveal, SectionHeading, Stars } from "../ui";
+import { ReviewsMarquee } from "../ReviewsMarquee";
+import { Reveal, SectionHeading } from "../ui";
+import { WorksCarousel } from "../WorksCarousel";
 
 // ─── شريط متحرك ───────────────────────────────────────────
 const marqueeWords = ["صُنع باليد", "كروشيه", "تطريز", "خرز", "قطعة ما بتتكرر", "تغليف بحب", "تفاصيل صغيرة", "خيوط طبيعية"];
@@ -42,7 +45,11 @@ export function CategoriesSection({ categories }: { categories: Category[] }) {
                   whileHover={{ rotate: -4, scale: 1.04 }}
                   transition={{ type: "spring", stiffness: 260, damping: 14 }}
                 >
-                  <ProductArt kind={c.art} color={["#c98f86", "#c5a46d", "#93a386", "#b9a6c4", "#b88356", "#e9c2bb"][i % 6]} bg={c.tint} className="size-full" />
+                  {c.imageUrl ? (
+                    <img src={c.imageUrl} alt={c.name} loading="lazy" className="size-full object-cover" />
+                  ) : (
+                    <ProductArt kind={c.art} color={["#c98f86", "#c5a46d", "#93a386", "#b9a6c4", "#b88356", "#e9c2bb"][i % 6]} bg={c.tint} className="size-full" />
+                  )}
                 </motion.div>
                 <div className="min-w-0">
                   <h3 className="font-display text-xl md:text-2xl">{c.name}</h3>
@@ -220,42 +227,28 @@ export function CustomCta() {
   );
 }
 
-// ─── آراء الزبائن (أوراق مثبّتة) ──────────────────────────
-const noteTints = ["#fffdfa", "#f3e1dc", "#e3e9dc", "#f3e8d2"];
-const noteRot = [-2.5, 1.8, -1.2, 2.4];
-
+// ─── آراء الزبائن (شريط متحرك) ────────────────────────────
 export function ReviewsSection({ reviews }: { reviews: Review[] }) {
+  if (!reviews.length) return null;
   return (
     <section className="relative overflow-hidden bg-cream-2/70 py-20 md:py-28">
       <div className="container-b">
         <SectionHeading eyebrow="من قلوبكم" title="شو حكوا عن بَنان" text="أحلى شي بنستلمه بعد كل طلب: رسالة حلوة متلكم." />
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {reviews.map((r, i) => (
-            <motion.figure
-              key={r.id}
-              initial={{ opacity: 0, y: 40, rotate: 0 }}
-              whileInView={{ opacity: 1, y: 0, rotate: noteRot[i % 4] }}
-              whileHover={{ rotate: 0, y: -6, scale: 1.02 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ type: "spring", damping: 14, delay: i * 0.08 }}
-              className="relative rounded-2xl p-6 pt-8 shadow-[0_18px_30px_-22px_rgba(74,42,24,.45)]"
-              style={{ background: noteTints[i % 4] }}
-            >
-              {/* شريط لاصق */}
-              <span className="absolute -top-3 left-1/2 h-6 w-20 -translate-x-1/2 rotate-[-3deg] bg-gold-soft/80 shadow-sm" aria-hidden />
-              <Quote className="size-6 text-rose" />
-              <blockquote className="mt-3 font-serif text-lg leading-8">{r.text}</blockquote>
-              <figcaption className="mt-5 flex items-center justify-between border-t border-dashed border-cocoa/15 pt-4 text-sm">
-                <span>
-                  <b>{r.name}</b> <span className="text-cocoa-3">· {r.city}</span>
-                  <span className="mt-0.5 block text-xs text-cocoa-3">{r.productName}</span>
-                </span>
-                <Stars value={r.rating} />
-              </figcaption>
-            </motion.figure>
-          ))}
-        </div>
       </div>
+      <ReviewsMarquee reviews={reviews} />
+    </section>
+  );
+}
+
+// ─── معرض الأعمال (صور وفيديو) ────────────────────────────
+export function WorksSection({ items }: { items: GalleryItem[] }) {
+  if (!items.length) return null;
+  return (
+    <section className="py-20 md:py-28">
+      <div className="container-b">
+        <SectionHeading eyebrow="معرض الأعمال" title="من إيدينا لبيتكم" text="لقطات من الشغل والقطع اللي وصلت لأصحابها." />
+      </div>
+      <WorksCarousel items={items} />
     </section>
   );
 }
@@ -266,12 +259,12 @@ export function GallerySection({ products }: { products: Product[] }) {
   const spans = ["md:row-span-2", "", "", "md:row-span-2", "", ""];
   return (
     <section className="container-b py-20 md:py-28">
-      <SectionHeading eyebrow="@banan.store" title="من دفتر بَنان" text="لقطات من الشغل، القطع، والتفاصيل اللي بنحبها." />
+      <SectionHeading eyebrow="جديدنا" title="من دفتر بَنان" text="لقطات من الشغل، القطع، والتفاصيل اللي بنحبها." />
       <div className="grid auto-rows-[9rem] grid-cols-2 gap-3 md:auto-rows-[12rem] md:grid-cols-4 md:gap-4">
         {tiles.map((p, i) => (
           <Reveal key={p.id} delay={i * 0.06} className={`${spans[i]} group relative overflow-hidden rounded-3xl`}>
             <Link to={`/product/${p.slug}`} className="block size-full" aria-label={p.name}>
-              <ProductArt kind={p.art} color={p.colors[Math.min(1, p.colors.length - 1)].hex} variant={i % 3 === 1 ? 1 : i % 3 === 2 ? 2 : 0} className="size-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <ProductMedia image={p.images[0]} art={p.art} color={p.colors[Math.min(1, p.colors.length - 1)].hex} variant={p.images[0] ? 0 : i % 3 === 1 ? 1 : i % 3 === 2 ? 2 : 0} className="size-full transition-transform duration-700 group-hover:scale-110" alt={p.name} />
               <span className="absolute inset-0 flex items-end bg-gradient-to-t from-cocoa/60 via-transparent p-4 text-cream opacity-0 transition-opacity duration-500 group-hover:opacity-100">
                 <span className="font-display text-lg">{p.name}</span>
               </span>

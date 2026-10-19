@@ -1,14 +1,14 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Check, ChevronDown, Clock, LoaderCircle, Mail, Phone } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { site } from "../data/site";
 import { InstagramIcon, WhatsappIcon } from "../components/Icons";
 import { PageHero, Reveal, SectionHeading } from "../components/ui";
 import { getFaqs, submitContact, whatsappLink } from "../lib/api";
 import { useAsync, useTitle } from "../lib/hooks";
+import { useSite } from "../lib/site";
 
-const channels = [
-  { icon: WhatsappIcon, title: "واتساب", value: "أسرع طريقة", href: whatsappLink("مرحبا بَنان 🤍"), tint: "bg-sage-soft" },
+const channelsFor = (site: ReturnType<typeof useSite>["site"]) => [
+  { icon: WhatsappIcon, title: "واتساب", value: "أسرع طريقة", href: whatsappLink(site.whatsapp, "مرحبا بَنان 🤍"), tint: "bg-sage-soft" },
   { icon: InstagramIcon, title: "إنستغرام", value: `@${site.instagram}`, href: `https://instagram.com/${site.instagram}`, tint: "bg-rose-soft" },
   { icon: Phone, title: "اتصال", value: site.phone, href: `tel:${site.phone.replace(/\s/g, "")}`, tint: "bg-gold-soft" },
   { icon: Mail, title: "البريد", value: site.email, href: `mailto:${site.email}`, tint: "bg-cream-2" },
@@ -35,6 +35,8 @@ function Faq({ q, a, i }: { q: string; a: string; i: number }) {
 
 export default function Contact() {
   useTitle("تواصلي معنا");
+  const { site } = useSite();
+  const channels = channelsFor(site);
   const { data: faqs } = useAsync(getFaqs, []);
   const [form, setForm] = useState({ name: "", phone: "", message: "" });
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
@@ -48,8 +50,14 @@ export default function Contact() {
     }
     setError("");
     setState("sending");
-    await submitContact(form);
-    setState("done");
+    try {
+      await submitContact(form);
+      setState("done");
+    } catch (err) {
+      setState("idle");
+      setError(err instanceof Error ? err.message : "ما وصلت الرسالة، جرّبي كمان مرة");
+      return;
+    }
     setForm({ name: "", phone: "", message: "" });
   };
 
@@ -112,7 +120,7 @@ export default function Contact() {
           <div id="faq" className="scroll-mt-28">
             <SectionHeading eyebrow="أسئلة بتتكرر" title="الأسئلة الشائعة" align="start" />
             <div className="space-y-3">
-              {faqs?.map((f, i) => <Faq key={f.q} {...f} i={i} />)}
+              {faqs?.map((f, i) => <Faq key={f.id} q={f.question} a={f.answer} i={i} />)}
             </div>
           </div>
         </div>
